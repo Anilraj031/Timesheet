@@ -1,0 +1,206 @@
+{% extends "base.html" %}
+{% block script %}
+<style>
+  .form-control {
+    border-top:0 !important;
+    border-left:0 !important;
+    border-right:0 !important;
+    border-bottom:1px solid grey !important;
+    border-radius: 0 !important;
+}
+
+  .btnsm{
+    background-color: White !important;
+    color:black !important;
+  }
+  .btnsm1 >.active{
+    color:blue !important;
+    border-bottom:1px solid blue !important;
+    border-radius:0px !important;
+  }
+</style>
+{% endblock %}
+{% block content %}
+  <div class="tab-content" id="nav-tabs-content">
+    <div class="tab-pane-with-nested-tab fade show active" id="tab1-content" role="tabpanel" aria-labelledby="nav-tab1">
+      <ul role="tablist" aria-owns="nav-linkA nav-linkB nav-linkC nav-linkD" class="nav nav-tabs nav-tabs-light mt-0">
+        <li class="nav-item" role="presentation">
+          <a class="nav-link active" id="nav-linkA" href="#linkA" data-bs-toggle="tab" data-bs-target="#linkA" role="tab" aria-current="page">General</a>
+        </li>
+        <li class="nav-item" role="presentation">
+          <a class="nav-link" id="nav-linkB" href="#linkB" data-bs-toggle="tab" data-bs-target="#linkB" role="tab">Link B</a>
+        </li>
+        <li class="nav-item" role="presentation">
+          <a class="nav-link" id="nav-linkC" href="#linkC" data-bs-toggle="tab" data-bs-target="#linkC" role="tab">Link C</a>
+        </li>
+        <li class="nav-item" role="presentation">
+          <a class="nav-link disabled" id="nav-linkD" data-bs-toggle="tab" data-bs-target="#linkD" role="tab">Link D</a>
+        </li>
+      </ul>
+      <div class="tab-content border-0" id="nav-tabs-light-content">
+        <div class="tab-pane fade show active" id="linkA" role="tabpanel" aria-labelledby="nav-linkA">
+          <div class="container-fluid">
+            <div class="d-flex align-items-start">
+              <div class="nav flex-column nav-pills me-3 btnsm1" id="v-pills-tab" role="tablist" aria-orientation="vertical">
+                <button class="nav-link active btnsm px-0" id="v-pills-home-tab" data-bs-toggle="pill" data-bs-target="#v-pills-home" type="button" role="tab" aria-controls="v-pills-home" aria-selected="true">Leave Type</button>
+                <button class="nav-link btnsm pl-0" id="v-pills-profile-tab" data-bs-toggle="pill" data-bs-target="#v-pills-profile" type="button" role="tab" aria-controls="v-pills-profile" aria-selected="false">Teams</button>
+                <button class="nav-link btnsm" id="v-pills-messages-tab" data-bs-toggle="pill" data-bs-target="#v-pills-messages" type="button" role="tab" aria-controls="v-pills-messages" aria-selected="false">Messages</button>
+                <button class="nav-link btnsm" id="v-pills-settings-tab" data-bs-toggle="pill" data-bs-target="#v-pills-settings" type="button" role="tab" aria-controls="v-pills-settings" aria-selected="false">Settings</button>
+              </div>
+              <div class="tab-content border border-secondary p-3" id="v-pills-tabContent" style="width:900px;height:400px;">
+                <!--teams setting -->
+                <div class="tab-pane fade" id="v-pills-profile" role="tabpanel" aria-labelledby="v-pills-profile-tab">
+                  <div class="container">
+                    <ol>
+                      {% for t in teams %}
+                      <li><a href="{% url 'teams' teamid=t.id %}">{{t.name }}</a></li>
+                      {% endfor %}
+                    </ol>
+                  </div>
+                </div>
+                <div class="container tab-pane fade show active" id="v-pills-home" role="tabpanel" aria-labelledby="v-pills-home-tab">
+                  <label>Create leave type and days</label><br>
+                    <div class="row" >
+                      <div class="col-xl-6">
+                        <select class="form-select rounded-0" multiple aria-label="multiple select example" id="leaveType" onchange="getLeaveType()">
+                          {% for n in ltypes %}
+                          <option value="{{n.id}}">{{n.name}}</option>
+                          {% endfor %}
+                        </select><br>
+                        <label id="leaveDetails">Allowed Leave Days for <b><span id="lname"></span></b> is <b><span id="lday"></span></b> </label>
+                      </div>
+                      <div class="col-xl-6">
+                        <a class="btn btn-sm btn-light" type="button" data-bs-toggle="modal" data-bs-target="#leaveModal" onclick="updateLeave('add')">Add</a><br>
+                        <a class="btn btn-sm btn-light" type="button" data-bs-toggle="modal" data-bs-target="#leaveModal" onclick="updateLeave('edit')">Edit</a><br>
+                        <a class="btn btn-sm btn-light" type="button" data-bs-toggle="modal" data-bs-target="#leaveModal" onclick="updateLeave('delete')">Remove</a>
+                      </div>
+                    </div>
+                </div>
+                <div class="tab-pane fade" id="v-pills-messages" role="tabpanel" aria-labelledby="v-pills-messages-tab">...</div>
+                <div class="tab-pane fade" id="v-pills-settings" role="tabpanel" aria-labelledby="v-pills-settings-tab">...</div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="tab-pane" id="linkB" role="tabpanel" aria-labelledby="nav-linkB">
+          The
+        </div>
+        <div class="tab-pane" id="linkC" role="tabpanel" aria-labelledby="nav-linkC">Content of Link C</div>
+        <div class="tab-pane" id="linkD" role="tabpanel" aria-labelledby="nav-linkD">Content of Link D</div>
+      </div>
+    </div>
+  </div> 
+
+ <!--update leave modal-->
+ <div class="modal fade" id="leaveModal" tabindex="-1" role="dialog" aria-labelledby="leaveModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered" role="document">
+      <div class="modal-content rounded-0">
+          <div class="modal-header">
+              <h5 class="modal-title" id="leaveModalLabel"></h5>
+              <button class="btn-close" type="button" data-bs-dismiss="modal" aria-label="Close"></button>
+          </div>
+          <div class="modal-body">
+            <div class="row">
+              <div class="col-sm-3">
+                <h6 class="mt-2">Leave Name</h6>
+              </div>
+              <div class="col-sm-9 text-secondary">
+                <input type="text" class="form-control" id="leaveName" placeholder="name" value="">
+              </div>
+            </div>
+            <div class="row mt-4">
+              <div class="col-sm-3">
+                <h6 class="mt-2">Allowed Days</h6>
+              </div>
+              <div class="col-sm-9 text-secondary">
+                <input type="number" class="form-control" id="leaveDays" placeholder="Enter days in number" value="">
+                <br><label id="message"></label>
+              </div>
+            </div>
+          </div>
+          <div class="modal-footer"><button class="btn btn-secondary btn-sm" type="button" data-bs-dismiss="modal">Cancel</button>
+              <a class="btn btn-info btn-sm" href="#" onclick="update()">Update</a>
+          </div>
+      </div>
+  </div>
+</div>
+ 
+
+
+<script>
+$("#leaveDetails").hide();
+function getLeaveType()
+{
+  leave = $("#leaveType").val();
+  data={id:parseInt(leave)};
+  $.ajax({
+    url: "{% url 'getType' %}",
+    method: "POST",
+    data: data,
+    success: function(data){
+      Gname = $("#leaveType option:selected" ).text();
+      $("#lname").text(Gname);
+      $("#lday").text(data.result);
+      $("#leaveDetails").show();
+      $("#leaveDays").val(data.result);
+    },
+});
+}
+action='';
+function updateLeave(action1)
+{
+  $("#message").text('');
+  leave = $("#leaveType").val();
+  Gname = $("#leaveType option:selected" ).text();
+  name = $("#leaveName").val();
+  day = $("#leaveDays").val();
+  if(action1=='add')
+  {
+    action = "add";
+    $("#leaveModalLabel").text("Create New Leave Type");
+  }
+  else if(action1=='edit'){
+    action='edit';
+    $("#leaveModalLabel").text("Update: "+Gname);
+    $("#leaveName").val(Gname);
+
+  }
+  else{
+    action='delete'
+    $("#leaveModalLabel").text("Delete: "+Gname);
+    $("#leaveName").val(Gname);
+  }
+}
+
+function update()
+{
+  leave = $("#leaveType").val();
+  name = $("#leaveName").val();
+  day = $("#leaveDays").val();
+  if(action=='add')
+  {
+    updateLeaveType(leave,name,day,"add")
+  }
+  else if(action=='edit'){
+    updateLeaveType(leave,name,day,"edit")
+  }
+  else{
+    updateLeaveType(leave,name,"delete")
+  }
+}
+
+
+function updateLeaveType(id,name,day,action){
+  data = {id:parseInt(id),name:name,day:day,action:action};
+  $.ajax({
+    url: "{% url 'updateType' %}",
+    method: "POST",
+    data: data,
+    success: function(data){
+          $("#message").text(data.result);
+    },
+});
+}
+
+</script>
+{% endblock %}

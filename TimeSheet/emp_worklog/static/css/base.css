@@ -1,0 +1,22 @@
+/* This is for dailylog.html */
+.labels{
+    font-family: sans-serif;
+  }
+#maindiv{
+    background-color: grey;
+    margin-top: 10vh;
+    border-radius: 15px;
+  }
+  /* This is for loginpage */
+  body, html {
+    height: 100%;
+    margin: 0;
+    }
+.bg {
+  background-color: gray;
+  height: 100%; 
+  background-position: center;
+  background-repeat: no-repeat;
+  background-size: cover;
+  
+}

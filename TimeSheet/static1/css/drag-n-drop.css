@@ -1,0 +1,45 @@
+
+.card {
+    margin-bottom: 10px;
+    border-radius: 3px;
+    cursor: pointer;
+    cursor: grab;
+    transition: all 0.3s cubic-bezier(0.4, 0.0, 0.2, 1);
+}
+
+.card:active {
+    cursor: grabbing;
+}
+
+.card.dragging {
+    opacity: .5;
+    transform: scale(.8);
+}
+
+.column {
+    padding: 10px;
+    transition: all 0.3s cubic-bezier(0.4, 0.0, 0.2, 1);
+}
+
+
+.column.column-ip {
+    margin: 0 20px;
+}
+
+.column.drop {
+    border: 2px dashed grey;
+}
+
+.column.drop article {
+    pointer-events: none;
+}
+
+h3 {
+    font-size: 21px;
+    font-family: Helvetica;
+    margin: 0;
+}
+
+.card:last-child {
+    margin-bottom: 0;
+}

@@ -1,0 +1,150 @@
+{% extends "base.html" %}
+{% block title %}Ticket - {{issue.ticket_name}}{% endblock %}
+{% block script %}
+<script>
+    $(document).ready(function(){
+        $("#tickettype").val("{{issue.ticket_type}}");
+        $("#priority").val("{{issue.priority}}");
+        $("#assigned").val("{{issue.assigned_to.id}}");
+        $("#statelist").val("{{issue.state}}");
+        $("#affectedUser").val("{{issue.affected_user.id}}")
+      });
+</script>
+{% endblock %}
+{% block content %}
+<div class="container" >
+    <div >
+        <form action="/Issue/update/{{issue.id}}" method = "post">
+            {%csrf_token%}
+            <div class="container-fluid">  <h4 class="text-info">Details</h4>                  
+                <div class="form-group row">
+                    <div class="col-md-4 col-sm-12">
+                        <label>Ticket Name</label>
+                        <input name= "ticketName" value="{{issue.ticket_name}}" type="text" class="form-control form-control-sm col-md-6 col-sm-12 rounded-0" required>
+                    </div>
+                </div>
+                <div class="form-group row mt-2">
+                    <div class="col-md-4 col-sm-12">
+                        <label>Customer</label>
+                        <select  name="affUser" id="affectedUser" class="form-control form-control-sm rounded-0">
+                            <option value='0'>Customer</option>
+                            {% for u in customer %}
+                            <option value='{{u.id}}'>{{u.email}}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                </div>
+                <div class="form-group row mt-2">
+                    <div class="col-md-4 col-sm-12">
+                        <label>Ticket Type</label>
+                        <select id="tickettype" name="ticketType"  class="form-control form-control-sm rounded-0">
+                        <option value="Incident">Incident</option>
+                        <option value="Operational Change">Operational Change</option>
+                        <option value="Standard Enhancement">Standard Enhancement</option>
+                        <option value="Normal Enhancement">Normal Enhancement</option>
+                        </select>
+                    </div>
+                    <div class="col-md-2 col-sm-12">
+                        <label>Date Created</label>
+                        <input  name="dateOpened" value="{{issue.open_date}}" type="text"  class="form-control form-control-sm rounded-0" disabled>
+                    </div>
+                    <div class="col-md-2 col-sm-12">
+                        <label>Priority</label>
+                        <select id="priority" name="priority"  class="form-control form-control-sm rounded-0">
+                        <option value="high">High</option>
+                        <option value="medium">Medium</option>
+                        <option value="low">Low</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="form-group row mt-2">
+                    <div class="col-md-4 col-sm-12">
+                        <label>Assigned to </label>
+                        <select  name="assTo" id="assigned"  class="form-control form-control-sm rounded-0">
+                            {% for u in users %}
+                                {% if u.id != issue.assigned_to %}
+                                    <option value='{{u.id}}'>{{u.username}}</option>
+                                {% else %}
+                                    <option value='{{u.id}}' selected>{{u.username}}</option>
+                                {% endif %}
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="col-md-2 col-sm-12">
+                        <label>Last Updated</label>
+                        <input  name="dateOpened" value="{{issue.last_updated.date}}" type="text"  class="form-control form-control-sm rounded-0" disabled>
+                    </div>
+                    <div class="col-md-2 col-sm-12">
+                        <label>State</label>
+                        <select id="statelist" name="state" class="form-control form-control-sm rounded-0">
+                            <option value="New">New</option>
+                            <option value="InProgress">In Progress</option>
+                            <option value="Completed">Completed</option>
+                            <option value="Hold">Hold</option>
+                            <option value="Canceled">Canceled</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="form-group mt-2 row">
+                    <div class="col-md-12 col-sm-12">
+                        <label>Short Description </label>
+                        <textarea  name="shortDesc"  type="text" class="form-control rounded-0" rows="4" required>{{issue.short_desc}}</textarea>
+                    </div>
+                </div>
+                <div class="form-group mt-2 row ">
+                    <div class="col-md-12 col-sm-12">
+                        <label>Comments</label>
+                        <textarea  name = "comments" class="form-control rounded-0" rows="3" >{{issue.comments}}</textarea>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer mt-4">
+                <a href="{% url 'index' %}" class="btn btn-secondary btn-sm me-2" >Cancel</a>
+                <input type="submit" class="btn btn-success btn-sm" value="Save Changes">
+            </div>
+        </form>
+    </div><hr />
+    <div>
+        <div class="container-fluid commentList" id="commentList" style="color:grey;"> 
+            <h6 class="text-info">User Comments</h6>
+            {% for c in comments %}
+                <p>By: {{c.user}} On:  {{c.date}} <br />
+                <span class="ms-4">{{c.comments}}</span></p>
+            {% endfor %}
+            <span id="newComment"></span>
+        </div>
+            <div class="container-fluid">   
+                <div class="form-group mt-2 row ">
+                    <div class="col-md-12 col-sm-12">
+                        <label>New Comment</label>
+                        <textarea id = "newcommentInput" name = "newcomment" class="form-control rounded-0" rows="3" required></textarea>
+                    </div>
+                </div>
+                <div class="modal-footer mt-4">
+                    <input type="submit" class="btn btn-success btn-sm" value="Add Comment" onclick="addComment({{issue.id}})">
+                </div>
+            </div>
+    </div>
+</div>
+
+
+<script>
+    function addComment(id)
+    {
+        comment = $("#newcommentInput").val();
+        //alert(id);
+        data={newcomment:comment,id:id}
+        $.ajax({
+            url: "{% url 'addComments' %}",
+            method: "POST",
+            data: data,
+            success: function(data){
+                    let div = document.querySelector('.commentList');
+                    div.innerHTML += "By: "+data.user+" On: "+data.date+"<br /><span class='ms-4'>"+data.comment+"</span><br /><br />";
+
+            },
+        });
+    }
+
+</script>
+{% endblock %}

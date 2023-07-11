@@ -1,0 +1,573 @@
+{% extends "base.html" %}
+{% block title %}Attendace{% endblock %}
+{% block script %}
+<style>
+  .dataTables_filter { display: none; }
+  h1, h3, span { 
+    text-align: center;
+    font-family: sans-serif;
+  }
+  h1 span {
+    /*border: 1px solid black; */
+    padding: 5px;
+  }
+</style>
+<script>
+$(document).ready(function(){
+    is_admin = '{% if user.is_superuser %}True{% else %}False{% endif %}';
+    checkAType = '{{attendanceType.attendanceType}}'
+    if(checkAType == 'Physical')
+    {
+      getLocation();
+    }
+  });
+//gte latitude and longitude
+//location
+var mylocation = '';
+var locationError = '';
+function getLocation() {
+  if (navigator.geolocation) {
+    navigator.geolocation.getCurrentPosition(showPosition,showError);
+  } else { 
+      alert("Geolocation is not supported by this browser.");
+  }
+}
+
+function showPosition(position) {
+  mylocation = "" + position.coords.latitude + "," + position.coords.longitude;
+}
+
+function showError(error) {
+  switch(error.code) {
+    case error.PERMISSION_DENIED:
+    locationError = "User denied the request for Geolocation."
+      break;
+    case error.POSITION_UNAVAILABLE:
+    locationError = "Location information is unavailable."
+      break;
+    case error.TIMEOUT:
+    locationError= "The request to get user location timed out."
+      break;
+    case error.UNKNOWN_ERROR:
+    locationError = "An unknown error occurred."
+      break;
+  }
+}
+//location end
+</script>
+{% endblock %}
+{% block content %}
+<div class="">
+  <div class="mt-4">
+    <h1 class="display-1 text-success"><span id="trackTime">00:00:00</span></h1>
+    
+    <div class="text-center">
+      <button name="start1" class="btn btn-lg btn-primary ps-5 pe-5" style="display:{% if btn.btn1 == True or today.exit != None %}none;{% elif btn.btn1 == False  %}; {% endif %}" onclick="make_attendance('start',{{today.exit}})" id="btnstart">Start</button>
+      <button name="reset" class="btn btn-lg btn-danger ps-5 pe-5" style="display:{% if btn.btn3 == True  %}none;{% elif btn.btn3 == False %}; {% endif %}" onclick="make_attendance('stop')" id="btnstop">End</button>
+      <button name="stop" class="btn btn-lg btn-warning ps-5 pe-5" style="display:{% if btn.btn2 == True or today.lbreak1 != None or today.exit != None %}none;{% elif btn.btn2 == False %}; {% endif %}" onclick="make_attendance('break')" id="btnbreak1">Time Off</button>
+      <button name="start" class="btn btn-lg btn-warning ps-5 pe-5" style="display:{% if btn.btn2 == False %}none;{% elif btn.btn2 == False %}; {% endif %}" onclick="make_attendance('resume')" id="btnbreak2">Continue</button>
+    </div>
+  </div>
+  <hr>
+  <div class="row">
+    <p>Today</p>
+    <div class="col-xl-3 col-md-6 mb-8 ">
+      <div class="card border-left shadow h-100 py-2 bg-gradient-success text-light rounded-0">
+          <div class="card-body">
+              <div class="row no-gutters align-items-center">
+                  <div class="col mr-2">
+                      <div class="text-xs font-weight-bold text-uppercase mb-1">
+                          <h6>Started At</h6></div>
+                      <div class="h6 mb-0 font-weight-bold text-gray-800 ml-2"><span id="startedTime">{% if today != "None" %}{{today.entry}}{% endif %}</span></div>
+                  </div>
+                  <div class="col-auto">
+                    
+                  </div>
+              </div>
+          </div>
+      </div>
+    </div>
+    <div class="col-xl-3 col-md-6 mb-8">
+      <div class="card border-left shadow h-100 py-2 bg-gradient-warning text-light rounded-0">
+          <div class="card-body">
+              <div class="row no-gutters align-items-center">
+                  <div class="col mr-2">
+                      <div class="text-xs font-weight-bold text-uppercase mb-1">
+                          <h6>Break Started</h6></div>
+                      <div class="h6 mb-0 font-weight-bold text-gray-800 ml-2"><span id="breakstartedTime">{% if today.lbreak1 != None %}{{today.lbreak1}}{% endif %}</span></div>
+                  </div>
+                  <div class="col-auto">
+                   
+                  </div>
+              </div>
+          </div>
+      </div>
+    </div>
+    <div class="col-xl-3 col-md-6 mb-8">
+      <div class="card border-left shadow h-100 py-2 bg-gradient-warning text-light rounded-0">
+          <div class="card-body">
+              <div class="row no-gutters align-items-center">
+                  <div class="col mr-2">
+                      <div class="text-xs font-weight-bold text-uppercase mb-1">
+                          <h6>Break End</div>
+                      <div class="h6 mb-0 font-weight-bold text-gray-800 ml-2"><span id="breakendTime">{% if today.lbreak2 != None %}{{today.lbreak2}}{% endif %}</span></div>
+                  </div>
+                  <div class="col-auto">
+                   
+                  </div>
+              </div>
+          </div>
+      </div>
+    </div>
+    <div class="col-xl-3 col-md-6 mb-8">
+      <div class="card border-left shadow h-100 py-2 bg-gradient-danger text-light rounded-0">
+          <div class="card-body">
+              <div class="row no-gutters align-items-center">
+                  <div class="col mr-2">
+                      <div class="text-xs font-weight-bold text-uppercase mb-1">
+                          <h6>Leave</div>
+                      <div class="h6 mb-0 font-weight-bold text-gray-800 ml-2"><span id="leaveTime">{% if today.exit != None %}{{today.exit}}{% endif %}</span></div>
+                  </div>
+                  <div class="col-auto">
+                   
+                  </div>
+              </div>
+          </div>
+      </div>
+    </div>
+  </div>
+  <div class="row mt-4">
+    <p>History</p>
+    <div class="text-right w-50">
+      {% csrf_token %}
+    <select class="form-control form-control-sm w-25" id="year" style="float:left;" onchange="getMonthData()">
+      <option value="2023">2023</option>
+      <option value="2022">2022</option>
+    </select>
+      <select class="form-control form-control-sm col-xs-2 w-25" id="month" style="float:left;" onchange="getMonthData()">
+        <option value="1">January</option>
+        <option value="2">February</option>
+        <option value="3">March</option>
+        <option value="4">April</option>
+        <option value="5">May</option>
+        <option value="6">June</option>
+        <option value="7">July</option>
+        <option value="8">August</option>
+        <option value="9">September</option>
+        <option value="10">October</option>
+        <option value="11">November</option>
+        <option value="12">December</option>
+      </select>
+      {% if user.is_superuser or perms.Attendance.view_attendance %}
+      <select class="form-control form-control-sm col-xs-2 w-25" id="user_s" style="float:left;" onchange="getMonthData()">
+        <option value="{{user.id}}">{{user.username}}</option>
+        {% for n in users %}
+          {% if n.username != user.username %}
+            <option class="active" value="{{n.id}}">{{n.username}}</option>
+          {% endif %}
+        {% endfor %}
+        <option value="0">all</option>
+      </select>
+      {% endif %}
+    </div>
+
+  </div>
+  <div class="table-wrap table-responsive-sm">
+      <table class="table table-hover  shadow " id="example" style="width:100%;">
+        <thead id="thead">
+          <tr>
+            <th>Date</th>
+            <th>Entry</th>
+            <th>Break</th>
+            <th>Exit</th>
+            <th>Hour</th>
+            {% if user.is_superuser %}<th>User</th><th style="width:1%;">Action</th>{% endif %}
+          </tr>
+        </thead>
+        <tbody id="tbody">
+          {% for n in result %}
+          <tr><td>{{n.date}}</td><td>{{n.entry}}</td><td>{{n.lbreak1}}-{{n.lbreak2}}</td><td>{{n.exit}}</td><td>{{n.hour}}</td>
+            {% if user.is_superuser %}
+            <td>{{n.user.username}}</td>
+            <td>
+              <!-- <a href="{% url 'a_details1' attendance_id=n.id %}" id="a_details"><i class="fas fa-sharp fa-solid fa-location-arrow text-info"></i></a> -->
+              <a onclick = "viewLocation({{n.id}})"  id="a_details" class="btn btn-info btn-sm bg-transparent p-2 border-0 pb-0"><i class="fas fa-sharp fa-solid fa-location-arrow text-info"></i></a>
+            </td>
+            {% endif %}
+            </tr>
+          {% endfor%}
+        </tbody>
+      </table>
+    </div>
+</div>
+
+
+
+
+<!--view location modal-->
+<div class="modal fade" id="locationModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered" role="document">
+      <div class="modal-content rounded-0">
+          <div class="modal-header">
+              <h5 class="modal-title" id="exampleModalLabel">Users Location Details</h5>
+              <button class="btn-close" type="button" data-bs-dismiss="modal" aria-label="Close"></button>
+          </div>
+          <div class="modal-body">
+            <div class="row">
+              <div class="col-sm-3">
+                <h6 class="mb-0">SignIn</h6>
+              </div>
+              <div class="col-sm-9 text-secondary">
+                <span id="startLocation">
+              </div>
+            </div>
+            <div class="row mt-4">
+              <div class="col-sm-3">
+                <h6 class="mb-0">SignOut</h6>
+              </div>
+              <div class="col-sm-9 text-secondary">
+                <span id="stopLocation">
+              </div>
+            </div>
+          </div>
+          <div class="modal-footer">
+            <button class="btn btn-secondary btn-sm" type="button" data-bs-dismiss="modal">Close</button>
+            
+          </div>
+      </div>
+  </div>
+</div>
+<!-- end view location modal-->
+
+<script>
+ 
+  $(document).ready(function(){
+    const d = new Date();
+    let month = d.getMonth();
+    document.getElementById("month").selectedIndex = month;
+    checkToday();
+    //checkTimer();
+  });
+
+  //for data table
+  $(document).ready(function () {
+    $('#example').dataTable({
+      bInfo:true,
+      pagingType: 'full_numbers',
+      lengthChange: false
+    });
+  });
+
+
+  function getFirstDayOfMonth(year, month) {
+      return new Date(year, month, 1);
+    }
+    
+
+    function getDay(date)
+    {
+      const weekday = ["Sunday","Monday","Tuesday","Wednesday","Thursday","Friday","Saturday"];
+      const d = date;
+      let day = weekday[d.getDay()];
+      return day;
+    }
+
+    function make_attendance(type)
+    {
+      var secondss='';
+      var html = '';
+      var date=new Date();
+      var f_date = date.getFullYear()+'-'+(date.getMonth()+1)+'-'+date.getDate();
+      var day = getDay(date);
+      var time1 = date.getHours()+':'+date.getMinutes();
+      var data='';
+      if(type == 'start')
+      {
+        if(mylocation != '' || checkAType =='Remote')
+        {
+          //alert(mylocation);
+          data ={date:f_date,day:day,entry:time1,start_location:mylocation,btn:1};
+          $("#btnstart").hide();
+          $("#btnbreak1").show();
+          $("#btnstop").show();
+          startTimer();
+        }
+        else{
+          //alert('{{attendanceType.attendanceType}}');
+          alert(locationError);
+        }
+      }
+      if(type == 'break')
+      {
+        if($("#btnstart").is(':hidden') == true)
+        {
+          data ={date:f_date,lbreak1:time1,btn:2};
+          $("#btnbreak1").hide();
+          $("#btnbreak2").show();
+          $("#breakstartedTime").text(time1);
+        }
+        else{alert("You haven't started your work hours yet!")}
+        
+      }
+      if(type == 'resume')
+      {
+        data ={date:f_date,lbreak2:time1,btn:3};
+        $("#btnbreak1").show();
+        $("#btnbreak2").hide();
+        $("#breakendTime").text(time1);
+        startTimer();
+      }
+      if(type =='stop'){
+       
+        var isHidden = $('#btnbreak2').is(':hidden');
+        if( isHidden != false)
+        {
+          time = $('#trackTime').text();
+          get_h = time.split(":")[0];
+          get_m = time.split(":")[1];
+          w_hour = get_h+':'+get_m;
+          //alert(mylocation);
+          data ={date:f_date,exit:time1,hour:w_hour,stop_location:mylocation,btn:4};
+          $("#leaveTime").text(time1);
+          $("#btnstart").show();
+          $("#btnstop").hide();
+          $("#btnbreak1").hide();
+          $("#btnbreak2").hide();
+        }
+        else{
+          alert("End your break first");
+        }
+      }
+      if(data != ''){
+        $.ajax({
+          url: "{% url 'makeattendance' %}",
+          method: "POST",
+          data: data,
+          success: function(data){
+            dataset = [];
+            dataset1 = [];
+            for(i=0;i<data.attendance.length;i++)
+            {
+              dataset1.push(data.attendance[i].date,
+              data.attendance[i].entry,
+              data.attendance[i].lbreak1+'-'+data.attendance[i].lbreak2,
+              data.attendance[i].exit,
+              data.attendance[i].hour)
+              if(is_admin=='True'){
+                dataset1.push('<td>'+data.attendance[i].user+'</td>',
+                '<td><a class="btn btn-info btn-sm bg-transparent p-2 border-0 pb-0" onclick = "viewLocation('+data.attendance[i].id+')" id="a_details"><i class="fas fa-sharp fa-solid fa-location-arrow text-info"></i></a></tr>')
+              }
+              dataset.push(dataset1);
+              dataset1=[];
+              $("#startedTime").text(time1);
+            }
+            //console.log(dataset1)
+            var table = $('#example').DataTable();
+            table.clear();
+            table.rows.add(dataset).draw();
+          },
+        });
+      }
+      
+    }
+
+    function getMonthData(){
+      var month = $("#month").val();
+      var year = $("#year").val();
+      var user = $("#user_s").val();
+      //alert(user);
+      data = {month:month,year:year,user:user};
+      html = '';
+      $.ajax({
+        url: "{% url 'getattendance' %}",
+        method: "POST",
+        data: data,
+        success: function(data){
+                //$('#example').DataTable().clear();
+                dataset = [];
+                dataset1 = [];
+                for(i=0;i<data.attendance.length;i++)
+                {
+                  dataset1.push(data.attendance[i].date,
+                  data.attendance[i].entry,
+                  data.attendance[i].lbreak1+'-'+data.attendance[i].lbreak2,
+                  data.attendance[i].exit,
+                  data.attendance[i].hour)
+                  if(is_admin=='True'){
+                    dataset1.push('<td>'+data.attendance[i].user+'</td>',
+                    //'<td><a href="Details/'+data.attendance[i].id+'" id="a_details"><i class="fas fa-sharp fa-solid fa-location-arrow text-info"></i></a></tr>')
+                      '<td><a class="btn btn-info btn-sm bg-transparent p-2 border-0 pb-0" onclick = "viewLocation('+data.attendance[i].id+')" id="a_details"><i class="fas fa-sharp fa-solid fa-location-arrow text-info"></i></a></tr>')
+                  }
+                  dataset.push(dataset1);
+                  dataset1=[];
+                }
+                //console.log(dataset1)
+                var table = $('#example').DataTable();
+                table.clear();
+                table.rows.add(dataset).draw();
+        },
+    });
+    }
+    
+
+    function viewLocation(id)
+    {
+      csr =$("input[name=csrfmiddlewaretoken]").val();
+      data={id:id,csrfmiddlewaretoken:csr};
+      $.ajax({
+        url: "{% url 'a_details' %}",
+        method: "POST",
+        data: data,
+        success: function(data){
+          console.log(data.start);
+          $("#startLocation").html(data.start)
+          $("#stopLocation").html(data.stop)
+          console.log(data.stop);
+          $("#locationModal").modal('show');
+        },
+      });
+    }
+</script>
+
+<script>
+  
+    // Some global variables
+    var startTime = 0,
+        elapsed   = 0,
+        timerId   = 0,
+        $timer    = $("h1 span");
+    
+    function checkToday()
+    {
+      $.ajax({
+        url: "{% url 'get_todays_attendance' %}",
+        method: "GET",
+        success: function(data){
+                console.log(data);
+                if(data.result[0].lbreak1 != null && data.result[0].lbreak2 == null)
+                {
+                  pauseTimer();
+                  $timer.text(data.result[0].lbreak1);
+                }
+                else if(data.result[0].exit == null)
+                {
+                  checkTimer(data.result[0].entry+":00")
+                }
+                else{
+
+                }
+                
+        },
+    });
+    }
+    function checkTimer(time)
+    {
+      var today = new Date();
+      var endTime = today.getHours() + ":" + today.getMinutes() + ":" + today.getSeconds();
+      //alert(time);
+      var startTime = time;//"21:46:00";
+      var tim = diff(startTime, endTime);
+      editTimer();
+      $timer.text(tim+":"+today.getSeconds());
+      setElapsed();
+      startTimer();
+    }
+
+    function formatTime(time) {
+      var hrs = Math.floor(time / 60 / 60 / 1000),
+          min = Math.floor((time - hrs*60*60*1000) / 60 / 1000),
+          sec = Math.floor((time - hrs*60*60*1000 - min*60*1000) / 1000);
+      
+      hrs = hrs < 10 ? "0" + hrs : hrs;
+      min = min < 10 ? "0" + min : min;
+      sec = sec < 10 ? "0" + sec : sec;
+      
+      return hrs + ":" + min + ":" + sec;
+    }
+    
+    function elapsedTimeFrom(time) {
+      return formatTime(time - startTime + elapsed);
+    }
+    
+    function showElapsed() {
+      $timer.text(elapsedTimeFrom(Date.now()));
+    }
+    
+    function startTimer() {
+      // React only if timer is stopped
+      startTime = startTime || Date.now();
+      timerId = timerId || setInterval(showElapsed, 1000);
+    }
+    
+    function pauseTimer() {
+      // React only if timer is running
+      if (timerId) {
+        clearInterval(timerId);
+        elapsed += Date.now() - startTime;
+        startTime = 0;
+        timerId = 0;
+      }
+    }
+    
+    function resetTimer() {
+      clearInterval(timerId);
+      $timer.text("00:00:00");
+      startTime = 0;
+      elapsed = 0;
+      timerId = 0;
+    }
+  
+    function editTimer() {
+      pauseTimer();
+      $timer.prop("contenteditable", true);
+      //$timer.css("border", "1px solid red");
+    }
+  
+    function setElapsed() {
+      var time = $timer.text(),
+          arr  = time.split(":");
+      $timer.prop("contenteditable", false);
+      //$timer.css("border", "1px solid black");
+      elapsed = parseInt(arr[0]*60*60, 10);
+      elapsed += parseInt(arr[1]*60, 10);
+      elapsed += parseInt(arr[2], 10);
+      elapsed *= 1000;
+    }
+    
+    function sendTime() {
+      pauseTimer();
+      // Set hidden input value before send
+      $("[name='time']").val(formatTime(elapsed));
+    }
+  
+    //$("[name='start']").click(startTimer);
+    $("[name='stop']").click(pauseTimer); 
+    $("[name='reset']").click(resetTimer);
+    $("[name='Check']").click(checkTimer);
+    //$timer.dblclick(editTimer);
+    $timer.blur(setElapsed);
+    $("form").submit(sendTime);
+    
+    function diff(start, end) {
+      start = start.split(":");
+      end = end.split(":");
+      var startDate = new Date(0, 0, 0, start[0], start[1], 0);
+      var endDate = new Date(0, 0, 0, end[0], end[1], 0);
+      var diff = endDate.getTime() - startDate.getTime();
+      var hours = Math.floor(diff / 1000 / 60 / 60);
+      diff -= hours * 1000 * 60 * 60;
+      var minutes = Math.floor(diff / 1000 / 60);
+      
+      // If using time pickers with 24 hours format, add the below line get exact hours
+      if (hours < 0)
+         hours = hours + 24;
+      
+      return (hours <= 9 ? "0" : "") + hours + ":" + (minutes <= 9 ? "0" : "") + minutes;
+      }
+
+    function request()
+    {
+      alert("requestred");
+    }
+    </script>
+{% endblock %}

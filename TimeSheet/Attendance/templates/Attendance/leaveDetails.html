@@ -1,0 +1,98 @@
+{% extends "base.html" %}
+{% block content %}
+
+<div class="container-fluid">
+    <form class="container-fluid"> 
+        <input type='hidden' value='{{leave.id}}' id="leaveId"/>
+      <h4>User Entry Details</h4>
+      <div class="row">
+        <div class="col-6">
+          <div class="form-group row">
+            <label for="date" class="col-sm-6 col-form-label">Requested Date</label>
+            <div class="col-sm-6">
+              <p>:  {{leave.date}}</p>
+            </div>
+          </div>
+          <div class="form-group row">
+            <label for="date" class="col-sm-6 col-form-label">Leave Type</label>
+            <div class="col-sm-6">
+              <p>:  {{leave.type.name}}</p>
+            </div>
+          </div>
+          <div class="form-group row">
+            <label for="date" class="col-sm-6 col-form-label">Leave From</label>
+            <div class="col-sm-6">
+              <p>:  {{leave.leave_from}}</p>
+            </div>
+          </div>
+          <div class="form-group row">
+            <label for="date" class="col-sm-6 col-form-label">Leave To</label>
+            <div class="col-sm-6">
+              <p>:  {{leave.leave_to}}</p>
+            </div>
+          </div>
+          <div class="form-group row">
+            <label for="date" class="col-sm-6 col-form-label">Details</label>
+            <div class="col-sm-6">
+              <p>:  {{leave.details}}</p>
+            </div>
+          </div>
+        </div>
+        <div class='col-6' >
+            <div class="form-group row">
+                <label for="date" class="col-sm-3 col-form-label">Approval</label>
+                <div class="col-sm-9">
+                  <label>:  {{leave.approval.name}}</label>
+                </div>
+              </div>
+              <div class="form-group row">
+                <label for="date" class="col-sm-3 col-form-label">Comment</label>
+                <div class="col-sm-9">
+                  <textarea class="form-control"></textarea>
+                </div>
+              </div>
+        {% if leave.approval.name != 'Pending' %}
+          <div class="form-group row">
+            <label for="date" class="col-sm-3 col-form-label">Approved By</label>
+            <div class="col-sm-9">
+              <p>:  {{leave.approved_by}}</p>
+            </div>
+          </div>
+          <div class="form-group row">
+            <label for="date" class="col-sm-3 col-form-label">Approved Date</label>
+            <div class="col-sm-9">
+              <p>: {{leave.date_approved}} </p>
+            </div>
+          </div>
+        {% endif %}
+        <label id='s_text'></label>
+        {% if leave.approval.name == 'Pending' and perms.Attendance.change_leave %}
+        <div id='btn_action' style="text-align:right;">
+            <a class="btn btn-sm btn-success" onclick="update_leave(1,{{leave.id}})">Grant Leave</a>
+            <a class="btn btn-sm btn-danger" onclick="update_leave(3,{{leave.id}})">Decline</a>
+        </div>
+        {% endif %}
+        </div> 
+      </div>
+      <a class="btn btn-sm btn-success" href="{% url 'leave' %}">See All</a>
+      </form>
+</div>
+
+<script>
+    function update_leave(status,id)
+    {
+     //id=$("#leaveId").val();
+      data = {'status':status,'leave_id':id};
+      //alert(status+':'+id);
+      $.ajax({
+          url: "{% url 'updateLeave' %}",
+          method: "POST",
+          data: data,
+          success: function(data){
+                $("#s_text").html("Success");
+                $('#btn_action').hide();
+          },
+      });
+    }
+</script>
+{% endblock %}

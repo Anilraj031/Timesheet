@@ -1,0 +1,65 @@
+{% extends "base.html" %}
+{% block title %}{{company.name}}{% endblock %}
+{% block content %}
+
+<div class="row gutters-sm container">
+  <div class="col-md">
+    <div class="card mb-3">
+      <div class="card-body">
+        <div class="row">
+          <div class="col-sm-3">
+            <h6 class="mb-0">Name</h6>
+          </div>
+          <div class="col-sm-9 text-secondary">
+            {{company.name}}
+          </div>
+        </div>
+        <div class="row mt-4">
+          <div class="col-sm-3">
+            <h6 class="mb-0">Email</h6>
+          </div>
+          <div class="col-sm-9 text-secondary">
+            {{company.email}}
+          </div>
+        </div>
+        <div class="row mt-4">
+          <div class="col-sm-3">
+            <h6 class="mb-0">Contact</h6>
+          </div>
+          <div class="col-sm-9 text-secondary">
+            {{company.phone1}}
+          </div>
+        </div>
+        <div class="row mt-4">
+          <div class="col-sm-3">
+            <h6 class="mb-0">Address</h6>
+          </div>
+          <div class="col-sm-9 text-secondary">
+            {{company.address}}
+          </div>
+        </div>
+        <div class="row mt-4">
+          <div class="col-sm-3">
+            <h6 class="mb-0">Contact Email</h6>
+          </div>
+          <div class="col-sm-9 text-secondary">
+            {{company.contact_email}}
+          </div>
+        </div>
+        <div class="row mt-4">
+          <div class="col-sm-12">
+            {% if user.is_superuser %}
+            <a class="btn btn-info btn-sm" href="{% url 'company' %}">Edit</a>
+            {% endif %}
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+<div>
+  Active Employees
+</div>
+
+
+{% endblock %}

@@ -1,0 +1,508 @@
+{% extends "base.html" %}
+{% block title %}{{users.username}} Details{% endblock %}
+{% block script %}
+<style>
+  .order-card {
+      color: #fff;
+  }
+
+  .bg-c-blue {
+      background: linear-gradient(45deg,#4099ff,#73b4ff);
+  }
+
+  .bg-c-green {
+      background: linear-gradient(45deg,#2ed8b6,#59e0c5);
+  }
+
+  .bg-c-yellow {
+      background: linear-gradient(45deg,#FFB64D,#ffcb80);
+  }
+
+  .bg-c-pink {
+      background: linear-gradient(45deg,#FF5370,#ff869a);
+  }
+
+
+  .card {
+      border-radius: 1px !important;
+      -webkit-box-shadow: 0 1px 2.94px 0.06px rgba(4,26,55,0.16);
+      box-shadow: 0 1px 2.94px 0.06px rgba(4,26,55,0.16);
+      border: none;
+      margin-bottom: 30px;
+      -webkit-transition: all 0.3s ease-in-out;
+      transition: all 0.3s ease-in-out;
+  }
+
+  .card .card-block {
+      padding: 15px;
+      padding-bottom: 5px !important;
+      padding-top: 10px !important;
+  }
+
+  .order-card i {
+      font-size: 26px;
+  }
+
+  .f-left {
+      float: left;
+  }
+
+  .f-right {
+      float: right;
+  }
+</style>
+{% endblock %}
+{% block content %}
+
+<div class="container">
+    <div class="main-body">
+          <div class="row gutters-sm">
+            <div class="col-md-4 mb-3">
+              <div class="card">
+                <div class="card-body">
+                  <div class="d-flex flex-column align-items-center text-center">
+                    <img src="https://bootdey.com/img/Content/avatar/avatar7.png" alt="Admin" class="rounded-circle" width="150">
+                    <div class="mt-3">
+                      <h4>{{users.first_name}} {{users.last_name}}</h4>
+                      <p class="text-secondary mb-1">Full Stack Developer</p>
+                      <p class="text-muted font-size-sm">Bay Area, San Francisco, CA</p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="col-md-8">
+              <div class="card mb-3">
+                <div class="card-body">
+                  <div class="row">
+                    <div class="col-sm-3">
+                      <h6 class="mb-0">UserName</h6>
+                    </div>
+                    <div class="col-sm-9 text-secondary">
+                      {{users.username}}
+                    </div>
+                  </div>
+                  <div class="row mt-4">
+                    <div class="col-sm-3">
+                      <h6 class="mb-0">Email</h6>
+                    </div>
+                    <div class="col-sm-9 text-secondary">
+                      {{users.email}}
+                    </div>
+                  </div>
+                  <div class="row mt-4">
+                    <div class="col-sm-3">
+                      <h6 class="mb-0">Full Name</h6>
+                    </div>
+                    <div class="col-sm-9 text-secondary">
+                      {{users.first_name}} {{users.last_name}}
+                    </div>
+                  </div>
+                  
+                  <div class="row mt-4">
+                    <div class="col-sm-3">
+                      <h6 class="mb-0">Date Joined</h6>
+                    </div>
+                    <div class="col-sm-9 text-secondary">
+                      {{users.date_joined}}
+                    </div>
+                  </div>
+                  <div class="row mt-4">
+                    <div class="col-sm-3">
+                      <h6 class="mb-0">LogIn Type</h6>
+                    </div>
+                    <div class="col-sm-9 text-secondary">
+                      <div class="row">
+                        <div class="col-6 col-sm-6">
+                          <select class="form-control form-control-sm" id="loginType" onchange="LoginType('update',{{users.id}})" {% if manager != True  %}disabled{% endif %}>
+                            <option value="Physical" {% if loginType.attendanceType == 'Physical' %}selected{% endif %}>Physical</option>
+                            <option value="Remote" {% if loginType.attendanceType == 'Remote' %}selected{% endif %}>Remote</option>
+                          </select>
+                        </div>
+                        <div class="col-6 col-sm-6 col-md-6">
+                          <div class="form-check">
+                            <input class="form-check-input" type="checkbox" value="" id="loginRequest" onclick="LoginType('request',{{users.id}})" {% if loginType.mrequest ==  True %}checked disabled{% endif %}>
+                            <label class="form-check-label" for="flexCheckChecked">
+                              Request Remote Login
+                            </label>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                  
+                  <div class="row mt-4">
+                    <div class="col-sm-12">
+                      {% if users == user %}
+                      <a class="btn btn-info btn-sm" href="{% url 'updateUser' userId=users.id%}">Edit</a>
+                      {% endif %}
+                      {% if 'auth.view_permission' in perms %}
+                      <a class="btn btn-sm btn-warning" type="button" data-bs-toggle="modal" data-bs-target="#rolesModal">Manage Permissions</a>
+                      {% endif %}
+                      {% if users != user and 'auth.delete_user' in perms %}
+                        {% if users.is_active %}<a class="btn btn-sm btn-danger" onclick="activate('false',{{users.id}})">Deactivate</a>{% else %}<a class="btn btn-sm btn-info" onclick="activate('true',{{users.id}})">Activate</a>{% endif %}
+                      {% endif %}
+                      {% if user.is_superuser and users != user %}
+                      {% if users.is_superuser %}<a class="btn btn-sm btn-danger" onclick="makeadmin('false',{{users.id}})">Remove Admin</a>{% else %}<a class="btn btn-sm btn-info" onclick="makeadmin('true',{{users.id}})">Make Admin</a>{% endif %}
+                      {% endif %}
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+            </div>
+          </div>
+          
+          <div class="row gutters-sm">
+            <div class="col-md-12">
+              <div class="card mb-3">
+                <div class="card-body">
+                  <!-- user work  details -->
+                  <div class="tab-content" id="nav-tabs-content">
+                    <div class="tab-pane-with-nested-tab fade show active" id="tab1-content" role="tabpanel" aria-labelledby="nav-tab1">
+                      <ul role="tablist" aria-owns="nav-linkA nav-linkB nav-linkC nav-linkD" class="nav nav-tabs nav-tabs-light mt-0">
+                        <li class="nav-item" role="presentation">
+                          <a class="nav-link active" id="nav-linkA" href="#linkA" data-bs-toggle="tab" data-bs-target="#linkA" role="tab" aria-current="page">Details</a>
+                        </li>
+                        <li class="nav-item" role="presentation">
+                          <a class="nav-link" id="nav-linkB" href="#linkB" data-bs-toggle="tab" data-bs-target="#linkB" role="tab">Projects</a>
+                        </li>
+                        <li class="nav-item" role="presentation">
+                          <a class="nav-link" id="nav-linkC" href="#linkC" data-bs-toggle="tab" data-bs-target="#linkC" role="tab">Issue</a>
+                        </li>
+                        <li class="nav-item" role="presentation">
+                          <a class="nav-link disabled" id="nav-linkD" data-bs-toggle="tab" data-bs-target="#linkD" role="tab">Link D</a>
+                        </li>
+                      </ul>
+                      <!-- tabs content-->
+                      <div class="tab-content border-0" id="nav-tabs-light-content">
+                        <div class="tab-pane fade show active" id="linkA" role="tabpanel" aria-labelledby="nav-linkA">
+                          <!-- tab content general-->
+                          <br>
+                          <div class="container">
+                              <div class="row">
+                                  <div class="col-md-4 col-xl-3">
+                                      <div class="card bg-c-blue order-card">
+                                          <div class="card-block">
+                                              <h6 class="m-b-20">Issues Resolved</h6>
+                                              <h2 class="text-right"><i class="fa fa-cart-plus"></i><span class="f-right">{{summary.issue}}</span></h2>
+                                              <p class="m-b-0">Total since joined<span class="f-right">{{summary.totalIssue}}</span></p>
+                                          </div>
+                                      </div>
+                                  </div>
+                                  
+                                  <div class="col-md-4 col-xl-3">
+                                      <div class="card bg-c-green order-card">
+                                          <div class="card-block">
+                                              <h6 class="m-b-20">Projects Involved In</h6>
+                                              <h2 class="text-right"><i class="fa fa-rocket"></i><span class="f-right">{{summary.project}}</span></h2>
+                                              <p class="m-b-0">Total since joined<span class="f-right">{{summary.totalProject}}</span></p>
+                                          </div>
+                                      </div>
+                                  </div>
+                                  
+                                  <div class="col-md-4 col-xl-3">
+                                      <div class="card bg-c-yellow order-card">
+                                          <div class="card-block">
+                                              <h6 class="m-b-20">Billable Hours</h6>
+                                              <h2 class="text-right"><i class="fa fa-refresh"></i><span class="f-right">{{summary.hour.Hours__sum}}</span></h2>
+                                              <p class="m-b-0">Total Working Hour<span class="f-right">{{summary.totalHour.hour__sum}}</span></p>
+                                          </div>
+                                      </div>
+                                  </div>
+                                  
+                                  <div class="col-md-4 col-xl-3">
+                                      <div class="card bg-c-pink order-card">
+                                          <div class="card-block">
+                                              <h6 class="m-b-20">Leave Taken</h6>
+                                              <h2 class="text-right"><i class="fa fa-credit-card"></i><span class="f-right">{{summary.leave}}</span></h2>
+                                              <p class="m-b-0">Total Working Days<span class="f-right">{{summary.attendance}}</span></p>
+                                          </div>
+                                      </div>
+                                  </div>
+                            </div>
+                          </div>
+                          <!-- tab content general-->
+                        </div>
+                        <div class="tab-pane" id="linkB" role="tabpanel" aria-labelledby="nav-linkB">
+                          <div class="mt-2">
+                            {% if projects.count == 0 %}
+                            <label>No projects leaded !</label>
+                            {% else %}
+                            <table id="example" class="table table-hover text-left" style="width:100%">
+                              <thead>
+                                <tr>
+                                  <th scope="col" class="col-sm-4">Name</th>
+                                  <th scope="col">Customer</th>
+                                  <th>Status</th>
+                                  <th scope="col">Created On</th>
+                                  <th scope="col">Est Complete</th>
+                                  <th scope="col">Manage By</th>
+                                </tr>
+                              </thead>
+                              <tbody>
+                                  {% for project in projects %}
+                                  <tr>
+                                      <td><a href="{% url 'projectDetails' pid=project.id%}">{{project.name}}</a></td>
+                                      <td>{{project.customer}}</td>
+                                      <td></td>
+                                      <td>{{project.created_on}}</td>
+                                      <td>{{project.estimated_date}}</td>
+                                      <td>{{project.manager}}</td>
+                                  </tr>
+                                  <tr>
+                                    <td colspan="4"></td>
+                                    <td colspan = "2" class="text-end">Total Hours : </td>
+                                  </tr>
+                                  {% endfor %}
+                              </tbody>
+                            </table>
+                            {% endif %}
+                          </div>
+                          <div class="mt-2">
+                            {% if subprojects.count == 0 %}
+                            <label>Not involved in any projects !</label>
+                            {% else %}
+                            <label>Projects Involved !</label>
+                            <table id="example" class="table table-hover text-left table-sm" style="width:100%">
+                              <thead>
+                                <tr>
+                                  <th scope="col" class="col-sm-4">Name</th>
+                                  <th scope="col">Worked On</th>
+                                  <th>Customer</th>
+                                  <th>Task Lead By</th>
+                                  <th scope="col">Managed By</th>
+                                  <th>Hours Worked</th>
+                                </tr>
+                              </thead>
+                              <tbody>
+                                  {% for project in subprojects %}
+                                  <tr>
+                                      <td><a href="{% url 'projectDetails' pid=project.id %}">{{project.projectName}}</a></td>
+                                      <td>{{project.subproject}}</td>
+                                      <td>{{project.customer}}</td>
+                                      <td>{{project.leadby}}</td>
+                                      <td>{{project.managedby}}</td>
+                                      <td>{{project.hours}}</td>
+                                  </tr>
+                                  {% endfor %}
+                              </tbody>
+                            </table>
+                            {% endif %}
+                          </div>
+                        </div>
+                        <div class="tab-pane" id="linkC" role="tabpanel" aria-labelledby="nav-linkC">
+                          <div class="mt-2">
+                            {% if task.count == 0 %}
+                            <label>Not involved in any tasks yet!</label>
+                            {% else %}
+                            <table id="example" class="table table-hover text-left table-sm" style="width:100%">
+                              <thead>
+                                <tr>
+                                  <th scope="col" class="col-sm-2">Name</th>
+                                  <th scope="col">Type</th>
+                                  <th scope="col">Customer</th>
+                                  <th>Created On</th>
+                                  <th scope="col">Last Modified</th>
+                                  <th scope="col">Priority</th>
+                                  <th>Hours</th>
+                                </tr>
+                              </thead>
+                              <tbody>
+                                  {% for ts in task %}
+                                  <tr>
+                                      <td><a href="{% url 'issueDetails' issueid=ts.task.id %}">{{ts.task.ticket_name}}</a></td>
+                                      <td>{{ts.task.ticket_type}}</td>
+                                      <td>{{ts.task.affected_user}}</td>
+                                      <td>{{ts.task.open_date}}</td>
+                                      <td>{{ts.task.last_updated.date}}</td>
+                                      <td>{{ts.task.priority}}</td>
+                                      <td>{{ts.Hours}}</td>
+                                  </tr>
+                                  {% endfor %}
+                              </tbody>
+                            </table>
+                            {% endif %}
+                          </div>
+                        </div>
+                        <div class="tab-pane" id="linkD" role="tabpanel" aria-labelledby="nav-linkD">Content of Link D</div>
+                      </div>
+                    </div>
+                  </div> 
+                  <!-- user work details end -->
+                </div>
+
+                </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+    </div>
+
+    <!-- Roles Modal -->
+  <!-- Modal -->
+  <div class="modal fade" id="rolesModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg" role="document">
+      <div class="modal-content rounded-0">
+        <div class="modal-header">
+          <h5 class="modal-title" id="rolesModalLabel">Update Permissions</h5>
+          <button class="btn-close" type="button" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+        <div class="modal-body">
+          <table class="table table-hover text-center table-sm table-borderless">
+            <thead>
+              <tr>
+                <th>For</th>
+                <th>Create</th>
+                <th>Update</th>
+                <th>Delete</th>
+                <th>Read</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>Attendance</td>
+                <td><input type="checkbox" value="33" {% if 33 in permissions %} name="rolesChecked" checked {% else %}name="roles"{% endif %} ></td>
+                <td><input type="checkbox" value="34" {% if 34 in permissions  %} name="rolesChecked" checked {% else %}name="roles"{% endif %}></td>
+                <td><input type="checkbox" value="35" {% if 35 in permissions %} name="rolesChecked" checked {% else %}name="roles"{% endif %}></td>
+                <td><input type="checkbox" value="36"  {% if 36 in permissions %} name="rolesChecked" checked {% else %}name="roles"{% endif %}></td>
+              </tr>
+              <tr>
+                <td>Leave</td>
+                <td><input type="checkbox" value="37" {% if 37 in permissions %} name="rolesChecked" checked {% else %}name="roles"{% endif %}></td>
+                <td><input type="checkbox" value="38" {% if 38 in permissions %} name="rolesChecked" checked {% else %}name="roles"{% endif %}></td>
+                <td><input type="checkbox" value="39" {% if 39 in permissions %} name="rolesChecked" checked {% else %}name="roles"{% endif %}></td>
+                <td><input type="checkbox" value="40" {% if 40 in permissions %} name="rolesChecked" checked {% else %}name="roles"{% endif %}></td>
+              </tr>
+              <tr>
+                <td>User</td>
+                <td><input type="checkbox" value="13" {% if 13 in permissions %} name="rolesChecked" checked {% else %}name="roles"{% endif %}></td>
+                <td><input type="checkbox" value="14" {% if 14 in permissions %} name="rolesChecked" checked {% else %}name="roles"{% endif %}></td>
+                <td><input type="checkbox" value="15" {% if 15 in permissions %} name="rolesChecked" checked {% else %}name="roles"{% endif %}></td>
+                <td><input type="checkbox" value="16" {% if 16 in permissions %} name="rolesChecked" checked {% else %}name="roles"{% endif %}></td>
+              </tr>
+              <tr>
+                <td>Roles</td>
+                <td><input type="checkbox" value="5" {% if 5 in permissions %} name="rolesChecked" checked {% else %}name="roles"{% endif %}></td>
+                <td><input type="checkbox" value="6" {% if 6 in permissions %} name="rolesChecked" checked {% else %}name="roles"{% endif %}></td>
+                <td><input type="checkbox" value="7" {% if 7 in permissions %} name="rolesChecked" checked {% else %}name="roles"{% endif %}></td>
+                <td><input type="checkbox" value="8" {% if 8 in permissions %} name="rolesChecked" checked {% else %}name="roles"{% endif %}></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">Cancel</button>
+          {% if 'auth.change_permission' in perms or user.is_superuser %}
+          <button type="button" class="btn btn-primary btn-sm" onclick="saveRoles({{users.id}})">Save changes</button>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div id="alert" class="alert alert-success alert-dismissible fade show text-center fixed-bottom">
+    <strong>Success!</strong> Permissions for {{users.username}} updated successfully.
+    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+  </div>
+
+
+
+
+
+</div>
+
+<script>
+  $("#alert").hide();
+  var $li = $('#buttons li').click(function() {
+    $li.removeClass('selected bg-info');
+    $(this).addClass('selected bg-info');
+  });
+
+
+
+function saveRoles(id){
+    var newCheckbox = document.querySelectorAll('input[type="checkbox"][name="roles"]:checked');  
+    var markedCheckbox = document.querySelectorAll('input[type="checkbox"][name="rolesChecked"]:not(:checked)'); 
+    for (var checkbox of newCheckbox) {  
+      if (checkbox.checked)  {
+        //alert(checkbox.value + ' ');
+        addPermission(id,checkbox.value,"add");
+      }
+    }
+    for(var checkbox of markedCheckbox) { 
+      if (checkbox.checked != true){
+        //alert(checkbox.value+':Not Chekced');
+        addPermission(id,checkbox.value,"remove");
+      } 
+    }
+    
+}
+
+function addPermission(user,pid,action){
+  data = {user,pid,action};
+        $.ajax({
+            url: "{% url 'permission' %}",
+            method: "POST",
+            data:data,
+            success: function(data){
+                //alert("Added");
+                $("#rolesModal").modal('hide');
+                $('#alert').show();
+                setTimeout(function () {
+                  $('#alert').alert('close');
+                  }, 2000);
+            },
+        }); 
+}
+
+function activate(action,user){
+  data ={action:action,userid:user};
+  //alert(action+":"+user);
+  $.ajax({
+    url:"{% url 'active' %}",
+    method:"POST",
+    data:data,
+    success:function(data){
+      alert(data.result);
+    },
+  });
+}
+function makeadmin(action,user){
+  data ={action:action,userid:user};
+  //alert(action+":"+user);
+  $.ajax({
+    url:"{% url 'admin' %}",
+    method:"POST",
+    data:data,
+    success:function(data){
+      alert(data.result);
+    },
+  });
+}
+
+
+function LoginType(type,id)
+{
+  var val1='';
+  if(type=='update'){
+    val1 = $('#loginType').val();
+    data ={type:val1,action:'update',user:id};
+  }
+  else{
+    val1 = $('#loginRequest').is(':checked');
+    data ={type:val1,action:'request',user:id};
+  }
+  $.ajax({
+    url:"{% url 'updateLoginType' %}",
+    method:"POST",
+    data:data,
+    success:function(data){
+      alert(data.result);
+    },
+  });
+}
+</script>
+
+{% endblock %}

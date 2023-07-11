@@ -1,0 +1,206 @@
+{% extends "base.html" %}
+{% block title %}{{users.username}} Update{% endblock %}
+{% block script %}
+<style>
+    .form-control {
+        border-top:0 !important;
+        border-left:0 !important;
+        border-right:0 !important;
+        border-bottom:1px solid grey !important;
+        border-radius: 0 !important;
+        color: grey !important;
+    }
+
+
+    .account-settings .user-profile {
+        margin: 0 0 1rem 0;
+        padding-bottom: 1rem;
+        text-align: center;
+    }
+    .account-settings .user-profile .user-avatar {
+        margin: 0 0 1rem 0;
+    }
+    .account-settings .user-profile .user-avatar img {
+        width: 90px;
+        height: 90px;
+        -webkit-border-radius: 100px;
+        -moz-border-radius: 100px;
+        border-radius: 100px;
+    }
+    .account-settings .user-profile h5.user-name {
+        margin: 0 0 0.5rem 0;
+    }
+    .account-settings .user-profile h6.user-email {
+        margin: 0;
+        font-size: 0.8rem;
+        font-weight: 400;
+        color: #9fa8b9;
+    }
+    .account-settings .about {
+        margin: 2rem 0 0 0;
+        text-align: center;
+    }
+    .account-settings .about h5 {
+        margin: 0 0 15px 0;
+        color: #007ae1;
+    }
+    .account-settings .about p {
+        font-size: 0.825rem;
+    }
+    
+    
+    .card {
+        background: #ffffff;
+        -webkit-border-radius: 5px;
+        -moz-border-radius: 5px;
+        border-radius: 5px;
+        border: 0;
+        margin-bottom: 1rem;
+    }
+    
+</style>
+{% endblock %}
+{% block content %}
+
+<div class="container">
+    <div class="row gutters">
+    <div class="col-xl-3 col-lg-3 col-md-12 col-sm-12 col-12">
+    <div class="card h-100">
+        <div class="card-body">
+            <div class="account-settings">
+                <div class="user-profile">
+                    <div class="user-avatar">
+                        <img src="https://bootdey.com/img/Content/avatar/avatar7.png" alt="Maxwell Admin">
+                    </div>
+                    <h5 class="user-name">{{users.username}}</h5>
+                    <h6 class="user-email">{{users.email}}</h6>
+                </div>
+                <div class="about">
+                    <h5>About</h5>
+                    <p>I'm Yuki. Full Stack Designer I enjoy creating user-centric, delightful and human experiences.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+    </div>
+    <div class="col-xl-9 col-lg-9 col-md-12 col-sm-12 col-12">
+    <div class="card h-100">
+        <div class="card-body">
+            <form>
+                {% csrf_token %}
+                <div class="row gutters">
+                    <div class="col-xl-12 col-lg-12 col-md-12 col-sm-12 col-12">
+                        <h6 class="mb-2 text-primary">Update</h6>
+                    </div>
+                    <div class="col-xl-6 col-lg-6 col-md-6 col-sm-6 col-12">
+                        <div class="form-group">
+                            <label for="username">Username</label>
+                            <input type="text" class="form-control" id="username" placeholder="Enter full name" value="{{users.username}}">
+                        </div>
+                    </div>
+                    <div class="col-xl-6 col-lg-6 col-md-6 col-sm-6 col-12">
+                        <div class="form-group">
+                            <label for="email">Email</label>
+                            <input type="email" class="form-control" id="email" placeholder="Enter email ID" value="{{users.email}}">
+                        </div>
+                    </div>
+                    <div class="col-xl-6 col-lg-6 col-md-6 col-sm-6 col-12 mt-4">
+                        <div class="form-group">
+                            <label for="firstname">First Name</label>
+                            <input type="text" class="form-control" id="firstname" placeholder="Enter first name" value="{{users.first_name}}">
+                        </div>
+                    </div>
+                    <div class="col-xl-6 col-lg-6 col-md-6 col-sm-6 col-12 mt-4">
+                        <div class="form-group">
+                            <label for="lastname">Last Name</label>
+                            <input type="text" class="form-control" id="lastname" placeholder="Enter last name" value="{{users.last_name}}">
+                        </div>
+                    </div>
+                    <div class="col-xl-6 col-lg-6 col-md-6 col-sm-6 col-12 mt-4">
+                        <div class="form-group">
+                            <label for="password">Password</label>
+                            <input type="password" class="form-control" id="password" placeholder="Change Password" value="{{users.password}}">
+                            <a href="{% url 'resetPassword' %}">change password</a>
+                        </div>
+                    </div>
+                </div>
+                <div class="row gutters">
+                    <div class="col-xl-12 col-lg-12 col-md-12 col-sm-12 col-12">
+                        <h6 class="mt-3 mb-2 text-primary">Status</h6>
+                    </div>
+                    <div class="col-xl-12 col-lg-12 col-md-12 col-sm-12 col-12">
+                        <div class="form-check form-group">
+                            <input class="form-check-input" type="checkbox" value="" {% if users.is_active %}checked{% endif %} id="flexCheckDefault" {% if user.is_superuser %}{% else %}disabled{% endif %}>
+                            <label class="form-check-label" for="flexCheckDefault">
+                            Active
+                            </label>
+                        </div>
+                    </div>
+                    </div>
+
+                <div class="row gutters">
+                    <div class="col-xl-12 col-lg-12 col-md-12 col-sm-12 col-12">
+                        <h6 class="mt-3 mb-2 text-primary">Address</h6>
+                    </div>
+                    <div class="col-xl-6 col-lg-6 col-md-6 col-sm-6 col-12">
+                        <div class="form-group">
+                            <label for="Street">Street</label>
+                            <input type="name" class="form-control" id="Street" placeholder="Enter Street">
+                        </div>
+                    </div>
+                    <div class="col-xl-6 col-lg-6 col-md-6 col-sm-6 col-12">
+                        <div class="form-group">
+                            <label for="ciTy">City</label>
+                            <input type="name" class="form-control" id="ciTy" placeholder="Enter City">
+                        </div>
+                    </div>
+                    <div class="col-xl-6 col-lg-6 col-md-6 col-sm-6 col-12">
+                        <div class="form-group">
+                            <label for="sTate">State</label>
+                            <input type="text" class="form-control" id="sTate" placeholder="Enter State">
+                        </div>
+                    </div>
+                    <div class="col-xl-6 col-lg-6 col-md-6 col-sm-6 col-12">
+                        <div class="form-group">
+                            <label for="zIp">Zip Code</label>
+                            <input type="text" class="form-control" id="zIp" placeholder="Zip Code">
+                        </div>
+                    </div>
+                </div>
+            </form> 
+            <div class="row gutters mt-4 ">
+                <div class="col-xl-12 col-lg-12 col-md-12 col-sm-12 col-12">
+                    <div class="">
+                        <a type="button" id="submit" name="submit" class="btn btn-secondary btn-sm" href="{% url 'userDetails' userId=users.id %}">Cancel</a>
+                        <a type="button" id="submit" name="submit" class="btn btn-primary btn-sm" onclick="Update({{users.id}})">Update</a>
+                    </div>
+                    <label id='s_message' style="color:green;"></label>
+                </div>
+            </div>
+        </div>
+    </div>
+    </div>
+    </div>
+    </div>
+<script>
+    function Update(id){
+        uname = $("#username").val();
+        email = $("#email").val();
+        fname = $("#firstname").val();
+        lname = $("#lastname").val();
+        csr =$("input[name=csrfmiddlewaretoken]").val();
+        //alert(lname);
+        
+        data = {id:id,username:uname,email:email,firstname:fname,lastname:lname,action:'update',csrfmiddlewaretoken:csr};
+        $.ajax({
+            url: "{% url 'createUser' %}",
+            method: "POST",
+            data:data,
+            success: function(data){
+                $("#s_message").text(data.result);
+            },
+        }); 
+    }
+</script>
+
+{% endblock %}

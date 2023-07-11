@@ -1,0 +1,612 @@
+{% extends "base.html" %}
+{% block title %}Daily Log{% endblock %}
+{% block script %}
+<link href="https://cdn.datatables.net/1.13.5/css/jquery.dataTables.min.css" rel="stylesheet" />
+
+<style>
+	table{
+		font-weight:normal !important;
+	}
+
+	thead > tr > th{
+		opacity:0.6 !important;
+	}
+	.table-wrapper{
+		
+	}
+	.modal-content{
+		background-color:GhostWhite !important;
+	}
+
+	td.details-control {
+		background: url('https://www.datatables.net/examples/resources/details_open.png') no-repeat center center;
+		cursor: pointer;
+	}
+	tr.shown td.details-control {
+		background: url('https://www.datatables.net/examples/resources/details_close.png') no-repeat center center;
+	}
+
+</style>
+
+{% endblock %}
+{% block content %} 
+    <div class="">
+        <div class="table-wrapper">
+            <div class="table-title">
+                	<div class="row">	
+						<div class="col-md-8">				
+							<!-- <a href="#addEmployeeModal" class="btn btn-success" data-toggle="modal"><span>Add New Record</span></a> -->
+							<a id="logBtn" class="btn btn-success btn-sm ps-4 pe-4 rounded-1" data-bs-toggle="modal" data-bs-target="#addLog" style="float:left;">Add Log</a>
+							{% if user.is_superuser or is_team == True %}
+								<select class="form-control form-control-sm col-xs-2 w-25 rounded-0" id="user_s" onchange="getuserLog();">
+									<option value="{{user.id}}">{{user.username}}</option>
+									{% for n in users %}
+									{% if n.username != user.username %}
+										<option class="active" value="{{n.id}}">{{n.username}}</option>
+									{% endif %}
+									{% endfor %}
+									<option value="0">all</option>
+								</select>
+							{% endif %}
+						</div>
+                	</div>
+            </div>
+			
+			<div class=" table-responsive-sm">
+				<p class="mt-4">This Week</p>
+				<table class="table  table-sm table-hover table-light shadow rounded" id="thisweeklogTable" >
+					<thead>
+						<tr class="align-middle ">
+							<th></th>
+							<th>Date</th>
+							<th class="w-50">Worked On</th>
+							<th>Hours</th>
+							<th>Billable</th>
+							<th>Action</th>
+						</tr>
+					</thead>
+					<tbody>
+						{% for d in thisweekdata %}
+						<tr style="height:50px;opacity:0.8;" class="align-middle">
+							<td class="details-control">
+								<span style="visibility:hidden">{{d.id}}</span>
+						   	</td>
+							<td>{{d.Date}}</td>
+							<td class="w-25">
+								{% if d.project_id != None %}{{d.project_id.name}}{% else %}{{d.task.ticket_name}} {% endif %}<span class="badge bg-light text-dark ms-4">{{d.TaskType.TaskType}}</span>
+								{% if d.TaskType.TaskType == 'Issue' %}
+								<span class="badge rounded-1 {% if d.task.priority == 'high' %}text-bg-danger{% elif d.task.priority == 'medium' %}text-bg-info{% elif d.task.priority == 'low' %}text-bg-primary{% endif %}">{{d.task.priority}}</span>
+								{% endif %}
+							</td>
+							<td>{{d.Hours}}</td>
+							<td><input disabled class="form-check-input" type="checkbox" {% if d.Billable != True %}{% else %}Checked{% endif %} /></td>
+							<td>
+								<a onclick="getLog({{d.id}})"><i class="fas fa-solid fa-pen text-primary"></i></a>
+								<a  data-bs-toggle="modal" data-bs-target="#deleteLog"><i class="fas fa-sharp fa-solid fa-trash text-danger"></i></a>
+							</td>
+						</tr>
+						{% endfor %}
+					</tbody>
+					<tfoot>
+						{% if thisweekdata %}
+							<tr>
+								<td colspan="3">Total</td>
+								<td colspan="3">
+									{{thisweektotal.Hours__sum}}
+								</td>
+							</tr>
+						{% endif %}
+						
+					</tfoot>
+				</table>
+				
+			<div>
+			<div class=" table-responsive-sm mt-2">
+				<p class="mt-2">Last Week</p>
+				{% if lastweekdata %}
+				<table class="table display  table-sm table-hover table-light shadow rounded" id="weeklogTable" >
+					<thead>
+						<tr>
+							<th></th>
+							<th>Date</th>
+							<th class="w-50">Worked On</th>
+							<th>Hours</th>
+							<th>Billable</th>
+							<th>Action</th>
+						</tr>
+					</thead>
+					<tbody>
+						{% for d in lastweekdata %}
+						<tr style="height:50px;opacity:0.8;" class="align-middle" id="{{d.id}}">
+							<td class="p-2 details-control">
+								 <span style="visibility:hidden">{{d.id}}</span>
+							</td>
+							<td>{{d.Date}}</td>
+							<td class="w-25">
+								{% if d.project_id != None %}{{d.project_id.name}}{% else %}{{d.task.ticket_name}} {% endif %}<span class="badge bg-light text-dark ms-4">{{d.TaskType.TaskType}}</span>
+								{% if d.TaskType.TaskType == 'Issue' %}
+								<span class="badge rounded-1 {% if d.task.priority == 'high' %}text-bg-danger{% elif d.task.priority == 'medium' %}text-bg-info{% elif d.task.priority == 'low' %}text-bg-primary{% endif %}">{{d.task.priority}}</span>
+								{% endif %}
+							</td>
+							<td>{{d.Hours}}</td>
+							<td><input disabled class="form-check-input" type="checkbox" {% if d.Billable != True %}{% else %}Checked{% endif %} /></td>
+							<td>
+								<a onclick="getLog({{d.id}})"><i class="fas fa-solid fa-pen text-primary"></i></a>
+								<a  data-bs-toggle="modal" data-bs-target="#deleteLog"><i class="fas fa-sharp fa-solid fa-trash text-danger"></i></a>
+								<a ><i class="fas fa-sticky-note text-primary"></i></a>
+							</td>
+						</tr>
+						{% endfor %}
+					</tbody>
+					<tfoot>
+						<tr>
+							<td colspan="3">Total</td>
+							<td colspan="3">
+								{{lastweektotal.Hours__sum}}
+							</td>
+						</tr>
+					</tfoot>
+				</table>
+				{% else %}
+				<div class="align-center text-center text-secondary">No Record Found For Last Week!</div>
+				{% endif %}
+			</div>
+			<div class=" table-responsive-sm mt-4">
+				<p>This Month</p>
+				<table class="table display table-sm table-hover table-light shadow" id="logTable" >
+					<thead>
+						<tr>
+							<th></th>
+							<th scope="col" class="">Date</th>
+							<th scope="col" class="w-50">Worked On</th>
+							<th scope="col">Priority</th>
+							<th scope="col">Status</th>
+							<th scope="col">Hours</th>
+							<th scope="col">Billable</th>
+							<th scope="col">Action</th>
+
+						</tr>
+					</thead>
+					<tbody>
+						{% for d in all_data %}
+						<tr class="align-middle" style="height:50px;font-weight:400;" >
+							<td class="details-control">
+								<span style="visibility:hidden">{{d.id}}</span>
+							</td>
+							<td class="p-2">{{d.Date}}</td>
+							<td class="w-25 p-2">{% if d.project_id != None %}{{d.project_id.name}}{% else %}{{d.task.ticket_name}} {% endif %}<span class="badge bg-light text-dark ms-4">{{d.TaskType.TaskType}}</span></td>
+							<td class="p-2">
+								{% if d.TaskType.TaskType == 'Issue' %}
+								<span class="badge rounded-0 {% if d.task.priority == 'high' %}text-bg-danger{% elif d.task.priority == 'medium' %}text-bg-info{% elif d.task.priority == 'low' %}text-bg-primary{% endif %}">{{d.task.priority}}</span>
+								{% endif %}
+							</td>
+							<td class="p-2">
+								{% if d.TaskType.TaskType == 'Issue' %}
+								<span class="badge rounded-0 {% if d.task.state == 'New' %}text-bg-primary{% elif d.task.state == 'InProgress' %}text-bg-info{% elif d.task.state == 'Completed' %}text-bg-success{% elif d.task.state == 'Hold' %}text-bg-warning{% elif d.task.state == 'Canceled' %}text-bg-danger{% endif %}">{{d.task.state}}</span>
+								{% endif %}
+							</td>
+							<td class="p-2">{{d.Hours}}</td>
+							<td class="p-2"><input disabled class="form-check-input" type="checkbox" {% if d.Billable != True %}{% else %}Checked{% endif %} /></td>
+							<td class="p-2">
+								<a onclick="getLog({{d.id}})"><i class="fas fa-solid fa-pen text-primary"></i></a>
+								<a  data-bs-toggle="modal" data-bs-target="#deleteLog"><i class="fas fa-sharp fa-solid fa-trash text-danger"></i></a>
+							</td>
+						</tr>
+						{% empty %}
+						<center><h1><b>Record Not Found.</b></h1></center>
+						{% endfor %}
+					</tbody>
+				</table>
+				<div class="clearfix" style="display: flex; justify-content: right;">
+					{% comment %} <div class="hint-text">Showing <b>5</b> out of <b>25</b> entries</div> {% endcomment %}
+					<nav aria-label="...">
+						<ul class="pagination">
+
+							{% if all_data.has_previous %}
+							{% comment %} <li class="page-item"><a href="/test1/?page=1" tabindex="-1">First</a></li> {% endcomment %}
+							<li class="page-item">
+								<a href="/Worklog/dailylog/?page={{all_data.previous_page_number}}"  class="page-link">Previous</a>
+							</li>
+							{% endif %}
+
+							{% for n in totalpage %}					
+							<li class="page-item"><a href="/Worklog/dailylog/?page={{n}}"  class="page-link">{{n}}</a></li>
+							{% comment %} <li class="page-item"><a href="#" class="page-link">2<span class="sr-only">(current)</span></a></li>
+							<li class="page-item"><a href="#" class="page-link">3</a></li> {% endcomment %}
+							{% endfor %}
+
+							{% if all_data.has_next %}
+							<li class="page-item"><a href="/Worklog/dailylog/?page={{all_data.next_page_number}}" class="page-link">Next</a></li>
+							{% endif %}
+						</ul>
+					</nav>
+				</div> 
+			</div>
+        </div>
+    </div>
+
+	
+
+	<!-- Add Modal HTML -->
+	<div class="modal fade" id="addLog" tabindex="-1" role="dialog" aria-labelledby="addLogLabel" aria-hidden="true">
+		<div class="modal-dialog modal-lg modal-dialog-centered" role="document">
+			<div class="modal-content rounded-0 container">
+				<form action="{% url 'addLog' %}" method="POST" id="LogForm">
+					{% csrf_token %}
+					<input type="hidden" id="logid" />
+					<div class="modal-header">						
+						<h5 class="modal-title text-secondary fw-bolder">Add Record</h5>
+						<button class="btn-close" type="button" data-bs-dismiss="modal" aria-label="Close"></button>
+					</div>
+					<div class="modal-body ps-5 pe-5">
+						<div class="form-group row">
+							<label class="col-3 text-secondary">Date</label>							
+							<input name="date" id="date" type="date" class="form-control form-control-sm w-25 col-9 userfm rounded-0" required>
+						</div>
+						<div class="form-group row mt-2">
+							<label class="col-3 text-secondary">TaskType</label>
+							<select name="tasktype" id="tasktype" class="form-control form-control-sm w-25 userfm rounded-0" id="exampleFormControlSelect1" onchange="gettask()" required>
+								<option value="">Select</option>
+								{% for n in tasktype %}
+								<option value="{{n.id}}">{{n.TaskType}}</option>
+								{% endfor %}                            
+							</select>
+							<span class="col" id="project"></span>
+							<span class="col" id="issue"></span>
+							<span class="col" id="subproject"></span>
+						</div>
+						<div class="form-group row mt-2">
+							<label class="col-3 text-secondary">Hours</label>
+							<input name="hours" id="hours" type="number" class="form-control form-control-sm col-9 w-25 userfm rounded-0" required>
+						</div>
+						<div class="form-group row">
+								<label class="col-3 text-secondary">Billable</label>
+								<input name="billable" id="billable" class="form-check-input col-9 rounded-0" type="checkbox">								
+						</div>
+						<div class="form-group row mt-2">
+							<label class="col-3 text-secondary">Workdone</label>
+							<div class="col-9 p-0 pe-2">
+								<textarea name="workdone" id="workdone" class="form-control userfm rounded-0" rows="5" required></textarea>
+							</div>
+						</div>				
+					</div>
+					<div class="modal-footer pe-5">
+						<input type="button" class="btn btn-info btn-sm" data-bs-dismiss="modal" aria-label="Close" value="Cancel">
+						<input id="btnSave" type="submit" class="btn btn-success btn-sm ps-3 pe-3" value="Save">
+						<a id="btnUpdate" class="btn btn-success btn-sm ps-3 pe-3" onclick="updateLog()">Update</a>
+					</div>
+				</form>
+			</div>
+		</div>
+	</div>
+
+	<!-- Delete Modal HTML -->
+	<div class="modal fade" id="deleteLog" tabindex="-1" role="dialog" aria-labelledby="deleteLogLabel" aria-hidden="true">
+		<div class="modal-dialog modal-dialog-centered" role="document">
+			<div class="modal-content rounded-0">
+				<form>
+					<div class="modal-header">						
+						<h4 class="modal-title">Delete Record</h4>
+						<button class="btn-close" type="button" data-bs-dismiss="modal" aria-label="Close"></button>
+					</div>
+					<div class="modal-body">					
+						<p>Are you sure you want to delete these Records?</p>
+					</div>
+					<div class="modal-footer">
+						<input type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal" aria-label="Close" value="No">
+						<a href="" type="submit" class="btn btn-danger btn-sm"> Yes </a>
+					</div>
+				</form>
+			</div>
+		</div>
+	</div>	
+
+
+
+<script>
+	$(document).ready(function () {
+		$(' #thisweeklogTable, #weeklogTable').dataTable({
+			bPaginate: false,
+			bInfo:false,
+			bFilter:false,
+		  	pagingType: 'full_numbers',
+		  	lengthChange: false
+	  	});
+		  $('#logTable').dataTable({
+			bPaginate: false,
+			bInfo:false,
+		  	pagingType: 'full_numbers',
+		  	lengthChange: true
+	  	});
+
+		  $('table.display').on('click', 'td.details-control', function () {
+			var table = $( $(this).closest( 'table') ).DataTable();
+			var tr = $(this).closest('tr');
+			var row = table.row( tr );
+	 
+			if ( row.child.isShown() ) {
+				// This row is already open - close it
+				row.child.hide();
+				tr.removeClass('shown');
+			}
+			else {
+				// Open this row
+				get_id = row.data()[0].slice(32, 34);
+				//alert(get_id);
+				//row.child( format(row.data()) ).show();
+				row.child( format(get_id) ).show();
+				tr.addClass('shown');
+			}
+		} );
+		
+		function format ( id ) {
+			html='';
+			$.ajax({
+				url:"{% url 'getLog' %}",
+				data:{id:id},
+				method:"GET",
+				async:false,
+				success:(function(data){
+					
+					for(i=0;i<data.result.length;i++)
+					{
+						html +='<div class="container p-2"><h6 class=" text-info">Work Details:</h6><div class="ms-2">'+data.result[i].Workdone+'</div></div>';
+						
+					}
+					
+				}),  
+			});
+			return html;
+		}
+	
+	});
+	 
+
+$(document).ready(function(){
+	$("#logBtn").click(function(){
+        $("#LogForm").trigger("reset");
+		$("#btnSave").show();
+		$("#btnUpdate").hide();
+    });
+});
+
+function gettask()
+{
+	var task=$("#tasktype").val();
+	$("#project").empty();
+	$("#subproject").empty();
+	$("#issue").empty();
+	$("#project").hide();
+	$("#subproject").hide();
+	$("#issue").hide();
+	getproject(task)
+}
+
+function getproject(task_id){
+		data={task:task_id};
+		$.ajax({
+			url:"{% url 'project' %}",
+			data:data,
+			method:"GET",
+			success:function(data){  
+				if(task_id==2)
+				{
+					$("#project").show();
+					var html="<select id='project_list'class='form-control form-control-sm' onchange='subproject()' >"+
+						'<option>Select Projects</option>';
+					for( a=0; a<data.result.length; a++){
+						html +="<option  value='"+data.result[a].id+"'>" +data.result[a].name +"</option>";
+					}
+					html+="</select>";
+					$("#project").html(html);   
+				}
+				if(task_id==1)
+				{
+					$("#issue").show();
+					var html="<select id='issue_list' name='issue_list'class='form-control form-control-sm'>"+
+						'<option>Select Task</option>';
+					for( a=0; a<data.result.length; a++){
+						html +="<option  value='"+data.result[a].id+"'>" +data.result[a].ticket_name +"</option>";
+					}
+					html+="</select>";
+					$("#issue").html(html);   
+				}
+			},  
+		});
+}
+
+function subproject(){
+    pid=$('#project_list').val();
+	$.ajax({
+		data:{id:pid},
+		url:"{% url 'subproject' %}",
+		method:"GET",
+		success:function(data){
+		$("#subproject").show();
+		var html="<select id='sublist' name='sublist' class='form-control form-control-sm'><option>Select SubProjects</option>";
+		
+		for( a=0; a<data.result.length; a++){
+			html +="<option  value='"+data.result[a].id+"'>" +data.result[a].name +"</option>";
+		}
+		html+="</select>";
+		$("#subproject").html(html);   
+		},  
+	});
+}
+
+function getLog(id){
+	$.ajax({
+		url:"{% url 'getLog' %}",
+		data:{id:id},
+		method:"GET",
+		success:function(data){
+		//console.log(data.result);
+			for(i=0;i<data.result.length;i++)
+			{
+				$("#logid").val(data.result[i].id);
+				$("#date").val(data.result[i].Date);
+				$("#tasktype").val(data.result[i].TaskType_id)
+				$("#hours").val(data.result[i].Hours)
+				$("#workdone").val(data.result[i].Workdone)
+				if(data.result[i].Billable == true){
+					$("#billable").prop("checked", true);
+				}
+				else{
+					$("#billable").prop("checked", false);
+				}
+				
+			}
+			$("#btnSave").hide();
+			$("#btnUpdate").show();
+			$("#addLog").modal('show');
+		},  
+	});
+}
+
+function updateLog(){
+	id=$("#logid").val();
+	date=$("#date").val();
+	tasktype=$("#tasktype").val();
+	project=$("#sublist").val();
+	task=$("#issue_list").val();
+	hour=$("#hours").val()
+	work=$("#workdone").val()
+	billable=$("#billable").val();
+	csr =$("input[name=csrfmiddlewaretoken]").val();
+	alert(project);
+	data={id:id,date:date,tasktype:tasktype,sublist:project,issue_list:task,workdone:work,hours:hour,billable:billable,action:'update',csrfmiddlewaretoken:csr}
+	$.ajax({
+		url:"{% url 'addLog' %}",
+		data:data,
+		method:"POST",
+		success:function(data){
+		//console.log(data.result);
+		$("#addLog").modal('hide');
+		},  
+	});
+}
+
+
+function getuserLog(){
+	uid=$('#user_s').val();
+	//alert(uid);
+	data = {id:uid};
+	
+	$.ajax({
+		url: "{% url 'dailylog' %}",
+		method: "POST",
+		data: data,
+		success: function(data){
+			console.log(data.result.lastweekdata);
+			addUsersLogTable(data.result.lastweekdata,'lastweek');
+			addUsersLogTable(data.result.thisweekdata,'thisweek')
+		},
+	});
+}
+
+function addUsersLogTable(data,week)
+{
+	html = '';
+	html1='';
+	dataset = [];
+	dataset1 = [];
+
+	for(i=0;i<data.length;i++)
+	{
+		if(data[i].project != 'none' ){
+			html+=""+data[i].project;
+		}
+		if(data[i].task != 'none'){
+			html+= ""+data[i].task;
+		} 
+		html+='<span class="badge bg-light text-dark ms-4">'+data[i].tasktype+'</span>';
+		if(data[i].tasktype == 'Issue')
+		{
+			html+='<span class="badge rounded-1 ';
+			if(data[i].priority == 'high')
+			{ html+='text-bg-danger';}
+			else if(data[i].priority == 'medium' ){
+				html+='text-bg-info';}
+			else if(data[i].priority == 'low'){
+				html+='text-bg-primary';}
+			else{}
+			html+='">'+data[i].priority+'</span>';
+		}
+		
+		html1+='<input disabled class="form-check-input" type="checkbox"';
+		if(data[i].billable == true) {
+			html1+='Checked';}
+		html1+='/>';
+
+		dataset1.push('<td class="details-control"><span style="visibility:hidden">'+data[i].id+'</span></td>');
+		dataset1.push(data[i].date,html,data[i].hours,html1);
+		dataset1.push('<a onclick="getLog('+data[i].id+')"><i class="fas fa-solid fa-pen text-primary"></i></a>');
+		dataset.push(dataset1);
+		html='';
+		html1='';
+		dataset1=[];
+	}
+	//console.log(dataset1)
+	var table;
+	if(week=='lastweek')
+	{
+		table = $('#weeklogTable').DataTable();
+	}
+	else if(week == 'thisweek')
+	{
+		table = $('#thisweeklogTable').DataTable();
+	}
+	table.clear();
+	table.rows.add(dataset).draw();
+}
+
+
+function addUsersLogTableBackup(data)
+{
+	html = '';
+			html1='';
+			dataset = [];
+			dataset1 = [];
+
+			for(i=0;i<data.result.lastweekdata.length;i++)
+			{
+				if(data.result.lastweekdata[i].project != 'none' ){
+					html+=""+data.result.lastweekdata[i].project;
+				}
+				if(data.result.lastweekdata[i].task != 'none'){
+					html+= ""+data.result.lastweekdata[i].task;
+				} 
+				html+='<span class="badge bg-light text-dark ms-4">'+data.result.lastweekdata[i].tasktype+'</span>';
+				if(data.result.lastweekdata[i].tasktype == 'Issue')
+				{
+					html+='<span class="badge rounded-1 ';
+					if(data.result.lastweekdata[i].priority == 'high')
+					{ html+='text-bg-danger';}
+					else if(data.result.lastweekdata[i].priority == 'medium' ){
+						html+='text-bg-info';}
+					else if(data.result.lastweekdata[i].priority == 'low'){
+						html+='text-bg-primary';}
+					else{}
+					html+='">'+data.result.lastweekdata[i].priority+'</span>';
+				}
+				
+				html1+='<input disabled class="form-check-input" type="checkbox"';
+				if(data.result.lastweekdata[i].billable == true) {
+					html1+='Checked';}
+				html1+='/>';
+
+				dataset1.push('<td class="details-control"><span style="visibility:hidden">'+data.result.lastweekdata[i].id+'</span></td>');
+				dataset1.push(data.result.lastweekdata[i].date,html,data.result.lastweekdata[i].hours,html1);
+				dataset1.push('<td><a class="btn btn-info btn-sm bg-transparent p-2 border-0 pb-0" id="a_details"><i class="fas fa-sharp fa-solid fa-location-arrow text-info"></i></a></tr>');
+				dataset.push(dataset1);
+				html='';
+				html1='';
+				dataset1=[];
+			}
+			//console.log(dataset1)
+			var table = $('#weeklogTable').DataTable();
+			table.clear();
+			table.rows.add(dataset).draw();
+}
+</script>
+{% endblock %}

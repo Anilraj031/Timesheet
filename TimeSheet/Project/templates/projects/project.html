@@ -1,0 +1,185 @@
+{% extends "base.html" %}
+{% block script %}
+<title>{{project.name}}</title>
+<style>
+    .form-control {
+        border-top:0 !important;
+        border-left:0 !important;
+        border-right:0 !important;
+        border-bottom:1px solid grey !important;
+        border-radius: 0 !important;
+    }
+</style>
+{% endblock %}
+{% block content %}
+<div class="container">
+    <h4>{{project.name}}</h4><hr />
+    <!--project details -->
+    <div class="row shadow-lg bg-white  p-3" >
+        <div class="col-6" >
+            <div class="row">
+                <div class="col-sm-4">
+                    <h6 class="mb-0">Customer</h6>
+                </div>
+                <div class="col-sm-8 text-secondary">
+                    <a href="#">{{project.customer}}</a>
+                </div>
+            </div>
+            <div class="row mt-2">
+                <div class="col-sm-4">
+                <h6 class="mb-0">Created On</h6>
+                </div>
+                <div class="col-sm-8 text-secondary">
+                {{project.created_on}}
+                </div>
+            </div>
+            <div class="row mt-2">
+                <div class="col-sm-4">
+                    <h6 class="mb-0">Managed By</h6>
+                </div>
+                <div class="col-sm-8 text-secondary">
+                    <a href="#" >{{project.manager}}</a>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-6">
+            <div class="row">
+                <div class="col-sm-4">
+                <h6 class="mb-0">Est Complete Date</h6>
+                </div>
+                <div class="col-sm-8 text-secondary">
+                {{project.estimated_date}}
+                </div>
+            </div>
+            <div class="row mt-2">
+                <div class="col-sm-4">
+                    <h6 class="mb-0">Est Hours</h6>
+                </div>
+                <div class="col-sm-8 text-secondary">
+                    {{project.estimate_hr}}
+                </div>
+                </div>
+            <div class="row mt-2">
+                <div class="col-sm-4">
+                    <h6 class="mb-0">Hours Completed</h6>
+                </div>
+                <div class="col-sm-8 text-secondary">
+                    {{project.worked_hr}}
+                </div>
+            </div>
+        </div>
+        <div class="text-end">
+            <button class="btn btn-info btn-sm" type="button" data-bs-toggle="offcanvas" data-bs-target="#offcanvasRight" aria-controls="offcanvasRight">Update Details</button>
+        </div>
+    </div>
+    
+    <!-- project subtask details --><br>
+    <div class="">
+        <h6>Work Progress <a href="#">add task</a></h6>
+        {% for task in subtask %}
+        <div class="container-fluid shadow-sm bg-white  p-3">
+            <h4 class="small font-weight-bold">{{task.name}} <span
+                class="float-right">{{task.percent}}% Complete!</span></h4>
+            <div class="progress">
+                <div class="progress-bar {% if task.percent < 25 %}bg-danger {% elif task.percent < 50 %}bg-warning{% elif task.percent > 90 %}bg-success{% endif %}" role="progressbar" style="width: {{task.percent}}%"
+                    aria-valuenow="100" aria-valuemin="0" aria-valuemax="100"></div>
+            </div> 
+        </div>
+        {% endfor %}<br><br>
+        <h6>{{project.name}} Subtask Details </h6>
+        {% for task1 in subtask %}
+        <div class="container shadow-sm bg-white  p-3">
+            <h4 class="small font-weight-bold">{{task1.name}}: lead by <a href="#">{{task1.manager}}</a></h4>
+            <div class="table-responsive">
+                <table class="table table-hover table-secondary table-borderless p-3">
+                    <thead class="table-primary">
+                        <tr style="border-bottom:1px solid grey;border-left:5px solid skyblue;">
+                            <th>Date</th><th>Employee</th><th>Hours</th><th>Details</th></tr></thead>
+                    <tbody id="subtask{{task1.id}}">
+                    </tbody>
+                </table>
+            </div>
+            <div>
+                <label>Estimated Hours: {{task1.hours}}</label><br>
+                <label>Worked Hours: {{task1.hours_done}}</label>
+            </div>
+        </div><hr />
+        <script>
+            getDetails('{{task1.id}}','{{task1.name}}');
+            function getDetails(pid,name){
+                data = {id:pid};
+                $.ajax({
+                    url: "{% url 'subTaskDetails' %}",
+                    method: "POST",
+                    data:data,
+                    success: function(data){
+                        html = '';
+                        console.log(data);
+                        for(i=0;i<data.result.length;i++){
+                            html+='<tr style="border-left:5px solid skyblue;"><td>'+data.result[i].date+'</td><td>'+data.result[i].user+'</td><td>'+data.result[i].hour+'</td><td>'+data.result[i].details+'</td></tr>';
+                        }
+                        $("#subtask"+pid).html(html); 
+                    },
+                }); 
+            }
+        </script>
+        {% endfor %}
+    </div>
+
+    <!-- offcanvas right-->
+    <div class="offcanvas offcanvas-end w-50" tabindex="-1" id="offcanvasRight" aria-labelledby="offcanvasRightLabel">
+        <div class="offcanvas-header">
+          <h5 class="offcanvas-title" id="offcanvasRightLabel">{{project.name}}</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="Close"></button>
+        </div><hr>
+        <div class="offcanvas-body">
+            <form>
+                {% csrf_token %}
+                <div class="gutters">
+                    <div class="form-group row">
+                        <label for="inputEmail3" class="col-sm-4 col-form-label">Project</label>
+                        <div class="col-sm-7">
+                          <input type="text" class="form-control" id="inputEmail3" placeholder="Email" value="{{project.name}}">
+                        </div>
+                      </div>
+                      <div class="form-group row mt-2">
+                        <label for="inputEmail3" class="col-sm-4 col-form-label">Customer</label>
+                        <div class="col-sm-7">
+                          <input type="text" class="form-control" id="inputEmail3" placeholder="Email" value="{{project.customer}}">
+                        </div>
+                      </div>
+                      <div class="form-group row mt-2">
+                        <label for="inputEmail3" class="col-sm-4 col-form-label">Assigned To</label>
+                        <div class="col-sm-7">
+                          <input type="text" class="form-control" id="inputEmail3" placeholder="Email" value="{{project.manager}}">
+                        </div>
+                      </div>
+                      <div class="form-group row mt-2">
+                        <label for="inputEmail3" class="col-sm-4 col-form-label">Requested Complete On</label>
+                        <div class="col-sm-7">
+                          <input type="date" class="form-control" id="inputEmail3" placeholder="Email" value="{{project.estimated_date}}">
+                        </div>
+                      </div>
+                      <div class="form-group row mt-2">
+                        <label for="inputEmail3" class="col-sm-4 col-form-label">Est Hour</label>
+                        <div class="col-sm-7">
+                          <input type="text" class="form-control" id="inputEmail3" placeholder="Email" value="{{project.estimate_hr}}">
+                        </div>
+                      </div>
+                </div>
+
+            </form> 
+        </div>
+        <div class="offcanvas-footer">
+            <div class="float-end mb-4 me-4 pe-5">
+                <button type="button" class=" btn-sm btn-secondary" data-bs-dismiss="offcanvas" aria-label="Close">Cancel</button>
+                <a class="btn btn-info btn-sm" href="{% url 'projectDetails' pid=project.id %}">Save Changes</a>
+            </div>
+        <div>
+      </div>
+</div>
+<script>
+    
+</script>
+{% endblock %}

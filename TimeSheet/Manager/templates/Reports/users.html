@@ -1,0 +1,176 @@
+{% extends "base.html" %}
+{% block title %}All Users{% endblock %}
+{% block script %}
+<style>
+  .userfm {
+    border-top:0 !important;
+    border-left:0 !important;
+    border-right:0 !important;
+    border-bottom:1px solid grey !important;
+    border-radius: 0 !important;
+  }
+</style>
+{% endblock %}
+{% block content %}
+
+<div class="container">
+    <div class="row row-cols-lg-auto g-2 " style="float:left;">
+      <div class="col">
+        <select class="form-control form-control-sm " id="status" onchange="getUser()">
+          <option value="1">Active</option>
+          <option value="2">Inactive</option>
+          <option value="0">All</option>
+        </select>
+      </div>
+      <div class="col">
+        <input type="text" Placeholder="Search " class="form-group form-control form-control-sm" />
+      </div>
+    </div>
+    {% if user.is_superuser or 'auth.add_user' in perms %}
+    <div style="float:right;">
+      <a class="btn btn-primary btn-sm" type="button" data-bs-toggle="modal" data-bs-target="#newuserModal">Create User</a>
+    </div>
+    <div style="clear:right;" class="mt-4 float-none"><br />
+    {% else %}
+    <div style="clear:left;" class="mt-4"><br />
+    {% endif %}
+    
+      <table id="example" class="table table-hover text-left" style="width:100%">
+        <thead>
+          <tr>
+            <th scope="col">Username</th>
+            <th scope="col">FirstName</th>
+            <th scope="col">Last Name</th>
+            <th scope="col">Email</th>
+            <th scope="col">Status</th>
+          </tr>
+        </thead>
+        <tbody id="userss">
+          {% for n in users %}
+          <tr class="clickable-row">
+            <td><a href="{% url 'userDetails' userId=n.id %}">{{n.username}}</a></td>
+            <td>{{n.first_name}}</td>
+            <td>{{n.last_name}}</td>
+            <td>{{n.email}}</td>
+            <td><span class="badge {% if n.is_active %}text-bg-success{% else %}text-bg-danger{% endif %}">{% if n.is_active %}active{% else %}inactive{% endif %}</span>
+             </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+</div>
+
+
+
+
+<!--add user modal -->
+<div class="modal fade" id="newuserModal" tabindex="-1" role="dialog" aria-labelledby="newuserModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-lg modal-dialog-centered" role="document">
+    <div class="modal-content container rounded-0 p-2">
+      <div class="modal-header">
+        <h5 class="modal-title" id="exampleModalLabel">Add New User</h5>
+        <button class="btn-close" type="button" data-bs-dismiss="modal" aria-label="Close"></button>
+    </div>
+      <div class="modal-body container">
+        <form class="" action=''>
+          {% csrf_token %}
+          <div class="form-group row ms-4">
+            <label for="inputEmail3" class="col-sm-3 col-form-label">Username</label>
+            <div class="col-sm-6">
+              <input type="text" class="form-control userfm" id="uname" placeholder="username" name="username">
+            </div>
+          </div>
+          <div class="form-group row mt-2 ms-4">
+              <label for="inputEmail3" class="col-sm-3 col-form-label">Email</label>
+              <div class="col-sm-6">
+                <input type="Email" class="form-control userfm" id="email" placeholder="Email">
+              </div>
+            </div>
+          <div class="form-group row mt-2 ms-4">
+            <label for="inputPassword3" class="col-sm-3 col-form-label">Password</label>
+            <div class="col-sm-6">
+              <input type="password" class="form-control userfm" id="p1" placeholder="Password">
+            </div>
+          </div>
+          <div class="form-group row mt-2 ms-4">
+              <label for="inputPassword3" class="col-sm-3 col-form-label">Repeat Password</label>
+              <div class="col-sm-6">
+                <input type="password" class="form-control userfm" id="p2" placeholder="Password"><br>
+                <p class="ml-2" id="s_message"></p>
+              </div>
+            </div>
+          
+        </form>
+      </div>
+      <div class="modal-footer">
+        <a type="submit" class="btn btn-primary btn-sm" onclick="Create()">Create User</a>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+
+<script>
+  $(document).ready(function () {
+    $('#example').DataTable({
+      "bPaginate": false,
+        "bFilter": false,
+        "bInfo": false
+    });
+});
+    function getUser(){
+      status = $("#status").val();
+      //alert(status);
+      data = {status:status};
+      $.ajax({
+          url: "{% url 'getall' %}",
+          method: "POST",
+          data:data,
+          success: function(data){
+              console.log(data.result);
+              var html='';
+              for(i=0;i<data.result.length;i++){
+                html+='<tr><td><a href="Details/'+data.result[i].id+'">'+data.result[i].username+'</a> </td>'+
+                      '<td>'+data.result[i].firstname+'</td>'+
+                      '<td>'+data.result[i].lastname+'</td>'+
+                      '<td>'+data.result[i].email+'</td>';
+                    if(data.result[i].active == true){
+                      html+='<td><span class="badge text-bg-success">Active</span></td></tr>'
+                    }
+                    else{
+                      html+='<td><span class="badge text-bg-danger">Inactive</span></td></tr>'
+                    }
+              }
+              $("#userss").html(html);
+          },
+      }); 
+         
+    }
+
+    function Create(){
+      uname = $("#uname").val();
+      email = $("#email").val();
+      p1 = $("#p1").val();
+      p2 = $("#p2").val();
+      csr =$("input[name=csrfmiddlewaretoken]").val();
+      data = {username:uname,email:email,pass1:p1,pass2:p2,action:'create',csrfmiddlewaretoken:csr};
+      $.ajax({
+          url: "{% url 'createUser' %}",
+          method: "POST",
+          data:data,
+          success: function(data){
+            if(data.result == "Success")
+            {
+                $("#s_message").html('<label style="color:green;">Successfully Created User</label>');
+            }
+            else
+            {
+                $("#s_message").html('<label style="color:red;">'+data.result+'</label>');
+            }
+          },
+      }); 
+  }
+</script>
+{% endblock %}

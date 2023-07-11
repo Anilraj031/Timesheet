@@ -1,0 +1,345 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no" />
+    <meta name="description" content="" />
+    <meta name="author" content="" />
+    <link href="https://cdn.jsdelivr.net/npm/simple-datatables@latest/dist/style.css" rel="stylesheet" />
+    <link href="/static1/css/styles.css" rel="stylesheet" />
+    <link href="/static1/css/customSB.css" rel="stylesheet" />
+
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/js/all.min.js" crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.3/jquery.min.js" integrity="sha512-STof4xm1wgkfm7heWqFJVn58Hm3EtS31XFaagaa8VMReCXAkQnJZ+jEy8PCC/iT18dFy95WcExNHFTqLyp72eQ==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+    
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.8.0/Chart.min.js" crossorigin="anonymous"></script>
+    <!--custom added for bootstrap icons-->
+    <!--end-->
+    {% block script %}
+    {% endblock %}
+    <style>
+        .dropdown-toggle:after {
+            display: none !important;
+           }
+
+      thead{
+        background-color:aliceblue !important;
+      }
+      th{
+        font-weight:600 !important;
+        }
+      tbody tr{
+        opacity:0.8;
+        border-top:1px solid lightgray;
+        border-bottom:1px solid lightgray;
+      }
+
+        .navbar,.sb-sidenav{
+            background-color:DodgerBlue important;
+        }
+
+      .form-control:focus {
+        box-shadow: none !important;
+        border:1px solid lightgrey important;
+      }
+
+      #sidebarToggle:focus {
+         box-shadow: none !important;
+         border:1px solid lightgrey !important;
+         border-radius:3px !important;
+      }
+      .btn{
+      outline: none;
+      cursor: pointer;
+      border: none !important;
+      display: block;
+      position: relative;
+      font-size: 16px ;
+      font-weight: 600 !important;
+      color: #fff;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      }
+      /* primary button */
+      .btn-primary{
+      background-color: #0275d8;
+      box-shadow: 0 2px #052341;
+      }
+      .btn-primary:hover{
+      box-shadow: 0 4px #052341;
+      top: 2px;
+      }
+      .btn-primary:active{
+      box-shadow: 0 0 #052341;
+      top: 4px;
+      }
+      /* success button */
+      .btn-success{
+      background-color: #1cbb8c !important;
+      box-shadow: 0 4px #1B371C;
+      }
+      .btn-success:hover{
+      box-shadow: 0 2px #1B371C;
+      top: 2px;
+      }
+      .btn-success:active{
+      box-shadow: 0 0 #1B371C;
+      top: 4px;
+      }
+      /* info button */
+      .btn-info{
+      background-color: #5bc0de;
+      box-shadow: 0 4px #1C3A42;
+      }
+      .btn-info:hover{
+      box-shadow: 0 2px #1C3A42;
+      top: 2px;
+      }
+      .btn-info:active{
+      box-shadow: 0 0 #1C3A42;
+      top: 4px;
+      }
+      /* danger button */
+      .btn-danger{
+      background-color: #d9534f;
+      box-shadow: 0 4px #2D2D2D;
+      }
+      .btn-danger:hover{
+      box-shadow: 0 2px #2D2D2D;
+      top: 2px;
+      }
+      .btn-danger:active{
+      box-shadow: 0 0 #2D2D2D;
+      top: 4px;
+      }
+      /* warning button */
+      .btn-warning{
+      background-color: #f0ad4e;
+      box-shadow: 0 4px #473317;
+      }
+      .btn-warning:hover{
+      box-shadow: 0 2px #473317;
+      top: 2px;
+      }
+      .btn-warning:active{
+      box-shadow: 0 0 #473317;
+      top: 4px;
+      }
+      /* light button */
+      .btn-light{
+      background-color: #f7f7f7;
+      box-shadow: 0 4px #4A4A4A;
+      color: #4a4a4a;
+      }
+      .btn-light:hover{
+      box-shadow: 0 2px #4A4A4A;
+      top: 2px;
+      }
+      .btn-light:active{
+      box-shadow: 0 0 #4A4A4A;
+      top: 4px;
+      }
+      /* dark button */
+      .btn-secondary{
+      background-color: #292b2c;
+      box-shadow: 0 4px #0C0D0D;
+      }
+      .btn-secondary:hover{
+      box-shadow: 0 2px #0C0D0D;
+      top: 2px;
+      }
+      .btn-secondary:active{
+      box-shadow: 0 0 #0C0D0D;
+      top: 4px;
+      }
+
+    </style>
+</head>
+<body class="sb-nav-fixed">
+    <nav class="sb-topnav navbar navbar-expand-sm navbar-light bg-light fixed-top" style=" box-shadow: 5px 1px 5px #888888;">
+        <!-- Navbar Brand-->
+        <a class="navbar-brand ps-3 bg-light" href="{% url 'home' %}">{{request.session.company}}</a>
+        <!-- Sidebar Toggle-->
+        <button class="btn btn-link btn-sm order-2 order-lg-0 me-4 me-lg-0" id="sidebarToggle" href="#!"><i class="fas fa-bars"></i></button>
+        
+        <!-- Navbar Search-->
+        <form class="d-none d-md-inline-block form-inline ms-auto me-0 me-md-3 my-2 my-md-0">
+            <div class="input-group">
+                <input class="form-control" type="text" placeholder="Search for..." aria-label="Search for..." aria-describedby="btnNavbarSearch" />
+                <button class="btn btn-info" id="btnNavbarSearch" type="button"><i class="fas fa-search"></i></button>
+            </div>
+        </form>
+        <!-- Nav Item - Alerts -->
+        <ul class="navbar-nav ms-auto ms-md-0 ">
+            <li class="nav-item dropdown">
+                <a class="nav-link dropdown-toggle" id="navbarDropdown" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false"> <i class="fas fa-bell"></i><span class="badge badge-sm badge-danger badge-counter bg-danger rounded-circle " style="margin-left:-10px;">3</span></a>
+                <ul class="dropdown-menu dropdown-menu-end rounded-0" aria-labelledby="navbarDropdown">
+                    <li><a class="dropdown-item" href="#">
+                        <i class="fas fa-bell mr-2 text-gray-400"></i>
+                        Profile
+                    </a></li>
+                </ul>
+            </li> 
+        </ul>
+        <!-- Navbar-->
+        <ul class="navbar-nav  ms-md-0 me-3 me-lg-4">
+            <li class="nav-item dropdown">
+                <a class="nav-link dropdown-toggle" id="navbarDropdown" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false"><i class="fas fa-user fa-fw"></i></a>
+                <ul class="dropdown-menu dropdown-menu-end rounded-0" aria-labelledby="navbarDropdown">
+                    <li><a class="dropdown-item" href="{% url 'userDetails' userId=user.id %}">
+                        <i class="fas fa-user fa-sm fa-fw mr-2 text-gray-400"></i>
+                        Profile
+                    </a></li>
+                    <li><a class="dropdown-item" href="{% url 'settings' %}">
+                        <i class="fas fa-cogs fa-sm fa-fw mr-2 text-gray-400"></i>
+                        Settings
+                    </a></li>
+                    <li><a class="dropdown-item" href="#">
+                        <i class="fas fa-list fa-sm fa-fw mr-2 text-gray-400"></i>
+                        Activity Log
+                    </a></li>
+                    <li><hr class="dropdown-divider" /></li>
+                    <li><a class="dropdown-item" type="button" data-bs-toggle="modal" data-bs-target="#exampleModal">
+                        <i class="fas fa-sign-out-alt fa-sm fa-fw mr-2 text-gray-400"></i>Logout
+                    </a></li>
+                </ul>
+            </li> 
+        </ul>
+    </nav>
+    <div id="layoutSidenav" >
+        <div id="layoutSidenav_nav" >
+            <nav class="sb-sidenav accordion sb-sidenav-dark" id="sidenavAccordion" >
+                <div class="sb-sidenav-menu" >
+                    <div class="nav">
+                        <a class="nav-link mt-4" href="{% url 'home' %}">
+                            <div class="sb-nav-link-icon"><i class="fas fa-tachometer-alt"></i></div>
+                            Dashboard
+                        </a>
+                        <div class="sb-sidenav-menu-heading">User</div>
+                        <a class="nav-link" href="{% url 'dailylog' %}">
+                            <div class="sb-nav-link-icon"><i class="fas fa-chart-area"></i></div>
+                            Daily Log
+                        </a>
+
+                        <a class="nav-link collapsed" href="#" data-bs-toggle="collapse" data-bs-target="#collapseAttendance" aria-expanded="false" aria-controls="collapseLayouts">
+                            <div class="sb-nav-link-icon"><i class="fas fa-columns"></i></div>
+                            Attendace
+                            <div class="sb-sidenav-collapse-arrow"><i class="fas fa-angle-down"></i></div>
+                        </a>
+                        <div class="collapse" id="collapseAttendance" aria-labelledby="headingOne" data-bs-parent="#sidenavAccordion">
+                            <nav class="sb-sidenav-menu-nested nav">
+                                <a class="nav-link" href="{% url 'attendance' %}">Attendace</a>
+                                <a class="nav-link" href="{% url 'leave' %}">Leave</a>
+                            </nav>
+                        </div>
+
+                        <div class="sb-sidenav-menu-heading">Works</div>
+                        <a class="nav-link collapsed" href="#" data-bs-toggle="collapse" data-bs-target="#collapseLayouts" aria-expanded="false" aria-controls="collapseLayouts">
+                            <div class="sb-nav-link-icon"><i class="fas fa-columns"></i></div>
+                            Tasks
+                            <div class="sb-sidenav-collapse-arrow"><i class="fas fa-angle-down"></i></div>
+                        </a>
+                        <div class="collapse" id="collapseLayouts" aria-labelledby="headingOne" data-bs-parent="#sidenavAccordion">
+                            <nav class="sb-sidenav-menu-nested nav">
+                                <a class="nav-link" href="{% url 'aproject' %}">Projects</a>
+                                <a class="nav-link" href="{% url 'index' %}">Issues</a>
+                            </nav>
+                        </div>
+                        
+                        <div class="sb-sidenav-menu-heading">Manage</div>
+                        <a class="nav-link collapsed" href="#" data-bs-toggle="collapse" data-bs-target="#collapseDetails" aria-expanded="false" aria-controls="collapseLayouts">
+                            <div class="sb-nav-link-icon"><i class="fas fa-columns"></i></div>
+                            Accounts
+                            <div class="sb-sidenav-collapse-arrow"><i class="fas fa-angle-down"></i></div>
+                        </a>
+                        <div class="collapse" id="collapseDetails" aria-labelledby="headingOne" data-bs-parent="#sidenavAccordion">
+                            <nav class="sb-sidenav-menu-nested nav">
+                                {% if user.is_superuser or 'auth.view_user' in perms %}
+                                <a class="nav-link" href="{% url 'getall' %}">Users</a>
+                                <a class="nav-link" href="{% url 'company' %}">Company</a>
+                                <a class="nav-link" href="{% url 'allcustomers' %}">Customer</a>
+                                {% endif %}
+                            </nav>
+                        </div>
+
+                        <a class="nav-link collapsed" href="#" data-bs-toggle="collapse" data-bs-target="#collapseReports" aria-expanded="false" aria-controls="collapseLayouts">
+                            <div class="sb-nav-link-icon"><i class="fas fa-columns"></i></div>
+                            Reports
+                            <div class="sb-sidenav-collapse-arrow"><i class="fas fa-angle-down"></i></div>
+                        </a>
+                        <div class="collapse" id="collapseReports" aria-labelledby="headingOne" data-bs-parent="#sidenavAccordion">
+                            <nav class="sb-sidenav-menu-nested nav">
+                                {% if user.is_superuser or perms.auth.view_user %}
+                                <a class="nav-link" href="{% url 'user_report' %}">Users</a>
+                                {% endif %}
+                            </nav>
+                        </div>
+
+                    </div>
+                </div>
+                <div class="sb-sidenav-footer">
+                    <div class="small">Logged in as: {{ user.username}}</div>
+                    <!-- Start Bootstrap  -->
+                </div>
+            </nav>
+        </div>
+        <div id="layoutSidenav_content" style="background-color:GhostWhite;">
+            <main class="p-5">
+                {% block content %}
+
+                {% endblock %}
+            </main>
+            <footer class="py-4 bg-light mt-auto">
+                <div class="container-fluid px-4">
+                    <div class="d-flex align-items-center justify-content-between small">
+                        <div class="text-muted">Copyright &copy; Your Website 2021</div>
+                        <div>
+                            <a href="#">Privacy Policy</a>
+                            &middot;
+                            <a href="#">Terms &amp; Conditions</a>
+                        </div>
+                    </div>
+                </div>
+            </footer>
+        </div>
+    </div>
+
+
+    <!-- logout modal -->
+    <div class="modal fade" id="exampleModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered" role="document">
+            <div class="modal-content rounded-0">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="exampleModalLabel">Ready to Leave?</h5>
+                    <button class="btn-close" type="button" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">Select "Logout" below if you are ready to end your current session.</div>
+                <div class="modal-footer"><button class="btn btn-secondary btn-sm" type="button" data-bs-dismiss="modal">Cancel</button>
+                    <a class="btn btn-danger btn-sm" href="{% url 'logout' %}">Logout</a>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- end logout modal 
+    
+    -->
+
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js" crossorigin="anonymous"></script>
+    <script src="/static1/js/scripts.js"></script>
+    
+    
+    <script src="https://cdn.jsdelivr.net/npm/simple-datatables@latest" crossorigin="anonymous"></script>
+    <script src="/static1/js/datatables-simple-demo.js"></script>
+</body>
+</html>
+
+<link href="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/5.2.0/css/bootstrap.min.css" rel="stylesheet" type="text/css">
+<link href="https://cdn.datatables.net/1.13.1/css/dataTables.bootstrap5.min.css" rel="stylesheet" type="text/css">
+<script src="https://cdn.datatables.net/1.13.1/js/jquery.dataTables.min.js"></script>
+<script src="https://cdn.datatables.net/1.13.1/js/dataTables.bootstrap5.min.js" ></script>
+
+<script src="https://cdn.datatables.net/buttons/2.3.4/js/dataTables.buttons.min.js"></script>
+

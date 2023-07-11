@@ -1,0 +1,137 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div >
+    <div class="p-3 border border-info">
+        <h6 class="text-info">Details</h6>
+        <p>Name: {{teams.name}}</p>
+        <p>Description: {{teams.description}}</p>
+    </div>
+    <div class="p-3 mt-3 border border-info">
+        <div class="d-flex justify-content">
+            <div ><h6 class="text-info">Members</h6></div>
+            <div class="ms-3" ><a href="#" data-bs-toggle="modal" data-bs-target="#addTeamModal"><span>Add</span></a></div>
+        </div>
+        <ol>
+            {% for m in members %}
+                <li><a href="#" >{{m.user}}</a></li>
+            {% endfor %}
+        </ol>
+    </div>
+</div>
+
+
+<!-- Add Modal HTML -->
+<div class="modal fade" id="addTeamModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-lg" role="document">
+        <div class="modal-content rounded-0 container">
+            <div >
+                {%csrf_token%}
+                <div class="modal-header">                      
+                    <h4 class="modal-title">Add Member</h4>
+                    <button class="btn-close" type="button" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body text-secondary">                    
+                    <div class="form-group row">
+                        <div class="col-md-4 col-sm-12">
+                            <input id="search" name= "search" type="text" class="form-control form-control-sm rounded-0" required placeholder="search" oninput="searchUser();">
+                        </div>
+                    </div>
+                    <div class="form-group row mt-2" >
+                        <div class=" col-md-6 col-sm-12 userList border border-info" style="height: 210px;overflow-x: hidden; overflow-y: auto;text-align:justify;">
+                            <p>search result</p>
+                            <table class="table" id="usersList" style="width:100%;">
+                                <thead>
+                                    <tr>
+                                        <th>Select</th><th>Username</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="userTable">
+
+                                </tbody>
+                            </table>
+                        </div>
+                        <div class="col-6 col-md-6 col-sm-12 selecteduserList border border-info">
+                            <p>Selected</p>
+                            <ul style="list-style-type: none;padding:0;margin:0;">
+                                
+                            </ul>
+                        </div>
+                    </div>
+            
+                </div>
+                <div class="modal-footer">
+                    <button class="btn btn-secondary btn-sm" type="button" data-bs-dismiss="modal">Close</button>
+                    <input type="submit" class="ps-3 pe-3 btn btn-success btn-sm" value="Save" onclick="addMembers()">
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    function searchUser()
+    {
+        var user = $("#search").val();
+        //alert(user);
+        data={name:user}
+        $.ajax({
+            url: "{% url 'searchuser' %}",
+            method: "POST",
+            data: data,
+            success: function(data){
+                    $("#usersList").find("tr:gt(0)").remove();
+                    for(i=0;i<data.result.length;i++)
+                    {
+                        var table = document.getElementById("usersList");
+                        var row = table.insertRow(-1);
+                        var cell1 = row.insertCell(0);
+                        var cell2 = row.insertCell(1);
+                        cell1.innerHTML = "<input onclick='selectUser(this)' class='form-check-input' type='checkbox'  name='option1' value='"+data.result[i].username+"'>";
+                        cell2.innerHTML = data.result[i].username;
+                    }
+                    
+            },
+        });
+    }
+
+    function selectUser(row)
+    {
+        //selecteduserList
+        //alert(row);
+        //console.log(row.value);
+        //alert(row.checked);
+        var p = document.getElementById(row.value);
+        if(p != null && row.checked == false)
+        {
+            p.remove();
+        }
+        else if(p != null && row.checked == true){}
+        else{
+            let div = document.querySelector('.selecteduserList');
+            div.innerHTML += "<p class='selectedlist' id='"+row.value+"'>"+row.value+"</p>";
+        }
+        
+    }
+
+    function addMembers()
+    {
+        list = document.getElementsByClassName("selectedlist");
+        //console.log(list[0].innerText);
+        var ulist = ['{{teams.id}}']
+        for(i=0;i<list.length;i++)
+        {
+            ulist.push(list[i].innerText);
+        }
+        data={'userlist[]':ulist}
+        $.ajax({
+            url: "{% url 'addtoteam' %}",
+            method: "POST",
+            data: data,
+            success: function(data){
+                
+            },
+        });
+    }
+</script>
+{% endblock %}

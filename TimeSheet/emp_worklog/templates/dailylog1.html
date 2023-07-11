@@ -1,0 +1,432 @@
+{% extends "base3.html" %}
+{% block script %}
+<title>Daily Log</title>
+
+{% endblock %}
+{% block content %} 
+    <div class=" mt-5">
+        <div class="table-wrapper">
+            <div class="table-title">
+                	<div class="row">	
+						<div class="col-md-8">				
+							<!-- <a href="#addEmployeeModal" class="btn btn-success" data-toggle="modal"><span>Add New Record</span></a> -->
+							<a id="logBtn" class="btn btn-success btn-sm ps-4 pe-4" data-bs-toggle="modal" data-bs-target="#addLog" style="float:left;">Add Log</a>
+							{% if user.is_superuser %}
+								<select class="form-control form-control-sm col-xs-2 w-25" id="user_s" onchange="getMonthData()">
+									<option value="{{user.id}}">{{user.username}}</option>
+									{% for n in users %}
+									{% if n.username != user.username %}
+										<option class="active" value="{{n.id}}">{{n.username}}</option>
+									{% endif %}
+									{% endfor %}
+									<option value="0">all</option>
+								</select>
+							{% endif %}
+						</div>
+                	</div>
+            </div>
+			<div class=" table-responsive-sm">
+				<h6 class="mt-4">This Week<h6>
+				{% if thisweekdata %}
+				<table class="table table-striped table-hover table-borderless shadow" id="thisweeklogTable">
+					<thead>
+						<tr class="align-middle ">
+							<th>Date</th>
+							<th class="w-50">Worked On</th>
+							<th>Hours</th>
+							<th>Billable</th>
+							<th>Action</th>
+						</tr>
+					</thead>
+					<tbody>
+						{% for d in thisweekdata %}
+						<tr style="height:50px;opacity:0.8;" class="align-middle">
+							<td>{{d.Date}}</td>
+							<td class="w-25">
+								{% if d.project_id != None %}{{d.project_id.name}}{% else %}{{d.task.ticket_name}} {% endif %}<span class="badge bg-light text-dark ms-4">{{d.TaskType.TaskType}}</span>
+								{% if d.TaskType.TaskType == 'Issue' %}
+								<span class="badge rounded-1 {% if d.task.priority == 'high' %}text-bg-danger{% elif d.task.priority == 'medium' %}text-bg-info{% elif d.task.priority == 'low' %}text-bg-primary{% endif %}">{{d.task.priority}}</span>
+								{% endif %}
+							</td>
+							<td>{{d.Hours}}</td>
+							<td><input disabled class="form-check-input" type="checkbox" {% if d.Billable != True %}{% else %}Checked{% endif %} /></td>
+							<td>
+								<a onclick="getLog({{d.id}})"><i class="fas fa-solid fa-pen text-primary"></i></a>
+								<a  data-bs-toggle="modal" data-bs-target="#deleteLog"><i class="fas fa-sharp fa-solid fa-trash text-danger"></i></a>
+							</td>
+						</tr>
+						{% endfor %}
+					</tbody>
+					<tfoot>
+						<tr>
+							<td colspan="2">Total</td>
+							<td colspan="3">
+								{{thisweektotal.Hours__sum}}
+							</td>
+						</tr>
+					</tfoot>
+				</table>
+				{% else %}
+				<div class="align-center text-center">No Record Found For This Week!</div>
+				{% endif %}
+			<div>
+			<div class=" table-responsive-sm mt-4">
+				<h6 class="mt-4">Last Week<h6>
+				{% if lastweekdata %}
+				<table class="table  table-striped table-hover table-borderless shadow" id="weeklogTable" style="border-spacing: 0 10px;">
+					<thead>
+						<tr>
+							<th>Date</th>
+							<th class="w-50">Worked On</th>
+							<th>Hours</th>
+							<th>Billable</th>
+							<th>Action</th>
+						</tr>
+					</thead>
+					<tbody>
+						{% for d in lastweekdata %}
+						<tr style="height:50px;opacity:0.8;" class="align-middle">
+							<td>{{d.Date}}</td>
+							<td class="w-25">
+								{% if d.project_id != None %}{{d.project_id.name}}{% else %}{{d.task.ticket_name}} {% endif %}<span class="badge bg-light text-dark ms-4">{{d.TaskType.TaskType}}</span>
+								{% if d.TaskType.TaskType == 'Issue' %}
+								<span class="badge rounded-1 {% if d.task.priority == 'high' %}text-bg-danger{% elif d.task.priority == 'medium' %}text-bg-info{% elif d.task.priority == 'low' %}text-bg-primary{% endif %}">{{d.task.priority}}</span>
+								{% endif %}
+							</td>
+							<td>{{d.Hours}}</td>
+							<td><input disabled class="form-check-input" type="checkbox" {% if d.Billable != True %}{% else %}Checked{% endif %} /></td>
+							<td>
+								<a onclick="getLog({{d.id}})"><i class="fas fa-solid fa-pen text-primary"></i></a>
+								<a  data-bs-toggle="modal" data-bs-target="#deleteLog"><i class="fas fa-sharp fa-solid fa-trash text-danger"></i></a>
+								<a ><i class="fas fa-sticky-note text-primary"></i></a>
+							</td>
+						</tr>
+						{% endfor %}
+					</tbody>
+					<tfoot>
+						<tr>
+							<td colspan="2">Total</td>
+							<td colspan="3">
+								{{lastweektotal.Hours__sum}}
+							</td>
+						</tr>
+					</tfoot>
+				</table>
+				{% else %}
+				<div class="align-center text-center">No Record Found For Last Week!</div>
+				{% endif %}
+			</div>
+			<div class=" table-responsive-sm mt-4">
+				<h6>This Month<h6>
+				<table class="table table-striped table-hover" id="logTable" style="border-spacing: 0 10px;">
+					<thead>
+						<tr>
+							<th scope="col">Date</th>
+							<th scope="col" class="w-50">Worked On</th>
+							<th scope="col">Priority</th>
+							<th scope="col">Status</th>
+							<th scope="col">Hours</th>
+							<th scope="col">Billable</th>
+							<th scope="col">Action</th>
+
+						</tr>
+					</thead>
+					<tbody >
+						{% for d in all_data %}
+						<tr class="mt-2" style="height:50px;box-shadow: 0px 0px 3px 0px rgba(0,0,0,0.1);">
+							<td>{{d.Date}}</td>
+							<td class="w-25">{% if d.project_id != None %}{{d.project_id.name}}{% else %}{{d.task.ticket_name}} {% endif %}<span class="badge bg-light text-dark ms-4">{{d.TaskType.TaskType}}</span></td>
+							<td>
+								{% if d.TaskType.TaskType == 'Issue' %}
+								<span class="badge rounded-0 {% if d.task.priority == 'high' %}text-bg-danger{% elif d.task.priority == 'medium' %}text-bg-info{% elif d.task.priority == 'low' %}text-bg-primary{% endif %}">{{d.task.priority}}</span>
+								{% endif %}
+							</td>
+							<td>
+								{% if d.TaskType.TaskType == 'Issue' %}
+								<span class="badge rounded-0 {% if d.task.state == 'New' %}text-bg-primary{% elif d.task.state == 'InProgress' %}text-bg-info{% elif d.task.state == 'Completed' %}text-bg-success{% elif d.task.state == 'Hold' %}text-bg-warning{% elif d.task.state == 'Canceled' %}text-bg-danger{% endif %}">{{d.task.state}}</span>
+								{% endif %}
+							</td>
+							<td>{{d.Hours}}</td>
+							<td><input disabled class="form-check-input" type="checkbox" {% if d.Billable != True %}{% else %}Checked{% endif %} /></td>
+							<td>
+								<a onclick="getLog({{d.id}})"><i class="fas fa-solid fa-pen text-primary"></i></a>
+								<a  data-bs-toggle="modal" data-bs-target="#deleteLog"><i class="fas fa-sharp fa-solid fa-trash text-danger"></i></a>
+							</td>
+						</tr>
+						{% empty %}
+						<center><h1><b>Record Not Found.</b></h1></center>
+						{% endfor %}
+					</tbody>
+				</table>
+				<div class="clearfix" style="display: flex; justify-content: right;">
+					{% comment %} <div class="hint-text">Showing <b>5</b> out of <b>25</b> entries</div> {% endcomment %}
+					<nav aria-label="...">
+						<ul class="pagination">
+
+							{% if all_data.has_previous %}
+							{% comment %} <li class="page-item"><a href="/test1/?page=1" tabindex="-1">First</a></li> {% endcomment %}
+							<li class="page-item">
+								<a href="/Worklog/dailylog/?page={{all_data.previous_page_number}}"  class="page-link">Previous</a>
+							</li>
+							{% endif %}
+
+							{% for n in totalpage %}					
+							<li class="page-item"><a href="/Worklog/dailylog/?page={{n}}"  class="page-link">{{n}}</a></li>
+							{% comment %} <li class="page-item"><a href="#" class="page-link">2<span class="sr-only">(current)</span></a></li>
+							<li class="page-item"><a href="#" class="page-link">3</a></li> {% endcomment %}
+							{% endfor %}
+
+							{% if all_data.has_next %}
+							<li class="page-item"><a href="/Worklog/dailylog/?page={{all_data.next_page_number}}" class="page-link">Next</a></li>
+							{% endif %}
+						</ul>
+					</nav>
+				</div> 
+			</div>
+        </div>
+    </div>
+
+
+	
+
+	<!-- Add Modal HTML -->
+	<div class="modal fade" id="addLog" tabindex="-1" role="dialog" aria-labelledby="addLogLabel" aria-hidden="true">
+		<div class="modal-dialog modal-lg modal-dialog-centered" role="document">
+			<div class="modal-content rounded-1 container">
+				<form action="{% url 'addLog' %}" method="POST" id="LogForm">
+					{% csrf_token %}
+					<input type="hidden" id="logid" />
+					<div class="modal-header">						
+						<h4 class="modal-title">Add Record</h4>
+						<button class="btn-close" type="button" data-bs-dismiss="modal" aria-label="Close"></button>
+					</div>
+					<div class="modal-body ps-5 pe-5">
+						<div class="form-group row">
+							<label class="col-3">Date</label>							
+							<input name="date" id="date" type="date" class="form-control form-control-sm w-25 col-9 userfm" required>
+						</div>
+						<div class="form-group row mt-2">
+							<label class="col-3">TaskType</label>
+							<select name="tasktype" id="tasktype" class="form-control form-control-sm w-25 userfm" id="exampleFormControlSelect1" onchange="gettask()" required>
+								<option value="">Select</option>
+								{% for n in tasktype %}
+								<option value="{{n.id}}">{{n.TaskType}}</option>
+								{% endfor %}                            
+							</select>
+							<span class="col" id="project"></span>
+							<span class="col" id="issue"></span>
+							<span class="col" id="subproject"></span>
+						</div>
+						<div class="form-group row mt-2">
+							<label class="col-3">Hours</label>
+							<input name="hours" id="hours" type="number" class="form-control form-control-sm col-9 w-25 userfm" required>
+						</div>
+						<div class="form-group row">
+								<label class="col-3">Billable</label>
+								<input name="billable" id="billable" class="form-check-input col-9 rounded-1" type="checkbox">								
+						</div>
+						<div class="form-group row mt-2">
+							<label class="col-3">Workdone</label>
+							<div class="col-9 p-0 pe-2">
+								<textarea name="workdone" id="workdone" class="form-control userfm" rows="5" required></textarea>
+							</div>
+						</div>				
+					</div>
+					<div class="modal-footer pe-5">
+						<input type="button" class="btn btn-info btn-sm" data-bs-dismiss="modal" aria-label="Close" value="Cancel">
+						<input id="btnSave" type="submit" class="btn btn-success btn-sm" value="Save">
+						<a id="btnUpdate" class="btn btn-success btn-sm" onclick="updateLog()">Update</a>
+					</div>
+				</form>
+			</div>
+		</div>
+	</div>
+
+	<!-- Delete Modal HTML -->
+	<div class="modal fade" id="deleteLog" tabindex="-1" role="dialog" aria-labelledby="deleteLogLabel" aria-hidden="true">
+		<div class="modal-dialog modal-dialog-centered" role="document">
+			<div class="modal-content rounded-0">
+				<form>
+					<div class="modal-header">						
+						<h4 class="modal-title">Delete Record</h4>
+						<button class="btn-close" type="button" data-bs-dismiss="modal" aria-label="Close"></button>
+					</div>
+					<div class="modal-body">					
+						<p>Are you sure you want to delete these Records?</p>
+					</div>
+					<div class="modal-footer">
+						<input type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal" aria-label="Close" value="No">
+						<a href="" type="submit" class="btn btn-danger btn-sm"> Yes </a>
+					</div>
+				</form>
+			</div>
+		</div>
+	</div>	
+
+
+<!-- Button trigger modal -->
+<button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#exampleModal">
+	Launch demo modal
+  </button>
+  
+  <!-- Modal -->
+  <div class="modal fade" id="exampleModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+	<div class="modal-dialog">
+	  <div class="modal-content">
+		<div class="modal-header">
+		  <h5 class="modal-title" id="exampleModalLabel">Modal title</h5>
+		  <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+		</div>
+		<div class="modal-body">
+		  ...
+		</div>
+		<div class="modal-footer">
+		  <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+		  <button type="button" class="btn btn-primary">Save changes</button>
+		</div>
+	  </div>
+	</div>
+  </div>
+
+
+
+
+
+
+
+	<script>
+		$(document).ready(function () {
+			$('#logTable').dataTable({
+				bPaginate: false,
+				bInfo:false,
+				  pagingType: 'full_numbers',
+				  lengthChange: false
+		  });
+		});
+	
+	$(document).ready(function(){
+		$("#logBtn").click(function(){
+			$("#LogForm").trigger("reset");
+			$("#btnSave").show();
+			$("#btnUpdate").hide();
+		});
+	
+	});
+	
+	function gettask()
+	{
+		var task=$("#tasktype").val();
+		$("#project").empty();
+		$("#subproject").empty();
+		$("#issue").empty();
+		$("#project").hide();
+		$("#subproject").hide();
+		$("#issue").hide();
+		getproject(task)
+	}
+	
+	function getproject(task_id){
+			data={task:task_id};
+			$.ajax({
+				url:"{% url 'project' %}",
+				data:data,
+				method:"GET",
+				success:function(data){  
+					if(task_id==2)
+					{
+						$("#project").show();
+						var html="<select id='project_list'class='form-control form-control-sm' onchange='subproject()' >"+
+							'<option>Select Projects</option>';
+						for( a=0; a<data.result.length; a++){
+							html +="<option  value='"+data.result[a].id+"'>" +data.result[a].name +"</option>";
+						}
+						html+="</select>";
+						$("#project").html(html);   
+					}
+					if(task_id==1)
+					{
+						$("#issue").show();
+						var html="<select id='issue_list' name='issue_list'class='form-control form-control-sm'>"+
+							'<option>Select Task</option>';
+						for( a=0; a<data.result.length; a++){
+							html +="<option  value='"+data.result[a].id+"'>" +data.result[a].ticket_name +"</option>";
+						}
+						html+="</select>";
+						$("#issue").html(html);   
+					}
+				},  
+			});
+	}
+	
+	function subproject(){
+		pid=$('#project_list').val();
+		$.ajax({
+			data:{id:pid},
+			url:"{% url 'subproject' %}",
+			method:"GET",
+			success:function(data){
+			$("#subproject").show();
+			var html="<select id='sublist' name='sublist' class='form-control form-control-sm'><option>Select SubProjects</option>";
+			
+			for( a=0; a<data.result.length; a++){
+				html +="<option  value='"+data.result[a].id+"'>" +data.result[a].name +"</option>";
+			}
+			html+="</select>";
+			$("#subproject").html(html);   
+			},  
+		});
+	}
+	
+	function getLog(id){
+		$.ajax({
+			url:"{% url 'getLog' %}",
+			data:{id:id},
+			method:"GET",
+			success:function(data){
+			//console.log(data.result);
+				for(i=0;i<data.result.length;i++)
+				{
+					$("#logid").val(data.result[i].id);
+					$("#date").val(data.result[i].Date);
+					$("#tasktype").val(data.result[i].TaskType_id)
+					$("#hours").val(data.result[i].Hours)
+					$("#workdone").val(data.result[i].Workdone)
+					if(data.result[i].Billable == true){
+						$("#billable").prop("checked", true);
+					}
+					else{
+						$("#billable").prop("checked", false);
+					}
+					
+				}
+				$("#btnSave").hide();
+				$("#btnUpdate").show();
+				$("#addLog").modal('show');
+			},  
+		});
+	}
+	
+	function updateLog(){
+		id=$("#logid").val();
+		date=$("#date").val();
+		tasktype=$("#tasktype").val();
+		project=$("#sublist").val();
+		task=$("#issue_list").val();
+		hour=$("#hours").val()
+		work=$("#workdone").val()
+		billable=$("#billable").val();
+		csr =$("input[name=csrfmiddlewaretoken]").val();
+		alert(project);
+		data={id:id,date:date,tasktype:tasktype,sublist:project,issue_list:task,workdone:work,hours:hour,billable:billable,action:'update',csrfmiddlewaretoken:csr}
+		$.ajax({
+			url:"{% url 'addLog' %}",
+			data:data,
+			method:"POST",
+			success:function(data){
+			//console.log(data.result);
+			$("#addLog").modal('hide');
+			},  
+		});
+	}
+	</script>
+{% endblock %}

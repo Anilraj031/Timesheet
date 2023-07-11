@@ -1,0 +1,473 @@
+{% extends "base.html" %}
+{% block title %}Leave Details{% endblock %}
+{% block script %}
+<style>
+  .userfm {
+    border-top:0 !important;
+    border-left:0 !important;
+    border-right:0 !important;
+    border-bottom:1px solid grey !important;
+    border-radius: 0 !important;
+  }
+</style>
+{% endblock %}
+{% block content %}
+<div class="">
+    <div>
+      <div class="row">
+          <div class="col-md-12">
+              <div class="col-md-12 row">
+                <h4 class="text-left mb-4" >Leave Details&nbsp;</h4>
+                <div >
+                {% if user.is_superuser or perms.Attendance.view_leave %}
+                  <select class="form-control form-control-sm col-sm-2 mb-3 w-25" id="user_s" style="float:left;" onchange="getLeave()">
+                    <option value="0">All Users</option>
+                    {% for n in users %}
+                    <option value="{{n.id}}">{{n.username}}</option>
+                    {% endfor %}
+                  </select>
+                  <select class="form-control form-control-sm col-sm-2 w-25" id="chart_option" style="float:left;" onchange="selectCharts()">
+                    <option value="">Charts</option>
+                    <option value="b_chart">Bar Chart</option>
+                    <option value="table">Table</option>
+                    <option value="3">Declined</option>
+                  </select>
+                  {% endif %}
+                  <select class="form-control form-control-sm col-sm-2 w-25" id="status" style="float:left;" onchange="getLeave()">
+                    <option value="0">All Status</option>
+                    <option value="2">Pending</option>
+                    <option value="1">Approved</option>
+                    <option value="3">Declined</option>
+                  </select>
+                  <a style="float:right;" class="btn btn-sm btn-danger" type="button" data-bs-toggle="modal" data-bs-target="#leave_modal" onclick="setModal()" id="leaveRequest">Request Leave</a>
+                </div>
+              </div>
+              <div  id="change_content" class="table-wrap table-responsive-sm" style="clear:right;">
+                  <table class="table table-bordered text-center shadow">
+                    <thead>
+                      <tr>
+                        <th>Requested</th>
+                        <th>Type</th>
+                        <th>From</th>
+                        <th>To</th>
+                        <th>Approval</th>
+                        {% if user.is_superuser %}<th>User</th>{% endif %}
+                        <th>Action</th>
+                      </tr>
+                    </thead>
+                    <tbody id="tbody_leave">
+                      {% for n in result %}
+                      <tr style="background-color:{% if n.approval.name == 'Pending' %}lightskyblue{% elif n.approval.name == 'Approved' %}lightgreen{% else %}antiquewhite{% endif %};">
+                        <td>{{n.date}}</td><td>{{n.type.name}}</td><td>{{n.leave_from}}</td><td>{{n.leave_to}}</td>
+                        <td >{{n.approval.name}}</td>
+                        {% if user.is_superuser %}
+                        <td>{{n.user}}</td>
+                        <td>
+                          <a  id="a_detailss" onclick="updateLeave({{n.id}})">
+                            <!--edit icon svg-->
+                            <i class="fas fa-solid fa-pen text-primary"></i>
+                        </a>
+                        <!--delete icon-->
+                        <a  >
+                          <i class="fas fa-sharp fa-solid fa-trash text-danger"></i>
+                        </a>
+                        </td>
+                        {% else %}
+                        <td>
+                          <a  href="#" id="a_detailss" onclick="updateLeave({{n.id}})">
+                            <!--edit icon svg-->
+                            <i class="fas fa-solid fa-pen text-primary"></i>
+                        </a>
+                        </td>
+                        {% endif %}
+                        
+                      </tr>
+                      {% endfor%}
+                    </tbody>
+                  </table>
+                </div>
+            </div>
+
+            <!--Charts-->
+              <div id='barchart_div' style="width:100% !important;display:none;">
+                <div class="card shadow" style="width:100% !important;">
+                  <div class="card-header row">
+                      <div class="col-md-8">
+                        <h6 class="m-0 font-weight-bold text-primary">Bar Chart Test</h6>
+                      </div>
+                      <div class="col-md-4">
+                        <select class="form-control form-control-sm col-sm-6" id="chart_option" style="float:left;" onchange="selectCharts()">
+                          <option value="">Month</option>
+                          <option value="b_chart">Bar Chart</option>
+                          <option value="table">Table</option>
+                          <option value="3">Declined</option>
+                        </select>
+                        <select class="form-control form-control-sm col-sm-6" id="chart_option" style="float:left;" onchange="selectCharts()">
+                          <option value="">Year</option>
+                          <option value="b_chart">Bar Chart</option>
+                          <option value="table">Table</option>
+                          <option value="3">Declined</option>
+                        </select>
+                      </div>
+                  </div>
+                  <div class="card-body">
+                      <div class="chart-bar">
+                        <canvas id="barChart" ></canvas>
+                      </div>
+                  </div>
+              </div>
+          </div>
+          <!--end bar chart-->
+          <br /><br />
+            
+
+        </div>
+    </div>
+  </div>
+<!--Test-->
+
+
+<!-- Request Leave Modal -->
+<div class="modal fade" id="leave_modal" tabindex="-1" role="dialog" aria-labelledby="leaveModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered modal-lg" role="document">
+    <div class="modal-content rounded-0">
+      <div class="modal-header">
+        <h5 class="modal-title" id="leaveModalLabel">Request Leave!</h5>
+        <button class="btn-close" type="button" data-bs-dismiss="modal" aria-label="Close"></button>
+    </div>
+      <div class="modal-body">
+        <form action="" class="container-fluid" id="leaveForm">
+          {% csrf_token %}
+          <div class="form-group">
+            <label for="exampleFormControlSelect1">Leave Type</label>
+            <select class="form-control userfm w-50" id="leave_type" onchange="checkLeave()">
+              <option value="0">Select Leave Type</option>
+              {% for n in LeaveTypes %}
+                <option value="{{n.id}}">{{n.name}}</option>
+              {% endfor %}
+            </select>
+            <span style="display:none;" id="checkLeave"></span>
+          </div>
+          <div class="form row mt-4">
+              <div class="form-group col-md-6">
+                <label for="inputEmail4">Leave From</label>
+                <input type="date" class="form-control userfm" id="leave_start" placeholder="Email" onchange="getDate()">
+                <span id="emessage"></span>
+              </div>
+              <div class="form-group col-md-6">
+                <label for="inputPassword4">Leave To</label>
+                <input type="date" class="form-control userfm" id="leave_end" placeholder="Password">
+              </div>
+            </div>
+          <div class="form-group mt-4">
+            <label for="exampleFormControlTextarea1">Details</label>
+            <textarea class="form-control userfm" id="leave_details" rows="3"></textarea>
+          </div>
+        </form>
+      </div>
+      <div class="modal-footer">
+        <input type="hidden" value="" id=leaveId />
+        {% if user.is_superuser or perms.attendance.view_leaves %}
+        <button id="grantLeave" class="btn btn-sm btn-success" onclick="update_leave(1)">Grant Leave</button>
+        <a id="declineLeave" class="btn btn-sm btn-danger" onclick="update_leave(3)">Decline</a>
+        {% endif %}
+        <input id="reqLeave" class="btn btn-info btn-sm" type="button" value="Request" onclick="make_leave();"/>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+
+
+
+
+<script>
+  $(document).ready(function(){
+    $("#reqLeave").show();
+    $("#grantLeave").hide();
+    $("#declineLeave").hide();
+    $("#leaveRequest").click(function(){
+      $("#leaveForm").trigger("reset");
+    });
+  })
+
+  function setModal(){
+    $("#reqLeave").show();
+      $("#grantLeave").hide();
+      $("#declineLeave").hide();
+  }
+    function getDate()
+    {
+      date = $("#leave_start").val();
+      date1 = new Date($("#leave_start").val());
+      today = new Date()
+      if(date1<today){
+        $("#emessage").html("<p style='color:red;'>Please select future date!</p>");
+      }
+      else{
+        $("#emessage").hide();
+        $("#leave_end").val(date)
+      }
+    }
+
+    function make_leave()
+    {
+      var data='';
+      var leave_type = $("#leave_type").val();
+      var leave_start = $("#leave_start").val();
+      var leave_end = $("#leave_end").val();
+      var leave_details = $("#leave_details").val();
+      var csr =$("input[name=csrfmiddlewaretoken]").val();
+      //alert(leave_type);
+      $('#leave_modal').modal('hide');
+      data ={type:leave_type,leave_from:leave_start,leave_to:leave_end,details:leave_details,csrfmiddlewaretoken:csr};
+      
+      $.ajax({
+          url: "{% url 'requestLeave' %}",
+          method: "POST",
+          data: data,
+          success: function(data){
+            var html = '';
+                  console.log(data.result);
+                  for(i=0;i<data.result.length;i++)
+                  {
+                    if(data.result[i].approval=='Pending')
+                    {
+                        html += '<tr style="background-color:lightskyblue">';
+                    }
+                    else if(data.result[i].approval=='Approved')
+                    {
+                      html += '<tr style="background-color:lightgreen">';
+                    }
+                    else{
+                      html += '<tr style="background-color:antiquewhite">';
+                    }
+                    html += '<td>'+data.result[i].date+'</td>'+
+                      '<td>'+data.result[i].type+'</td>'+
+                      '<td>'+data.result[i].leave_from+'</td>'+
+                      '<td>'+data.result[i].leave_to+'</td>'+
+                      '<td>'+data.result[i].approval+'</td>';
+                      if(is_admin=='True')
+                      {
+                        html +='<td>'+data.result[i].user+'</td>';
+                      }
+                      
+                      if((is_admin !='True'))
+                      {
+                        html+='<td><a  href="LeaveDetails/'+data.result[i].id+'" id="a_details"><i class="bi bi-pencil-square"></i></a></td>';
+                      }
+                    else{
+                          html+='<td><a  href="LeaveDetails/'+data.result[i].id+'" id="a_details"><i class="bi bi-x-square"></i></a></td>'
+                    }
+                  }
+                  $("#tbody_leave").html(html); 
+          },
+      });
+    }
+
+    function getLeave()
+    {
+      var user = $("#user_s").val();
+      var stat = $("#status").val();
+      data = {'user':user,'status':stat};
+
+      $.ajax({
+        url: "{% url 'getLeave' %}",
+        method: "POST",
+        data: data,
+        success: function(data){
+            var html = '';
+                console.log(data.result);
+                for(i=0;i<data.result.length;i++)
+                {
+                  if(data.result[i].approval=='Pending')
+                    {
+                        html += '<tr style="background-color:lightskyblue">';
+                    }
+                    else if(data.result[i].approval=='Approved')
+                    {
+                      html += '<tr style="background-color:lightgreen">';
+                    }
+                    else{
+                      html += '<tr style="background-color:antiquewhite">';
+                    }
+                    html+='<td>'+data.result[i].date+'</td>'+
+                    '<td>'+data.result[i].type+'</td>'+
+                    '<td>'+data.result[i].leave_from+'</td>'+
+                    '<td>'+data.result[i].leave_to+'</td>'+
+                    '<td>'+data.result[i].approval+'</td>';
+                    if(is_admin=='True')
+                    {
+                      html +='<td>'+data.result[i].user+'</td>';
+                   }
+                    if((is_admin !='True'))
+                    {
+                      html+='<td><a  href="LeaveDetails/'+data.result[i].id+'" id="a_details"><i class="bi bi-pencil-square"></i></a></td>';
+                    }
+                  else{
+                        html+='<td><a  href="LeaveDetails/'+data.result[i].id+'" id="a_details"><i class="bi bi-x-square"></i></a></td>'
+                  }
+                }
+                $("#tbody_leave").html(html); 
+        },
+    });
+    }
+
+    function checkLeave()
+    {
+      leave_type = $("#leave_type").val();
+      data = {id:parseInt(leave_type)};
+      if(leave_type != 0){
+        $.ajax({
+          url: "{% url 'checkLeave' %}",
+          method: "POST",
+          data: data,
+          success: function(data){
+              //alert("Available:"+data.available+"--Taken:"+data.taken);
+              $("#checkLeave").show();
+              if(data.taken >= data.available)
+              {
+                $("#checkLeave").html("<p style='color:red;'>Allowed Leave Days: "+data.available+", Leave Taken: "+data.taken+"<br>You have already taken alloted leave days!</p>");
+              }
+              else{
+                $("#checkLeave").html("<p style='color:green;'>Allowed Leave Days: "+data.available+", Leave Taken: "+data.taken+"</p>");
+              }
+              
+          },
+        });
+      }
+    }
+
+    function updateLeave(id)
+    {
+      $("#reqLeave").hide();
+      $("#leaveId").val(id);
+      $('#leave_modal').modal('show');
+      $('#leaveModalLabel').text("Update Leave");
+      data={id:id};
+      $.ajax({
+        url: "{% url 'LeaveDetails' %}",
+        method: "POST",
+        data: data,
+        success: function(data){
+             //console.log(data.result);
+             var status="";
+             for(i=0;i<data.result.length;i++){
+              status = data.result[i].approval_id;
+              $("#leave_type").val(data.result[i].type_id);
+              $("#leave_start").val(data.result[i].leave_from);
+              $("#leave_end").val(data.result[i].leave_to);
+              $("#leave_details").val(data.result[i].details);
+             }
+             if(status=='2')
+             {
+                $("#grantLeave").show();
+                $("#declineLeave").show();
+                $("#reqLeave").hide();
+             }
+             else if(status == '1')
+             {
+                $("#declineLeave").show();
+                $("#reqLeave").hide();
+                $("#grantLeave").hide();
+             }
+             else{
+              $("#declineLeave").hide();
+              $("#reqLeave").hide();
+              $("#grantLeave").show();
+             }
+        },
+    });
+    }
+
+    function update_leave(status)
+    {
+      id=$("#leaveId").val();
+      data = {'status':status,'leave_id':id};
+      //alert(status+':'+id);
+      $.ajax({
+          url: "{% url 'updateLeave' %}",
+          method: "POST",
+          data: data,
+          success: function(data){
+                
+          },
+      });
+    }
+</script>
+<script>
+
+  function selectCharts()
+  {
+    var name = $("#chart_option").val();
+    if(name=='b_chart'){
+      getChartData();
+    }
+    if(name=='table'){
+      $("#change_content").show();
+      $("#barchart_div").hide();
+    }
+  }
+
+  function getChartData()
+  {
+    $.ajax({
+      url: "{% url 'getLeaveCount' %}",
+      method: "GET",
+      success: function(get_data){
+          console.log(get_data.app+':'+get_data.pend+':'+get_data.dec);
+          loadBarChart(get_data);
+      },
+  });
+  }
+
+
+  function loadBarChart(get_data)
+  {
+    $("#change_content").hide();
+    $("#barchart_div").show();
+      var ctxB = document.getElementById("barChart").getContext('2d');
+      var myBarChart = new Chart(ctxB, {
+        type: 'bar',
+        data: {
+          labels: ["Declined", "Pending", "Approved", "Green", "Purple", "Orange"],
+          datasets: [{
+            label: 'Employees Leave Details',
+            //data: [12, 19, 3, 5, 2, 3],
+            data:[get_data.dec,get_data.pend,get_data.app],
+            backgroundColor: [
+              'rgba(255, 99, 132, 0.2)',
+              'rgba(54, 162, 235, 0.2)',
+              'rgba(255, 206, 86, 0.2)',
+              'rgba(75, 192, 192, 0.2)',
+              'rgba(153, 102, 255, 0.2)',
+              'rgba(255, 159, 64, 0.2)'
+            ],
+            borderColor: [
+              'rgba(255,99,132,1)',
+              'rgba(54, 162, 235, 1)',
+              'rgba(255, 206, 86, 1)',
+              'rgba(75, 192, 192, 1)',
+              'rgba(153, 102, 255, 1)',
+              'rgba(255, 159, 64, 1)'
+            ],
+            borderWidth: 1
+          }]
+        },
+        options: {
+          maintainAspectRatio: false,
+          scales: {
+            yAxes: [{
+              ticks: {
+                beginAtZero: true
+              }
+            }]
+          }
+        }
+      });
+  }
+  
+  </script>
+{% endblock %}
+                

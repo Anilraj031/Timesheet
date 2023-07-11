@@ -1,0 +1,33 @@
+{% extends "base.html" %}
+{% block title %}Customers{% endblock %}
+{% block script %}
+{% endblock %}
+{% block content %}
+<div>
+    <button class="btn btn-success btn-sm rounded-1">New Customer</button>
+    <div class=" table-responsive-sm">
+        <table class="table table-sm table-hover mt-4">
+            <thead>
+                <tr>
+                    <td>Name</td>
+                    <td>Address</td>
+                    <td>Contact Email</td>
+                    <td>Contract Hour</td>
+                    <td>Status</td>
+                </tr>
+            </thead>
+            <tbody>
+                {% for customer in customers %}
+                <tr>
+                    <td><a href="{% url 'customerDetails' id=customer.id %}">{{customer.name}}</a></td>
+                    <td>{{customer.address}}</td>
+                    <td>{{customer.contact}}</td>
+                    <td>{{customer.contract_hr}}</td>
+                    <td>{{customer.status}}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

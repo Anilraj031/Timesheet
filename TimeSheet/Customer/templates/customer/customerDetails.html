@@ -1,0 +1,25 @@
+{% extends "base.html" %}
+{% block title %}Customer - {{company.name}}{% endblock %}
+{% block script %}
+{% endblock %}
+{% block content %}
+<div class="container">
+    <h6>Employees on {{company.name}}</h6>
+    <table class="table table-hover table-striped table-sm">
+        <thead>
+            <tr>
+                <th>Email</th>
+                <th>Designation</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for d in details %}
+            <tr>
+                <td>{{d.email}}</td>
+                <td>{{d.department}}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}

@@ -1,0 +1,413 @@
+{% extends "base.html" %}
+{% block script %}
+<title>Timesheet-Home1</title>
+<style>
+  
+</style>
+{% endblock %}
+{% block content %}
+
+<div class="container-fluid">
+
+    <!-- Page Heading Original
+    <div class="d-sm-flex align-items-center justify-content-between mb-4">
+        <h1 class="h3 mb-0 text-gray-800">Dashboard</h1>
+        <a href="#" class="d-none d-sm-inline-block btn btn-sm btn-primary shadow-sm"><i
+                class="fas fa-download fa-sm text-white-50"></i> Generate Report</a>
+    </div>
+ -->
+    {% if user.is_superuser %}
+    <!-- Content Row -->
+    <div class="row">
+        <!-- Earnings (Monthly) Card Example -->
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card border-left shadow h-100 py-2 bg-gradient-success text-light rounded-1">
+                <div class="card-body ">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs font-weight-bold text-uppercase mb-1">
+                                <h6>Active Users</h6></div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-800 ml-2">{{active}}</div>
+                        </div>
+                        <div class="col-auto">
+                            <i class="fas fa-solid fa-user fa-2x text-gray-300"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Earnings (Monthly) Card Example -->
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card bg-gradient-primary shadow h-100 py-2 text-light rounded-1">
+                <div class="card-body">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs font-weight-bold text-uppercase mb-1">
+                                <h6>Total Users</h6></div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-800 ml-2">{{total}}</div>
+                        </div>
+                        <div class="col-auto">
+                            <i class="fas fa-dollar-sign fa-2x text-gray-300"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Earnings (Monthly) Card Example -->
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card border-left-danger shadow h-100 py-2 bg-gradient-danger text-light rounded-1">
+                <div class="card-body">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs font-weight-bold  text-uppercase mb-1">
+                                <h6>On Leave Today</h6>
+                            </div>
+                            <div class="row no-gutters align-items-center">
+                                <div class="col-auto">
+                                    <div class="h5 mb-0 mr-2 font-weight-bold text-gray-800 ml-2">{{onleave}}</div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-auto">
+                            <i class="fas fa-clipboard-list fa-2x text-gray-300"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Pending Requests Card Example -->
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card shadow h-100 py-2 bg-gradient-warning text-light rounded-1">
+                <div class="card-body">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs font-weight-bold  text-uppercase mb-1">
+                                <h6>Pending Approval</h6></div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-800 ml-2">{{pending}}</div>
+                        </div>
+                        <div class="col-auto">
+                            <i class="fas fa-comments fa-2x text-gray-300"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+    <!-- Content Row -->
+
+    <div class="row">
+
+        <!-- Area Chart -->
+        <div class="col-xl-8 col-lg-7">
+            <div class="card shadow mb-4">
+                <!-- Card Header - Dropdown -->
+                <div
+                    class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
+                    <h6 class="m-0 font-weight-bold text-primary">Attendance</h6>
+                    <div class="dropdown no-arrow">
+                        <a class="dropdown-toggle" href="#" role="button" id="dropdownMenuLink"
+                            data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                            <i class="fas fa-ellipsis-v fa-sm fa-fw text-gray-400"></i>
+                        </a>
+                        <div class="dropdown-menu dropdown-menu-right shadow animated--fade-in"
+                            aria-labelledby="dropdownMenuLink">
+                            <div class="dropdown-header">Dropdown Header:</div>
+                            <a class="dropdown-item" href="#">Action</a>
+                            <a class="dropdown-item" href="#">Another action</a>
+                            <div class="dropdown-divider"></div>
+                            <a class="dropdown-item" href="#">Something else here</a>
+                        </div>
+                    </div>
+                </div>
+                <!-- Card Body -->
+                <div class="card-body">
+                    <div class="chart-area">
+                        <canvas id="barChart" ></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Pie Chart -->
+        <div class="col-xl-4 col-lg-5">
+            <div class="card shadow mb-4">
+                <!-- Card Header - Dropdown -->
+                <div
+                    class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
+                    <h6 class="m-0 font-weight-bold text-primary">Hours Achieved This Month</h6>
+                    <div class="dropdown no-arrow">
+                        <a class="dropdown-toggle" href="#" role="button" id="dropdownMenuLink"
+                            data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                            <i class="fas fa-ellipsis-v fa-sm fa-fw text-gray-400"></i>
+                        </a>
+                        <div class="dropdown-menu dropdown-menu-right shadow animated--fade-in"
+                            aria-labelledby="dropdownMenuLink">
+                            <div class="dropdown-header">Dropdown Header:</div>
+                            <a class="dropdown-item" href="#">Action</a>
+                            <a class="dropdown-item" href="#">Another action</a>
+                            <div class="dropdown-divider"></div>
+                            <a class="dropdown-item" href="#">Something else here</a>
+                        </div>
+                    </div>
+                </div>
+                <!-- Card Body -->
+                <div class="card-body">
+                    <div class="chart-pie"><!--
+                        <div style="width: 100%; height: 40px; position: absolute; top: 50%; left: 0; margin-top: 5px; line-height:19px; text-align: center; z-index: 999999999999999">
+                            <h3>80Hr</h3>
+                        </div>-->
+                        <canvas id="doughnutChart"></canvas>
+                    </div>
+                    <div class="mt-4 text-center small">
+                        <span class="mr-2">
+                            <i class="fas fa-circle text-primary"></i> Direct
+                        </span>
+                        <span class="mr-2">
+                            <i class="fas fa-circle text-success"></i> Social
+                        </span>
+                        <span class="mr-2">
+                            <i class="fas fa-circle text-info"></i> Referral
+                        </span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="">
+        <!-- Area Chart -->
+        <div class="col-xl-12 col-lg-12">
+            <div class="card shadow mb-4">
+                <!-- Card Header - Dropdown -->
+                <div
+                    class="card-header  d-flex flex-row align-items-center justify-content-between">
+                    <h6 class="m-0 font-weight-bold text-primary">Current Year Progress</h6>
+                    <div class="dropdown no-arrow">
+                        <a class="dropdown-toggle" href="#" role="button" id="dropdownMenuLink"
+                            data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                            <i class="fas fa-ellipsis-v fa-sm fa-fw text-gray-400"></i>
+                        </a>
+                        <div class="dropdown-menu dropdown-menu-right shadow animated--fade-in"
+                            aria-labelledby="dropdownMenuLink">
+                            <div class="dropdown-header">Dropdown Header:</div>
+                            <a class="dropdown-item" href="#">Action</a>
+                            <a class="dropdown-item" href="#">Another action</a>
+                            <div class="dropdown-divider"></div>
+                            <a class="dropdown-item" href="#">Something else here</a>
+                        </div>
+                    </div>
+                </div>
+                <!-- Card Body -->
+                <div class="card-body">
+                    <div class="">
+                        <canvas id="lineChart" class="chart-area"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+   
+
+</div>
+
+<script>
+getChartData();
+function getChartData()
+{
+    $.ajax({
+    url: "{% url 'getAttendanceCount' %}",
+    method: "GET",
+    success: function(get_data){
+        //console.log(get_data.onLeave+':'+get_data.users+':'+get_data.active);
+        loadBarChart(get_data);
+    },
+});
+}
+
+function loadBarChart(get_data)
+{
+    var ctxB = document.getElementById("barChart").getContext('2d');
+    var myBarChart = new Chart(ctxB, {
+    type: 'bar',
+    data: {
+        labels: ["Declined", "Pending", "Approved", "Green", "Purple", "Orange"],
+        datasets: [{
+            label: 'Active Users',
+            data:[get_data.users,get_data.users,get_data.users],
+            backgroundColor: 'rgba(54, 162, 235, 1)',
+            borderColor: 'rgba(54, 162, 235, 1)',
+            borderWidth: 1
+        },
+        {
+            label: 'Attendace Made',
+            data:[get_data.active,get_data.active,get_data.active],
+            backgroundColor: 'rgba(153, 102, 255, 1)',
+            borderColor: 'rgba(153, 102, 255, 1)',
+            borderWidth: 1
+            },
+        {
+            label: 'Leave Taken',
+            data:[get_data.onLeave,get_data.onLeave,get_data.onLeave],
+            backgroundColor: 'rgba(255, 99, 132, 1)',
+            borderColor: 'rgba(255,99,132,1)',
+            borderWidth: 1
+            }],
+    },
+    options: {
+        maintainAspectRatio: false,
+        scales: {
+        yAxes: [{
+            ticks: {
+            beginAtZero: true
+            }
+        }]
+        }
+    }
+    });
+}
+getDChartData();
+function getDChartData()
+{
+    $.ajax({
+    url: "{% url 'getHours' %}",
+    method: "GET",
+    success: function(data1){
+        //console.log(get_data.onLeave+':'+get_data.users+':'+get_data.active);
+        //console.log(get_data);
+        //loadDChart(get_data);
+        //console.log(get_data.users[0].hour.hour__sum)
+        label_name = [];
+    label_data = [];
+    for(i=0;i<data1.users.length;i++){
+        label_name[i]=""+data1.users[i].user;
+        if(data1.users[i].hour != null)
+        {
+            label_data[i]=""+data1.users[i].hour;
+        }
+        else{
+            label_data[i]="0";
+        }
+        
+    }
+    console.log(data1.requiredHr);
+    Chart.pluginService.register({
+        beforeDraw: function(chart) {
+          var width = chart.chart.width,
+              height = chart.chart.height,
+              ctx = chart.chart.ctx,
+              type = chart.config.type;
+      //console.log(chart.config.data.datasets[0].data[2]);
+          if (type == 'doughnut')
+          {
+            //var percent = Math.round(((chart.config.data.datasets[0].data[0]+chart.config.data.datasets[0].data[1]+chart.config.data.datasets[0].data[2]) * 100) / 160);
+            var oldFill = ctx.fillStyle;
+            var percent = (data1.hour/(data1.requiredHr*4))*100;
+            
+            var fontSize = ((height - chart.chartArea.top) / 100).toFixed(2);
+            
+            ctx.restore();
+            ctx.font = fontSize + "em sans-serif";
+            ctx.textBaseline = "middle"
+      
+            var text = percent + "%",
+                textX = Math.round((width - ctx.measureText(text).width) / 2),
+                textY = (height + chart.chartArea.top) / 2;
+                  
+            ctx.fillStyle = chart.config.data.datasets[0].backgroundColor[0];
+            ctx.fillText(text, textX, textY);
+            ctx.fillStyle = oldFill;
+            ctx.save();
+          }
+        }
+      });
+
+    new Chart(document.getElementById("doughnutChart"), {
+        type: "doughnut",
+        data: {
+          labels: label_name,//[data1.users[0].user, data1.users[1].user, data1.users[2].user],
+          datasets: [{
+            data: label_data,//[data1.users[0].hour, data1.users[1].hour, data1.users[2].hour],
+            //data:[]
+            backgroundColor: ['rgba(255, 99, 132, 1)',
+            'rgba(54, 162, 235, 1)',
+            'rgba(255, 206, 86, 1)',
+              "#dee2e6"
+            ],
+            borderColor: "transparent"
+          }]
+        },
+        options: {
+          maintainAspectRatio: false,
+          cutoutPercentage: 65,
+        }
+      });
+    },
+});
+}
+
+
+function loadDChart(data1)
+{//doughnut
+    
+}
+
+getAreaData();
+function getAreaData()
+{
+    $.ajax({
+        url: "{% url 'getMonthlyHours' %}",
+        method: "GET",
+        success: function(data){
+            //console.log(data);
+            var getdata =[]
+            for(i=0;i<12;i++){
+                if(data.test[i+1].Hours__sum != null)
+                {
+                    getdata[i] = ""+data.test[i+1].Hours__sum;
+                }
+                else{
+                    getdata[i] = "0";
+                }
+            }
+            //line
+            var ctxL = document.getElementById("lineChart").getContext('2d');
+            var myLineChart = new Chart(ctxL, {
+            type: 'line',
+            data: {
+                labels: ["January", "February", "March", "April", "May", "June", "July"],
+                datasets: [{
+                label: "Monthly Hours for "+data.year,
+                data: getdata,//[data.jan.Hours__sum, data.feb.Hours__sum, 0, 0, 0, 0, 0],
+                backgroundColor: [
+                    'rgba(78, 115, 223, 0.05)',
+                ],
+                borderColor: [
+                    'rgba(78, 115, 223, 1)',
+                ],
+                borderWidth: 3,
+                pointRadius: 3,
+                pointBackgroundColor: "rgba(78, 115, 223, 1)",
+                pointBorderColor: "rgba(78, 115, 223, 1)",
+                pointHoverRadius: 3,
+                pointHoverBackgroundColor: "rgba(78, 115, 223, 1)",
+                pointHoverBorderColor: "rgba(78, 115, 223, 1)",
+                pointHitRadius: 10,
+                pointBorderWidth: 3,
+                },
+                
+                ]
+            },
+            options: {
+                responsive: true
+            }
+            });
+        },
+    });
+    
+}
+</script>
+{% endblock %}
