@@ -54,7 +54,7 @@
 			
 			<div class=" table-responsive-sm">
 				<p class="mt-4">This Week</p>
-				<table class="table  table-sm table-hover table-light shadow rounded" id="thisweeklogTable" >
+				<table class="table display table-sm table-hover table-light shadow rounded" id="thisweeklogTable" >
 					<thead>
 						<tr class="align-middle ">
 							<th></th>
@@ -67,10 +67,10 @@
 					</thead>
 					<tbody>
 						{% for d in thisweekdata %}
-						<tr style="height:50px;opacity:0.8;" class="align-middle">
-							<td class="details-control">
+						<tr style="height:50px;opacity:0.8;" class="align-middle" id="testANil">
+							<td class="p-2 details-control">
 								<span style="visibility:hidden">{{d.id}}</span>
-						   	</td>
+						   </td>
 							<td>{{d.Date}}</td>
 							<td class="w-25">
 								{% if d.project_id != None %}{{d.project_id.name}}{% else %}{{d.task.ticket_name}} {% endif %}<span class="badge bg-light text-dark ms-4">{{d.TaskType.TaskType}}</span>
@@ -228,7 +228,7 @@
 	
 
 	<!-- Add Modal HTML -->
-	<div class="modal fade" id="addLog" tabindex="-1" role="dialog" aria-labelledby="addLogLabel" aria-hidden="true">
+	<div class="modal" id="addLog" tabindex="-1" role="dialog" aria-labelledby="addLogLabel" aria-hidden="true">
 		<div class="modal-dialog modal-lg modal-dialog-centered" role="document">
 			<div class="modal-content rounded-0 container">
 				<form action="{% url 'addLog' %}" method="POST" id="LogForm">
@@ -332,6 +332,8 @@
 			else {
 				// Open this row
 				get_id = row.data()[0].slice(32, 34);
+				//console.log(row.id());
+				//console.log(row.data()[0]);
 				//alert(get_id);
 				//row.child( format(row.data()) ).show();
 				row.child( format(get_id) ).show();
@@ -497,7 +499,7 @@ function getuserLog(){
 		method: "POST",
 		data: data,
 		success: function(data){
-			console.log(data.result.lastweekdata);
+			//console.log(data.result.lastweekdata);
 			addUsersLogTable(data.result.lastweekdata,'lastweek');
 			addUsersLogTable(data.result.thisweekdata,'thisweek')
 		},
@@ -538,7 +540,7 @@ function addUsersLogTable(data,week)
 			html1+='Checked';}
 		html1+='/>';
 
-		dataset1.push('<td class="details-control"><span style="visibility:hidden">'+data[i].id+'</span></td>');
+		dataset1.push('<span style="visibility:hidden">'+data[i].id+'</span>');
 		dataset1.push(data[i].date,html,data[i].hours,html1);
 		dataset1.push('<a onclick="getLog('+data[i].id+')"><i class="fas fa-solid fa-pen text-primary"></i></a>');
 		dataset.push(dataset1);
@@ -551,13 +553,26 @@ function addUsersLogTable(data,week)
 	if(week=='lastweek')
 	{
 		table = $('#weeklogTable').DataTable();
+		
 	}
 	else if(week == 'thisweek')
 	{
 		table = $('#thisweeklogTable').DataTable();
+		
 	}
 	table.clear();
 	table.rows.add(dataset).draw();
+	//alert(data.length);
+	if(data.length != 0)
+	{
+		$("table tbody tr").each(function() {
+			//height:50px;opacity:0.8;
+			$(this).css('height','50px');
+			var item = $(this).find("td:first");
+			item.addClass('p-2 details-control');
+		  });
+	}
+	
 }
 
 
@@ -595,7 +610,7 @@ function addUsersLogTableBackup(data)
 					html1+='Checked';}
 				html1+='/>';
 
-				dataset1.push('<td class="details-control"><span style="visibility:hidden">'+data.result.lastweekdata[i].id+'</span></td>');
+				dataset1.push('<td class="details-control" style="background: url("https://www.datatables.net/examples/resources/details_open.png") no-repeat center center;cursor: pointer;" ><span style="visibility:hidden">'+data.result.lastweekdata[i].id+'</span></td>');
 				dataset1.push(data.result.lastweekdata[i].date,html,data.result.lastweekdata[i].hours,html1);
 				dataset1.push('<td><a class="btn btn-info btn-sm bg-transparent p-2 border-0 pb-0" id="a_details"><i class="fas fa-sharp fa-solid fa-location-arrow text-info"></i></a></tr>');
 				dataset.push(dataset1);

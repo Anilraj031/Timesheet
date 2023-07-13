@@ -61,11 +61,10 @@
                     <div class="col-md-4 col-sm-12">
                         <label>Assigned to </label>
                         <select  name="assTo" id="assigned"  class="form-control form-control-sm rounded-0">
+                            <option value='{{issue.assigned_to.id}}' selected>{{issue.assigned_to.username}}</option>
                             {% for u in users %}
                                 {% if u.id != issue.assigned_to %}
                                     <option value='{{u.id}}'>{{u.username}}</option>
-                                {% else %}
-                                    <option value='{{u.id}}' selected>{{u.username}}</option>
                                 {% endif %}
                             {% endfor %}
                         </select>

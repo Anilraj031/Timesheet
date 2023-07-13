@@ -15,4 +15,5 @@ urlpatterns = [
     path('teams/<teamid>',views.getTeams,name='teams'),
     path('searchUsers',views.searchUser,name="searchuser"),
     path('addUsersTeam',views.addToTeams,name='addtoteam'),
+    path('removefromTeam',views.removeFromTeam,name='removeFromTeam'),
 ]

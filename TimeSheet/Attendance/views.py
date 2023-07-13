@@ -8,6 +8,10 @@ import datetime
 from geopy.geocoders import Nominatim
 from django.db.models import Sum
 from math import radians, cos, sin, asin, sqrt
+#for email send
+from django.core.mail import send_mail
+from django.conf import settings
+# email 
 
 # Create your views here.
 def attendance(request):
@@ -16,6 +20,7 @@ def attendance(request):
         btnTrack=TrackAttendance.objects.get(user=request.user)
         attenType = userDetails.objects.get(user=request.user)
         #print(btnTrack)
+        #send_mail('A cool subject', 'A stunning message', settings.EMAIL_HOST_USER, ['anilrajbanshi31@gmail.com'])
         #getDistance(request) #distance calculator
         date = datetime.date.today()
         if request.user.is_superuser:

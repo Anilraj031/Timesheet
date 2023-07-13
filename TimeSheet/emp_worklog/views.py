@@ -90,6 +90,7 @@ def dailylog(request):
     
     if request.method == 'GET':
         thisweekdata = worklog.objects.filter(User = request.user,Date__range=(lastMonday,nextMonday))
+        #print(thisweekdata[0].Date)
         #for last weeks log
         lastMonday2 = today + relativedelta(weekday=MO(-2))
         lastweekdata = worklog.objects.filter(User = request.user,Date__range=(lastMonday2,lastMonday-timedelta(days=1)))

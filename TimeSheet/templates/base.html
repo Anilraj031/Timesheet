@@ -216,12 +216,12 @@
                         <div class="nav">
                             <a class="nav-link mt-4" href="{% url 'home' %}">
                                 <div class="sb-nav-link-icon"><i class="fas fa-tachometer-alt"></i></div>
-                                Dashboard
+                                <span style="{% if request.path == '/' %}color:white;{% endif %}">Dashboard<span>
                             </a>
                             <div class="sb-sidenav-menu-heading">User</div>
                             <a class="nav-link" href="{% url 'dailylog' %}">
                                 <div class="sb-nav-link-icon"><i class="fas fa-chart-area"></i></div>
-                                Daily Log
+                                <span style="{% if request.path == '/Worklog/dailylog/' %}color:white;{% endif %}">Daily Log<span>
                             </a>
     
                             <a class="nav-link collapsed" href="#" data-bs-toggle="collapse" data-bs-target="#collapseAttendance" aria-expanded="false" aria-controls="collapseLayouts">
@@ -229,10 +229,11 @@
                                 Attendace
                                 <div class="sb-sidenav-collapse-arrow"><i class="fas fa-angle-down"></i></div>
                             </a>
-                            <div class="collapse" id="collapseAttendance" aria-labelledby="headingOne" data-bs-parent="#sidenavAccordion">
+                            <div class="{% if request.path|slice:'12' != '/Attendance/' %}collapse{% endif %}" id="collapseAttendance" aria-labelledby="headingOne" data-bs-parent="#sidenavAccordion">
                                 <nav class="sb-sidenav-menu-nested nav">
-                                    <a class="nav-link" href="{% url 'attendance' %}">Attendace</a>
-                                    <a class="nav-link" href="{% url 'leave' %}">Leave</a>
+                                    <a class="nav-link" href="{% url 'attendance' %} "style="{% if request.path == '/Attendance/Details' %}color:white;{% endif %}">Attendace</a>
+                                    <a class="nav-link" href="{% url 'leave' %}" style="{% if request.path == '/Attendance/Leaves' %}color:white;{% endif %}">Leave</a>
+                                    
                                 </nav>
                             </div>
     
@@ -242,10 +243,10 @@
                                 Tasks
                                 <div class="sb-sidenav-collapse-arrow"><i class="fas fa-angle-down"></i></div>
                             </a>
-                            <div class="collapse" id="collapseLayouts" aria-labelledby="headingOne" data-bs-parent="#sidenavAccordion">
+                            <div class="{% if request.path|slice:'9' == '/Project/' or request.path|slice:'7' == '/Issue/' %}{% else %}collapse{% endif %}" id="collapseLayouts" aria-labelledby="headingOne" data-bs-parent="#sidenavAccordion">
                                 <nav class="sb-sidenav-menu-nested nav">
-                                    <a class="nav-link" href="{% url 'aproject' %}">Projects</a>
-                                    <a class="nav-link" href="{% url 'index' %}">Issues</a>
+                                    <a class="nav-link" href="{% url 'aproject' %}" style="{% if request.path|slice:'9' == '/Project/' %}color:white;{% endif %}">Projects</a>
+                                    <a class="nav-link" href="{% url 'index' %}" style="{% if request.path|slice:'7' == '/Issue/' %}color:white;{% endif %}">Issues</a>
                                 </nav>
                             </div>
                             

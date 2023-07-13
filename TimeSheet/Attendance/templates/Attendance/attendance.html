@@ -239,6 +239,26 @@ function showError(error) {
 </div>
 <!-- end view location modal-->
 
+<!--if no location access permission-->
+<div class="modal " id="locationPermission" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true" >
+  <div class="modal-dialog  modal-dialog-centered ">
+    <div class="modal-content " style="border-radius:0px;">
+      <div class="modal-header">
+        <h1 class="modal-title fs-5 text-danger" id="exampleModalLabel">Access Location!</h1>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <p >Please request your manager for remote work!</p>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-sm btn-secondary" data-bs-dismiss="modal">Close</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+
 <script>
  
   $(document).ready(function(){
@@ -294,7 +314,8 @@ function showError(error) {
         }
         else{
           //alert('{{attendanceType.attendanceType}}');
-          alert(locationError);
+          //alert(locationError);
+          $('#locationPermission').modal('show');
         }
       }
       if(type == 'break')

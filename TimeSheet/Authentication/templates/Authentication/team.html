@@ -1,25 +1,30 @@
 {% extends "base.html" %}
-
+{% block script %}
+<link href="/static/jquery/dialog.css" rel="stylesheet" />
+<script src="/static/jquery/jquery.dialog.js"></script>
+{% endblock%}
 {% block content %}
 <div >
     <div class="p-3 border border-info">
         <h6 class="text-info">Details</h6>
         <p>Name: {{teams.name}}</p>
         <p>Description: {{teams.description}}</p>
+        <p>Managers: {% for m in manager %}<a href='#'>
+                        {{m.lead}}<button class="ms-1" style="border:none;background-color:transparent;" onclick="remove('manager',{{m.lead_id}})"><i class='fas fa-remove' style='color: red;font-size:14px;'></i></button></a>,
+                    {% endfor %} 
     </div>
     <div class="p-3 mt-3 border border-info">
         <div class="d-flex justify-content">
             <div ><h6 class="text-info">Members</h6></div>
-            <div class="ms-3" ><a href="#" data-bs-toggle="modal" data-bs-target="#addTeamModal"><span>Add</span></a></div>
+            <div class="ms-3" ><a href="#" data-bs-toggle="modal" data-bs-target="#addTeamModal"><span>Add Member/Manager</span></a></div>
         </div>
         <ol>
             {% for m in members %}
-                <li><a href="#" >{{m.user}}</a></li>
+                <li><a href="#" >{{m.user}}</a><button class="ms-1" style="border:none;background-color:transparent;" onclick="remove('user',{{m.user_id}})"><i class='fas fa-remove' style='color: red;font-size:14px;'></i></button></li>
             {% endfor %}
         </ol>
     </div>
 </div>
-
 
 <!-- Add Modal HTML -->
 <div class="modal fade" id="addTeamModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
@@ -40,7 +45,7 @@
                     <div class="form-group row mt-2" >
                         <div class=" col-md-6 col-sm-12 userList border border-info" style="height: 210px;overflow-x: hidden; overflow-y: auto;text-align:justify;">
                             <p>search result</p>
-                            <table class="table" id="usersList" style="width:100%;">
+                            <table class="table table-sm" id="usersList" style="width:100%;">
                                 <thead>
                                     <tr>
                                         <th>Select</th><th>Username</th>
@@ -53,9 +58,20 @@
                         </div>
                         <div class="col-6 col-md-6 col-sm-12 selecteduserList border border-info">
                             <p>Selected</p>
+                            <!--
                             <ul style="list-style-type: none;padding:0;margin:0;">
                                 
-                            </ul>
+                            </ul> -->
+                            <table class="table table-sm" id="selecteduList" style="width:100%;">
+                                <thead>
+                                    <tr>
+                                        <th>Username</th><th>Make Manager</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="selectedTable">
+
+                                </tbody>
+                            </table>
                         </div>
                     </div>
             
@@ -69,6 +85,10 @@
     </div>
 </div>
 
+
+
+
+
 <script>
     function searchUser()
     {
@@ -80,16 +100,16 @@
             method: "POST",
             data: data,
             success: function(data){
-                    $("#usersList").find("tr:gt(0)").remove();
-                    for(i=0;i<data.result.length;i++)
-                    {
-                        var table = document.getElementById("usersList");
-                        var row = table.insertRow(-1);
-                        var cell1 = row.insertCell(0);
-                        var cell2 = row.insertCell(1);
-                        cell1.innerHTML = "<input onclick='selectUser(this)' class='form-check-input' type='checkbox'  name='option1' value='"+data.result[i].username+"'>";
-                        cell2.innerHTML = data.result[i].username;
-                    }
+                $("#usersList").find("tr:gt(0)").remove();
+                for(i=0;i<data.result.length;i++)
+                {
+                    var table = document.getElementById("usersList");
+                    var row = table.insertRow(-1);
+                    var cell1 = row.insertCell(0);
+                    var cell2 = row.insertCell(1);
+                    cell1.innerHTML = "<input onclick='selectUser(this)' class='form-check-input' type='checkbox'  name='option1' value='"+data.result[i].username+"'/>";
+                    cell2.innerHTML = data.result[i].username;
+                }   
                     
             },
         });
@@ -108,30 +128,85 @@
         }
         else if(p != null && row.checked == true){}
         else{
+            //alert(row.value);
+            var st = row.value;
             let div = document.querySelector('.selecteduserList');
-            div.innerHTML += "<p class='selectedlist' id='"+row.value+"'>"+row.value+"</p>";
+            //div.innerHTML += "<p class='selectedlist' id='"+row.value+"'>"+row.value+"</p>";
+            var table = document.getElementById("selecteduList");
+            var row = table.insertRow(-1);
+            var cell1 = row.insertCell(0);
+            var cell2 = row.insertCell(1);
+            cell1.innerHTML = st;
+            cell2.innerHTML = '<input class="form-check-input managerC" type="checkbox" value="'+st+'" id="managerChecked">';
+            
         }
         
     }
 
     function addMembers()
-    {
+    {   
         list = document.getElementsByClassName("selectedlist");
         //console.log(list[0].innerText);
-        var ulist = ['{{teams.id}}']
-        for(i=0;i<list.length;i++)
-        {
-            ulist.push(list[i].innerText);
+        var ulist = ['{{teams.id}}'];
+        //add members
+        var table = document.getElementById("selecteduList");
+        for (var i = 1; i<table.rows.length; i++) {
+            ulist.push(table.rows[i].cells[0].innerHTML);
         }
-        data={'userlist[]':ulist}
+
+        //if manager
+        var checkboxes = document.getElementsByClassName('managerC');
+        var checkboxesChecked = [];
+        // loop over them all
+        for (var i=0; i<checkboxes.length; i++) {
+            // And stick the checked ones onto an array...
+            if (checkboxes[i].checked) {
+                checkboxesChecked.push(checkboxes[i].value);
+            }
+        }
+
+        data={'userlist[]':ulist,'managerlist[]':checkboxesChecked};
         $.ajax({
             url: "{% url 'addtoteam' %}",
             method: "POST",
             data: data,
             success: function(data){
+                window.location.reload();
+            },
+        }); 
+
+    }
+
+    function remove(type,id)
+    {
+        //alert(type+":"+id);
+        data={'type':type,'user':id,'team':'{{teams.id}}'};
+        $.ajax({
+            url: "{% url 'removeFromTeam' %}",
+            method: "POST",
+            data: data,
+            success: function(data){
+                //window.location.reload();
                 
             },
-        });
+        }); 
+    }
+    
+    function test()
+    {
+        $.dialog({
+            "body": "jQueryScript.net!",
+            "title": null,
+            "show": true,
+            "position": {
+              "top":500 ,
+              "left": 920
+            }
+          });
+    }
+
+    function test1(){
+        $("#locationPermission").modal('show');
     }
 </script>
 {% endblock %}

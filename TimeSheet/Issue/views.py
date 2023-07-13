@@ -5,6 +5,7 @@ from Attendance.models import User
 from Customer.models import employee
 from django.views.decorators.csrf import csrf_exempt
 from django.http import JsonResponse
+from Manager.views import checkTeams
 
 # Create your views here.
 # function based views
@@ -16,7 +17,7 @@ def index(request):
     #print(customer)
     dic = {
         'ticket':ticket,
-        'users':list(allusers),
+        'users':list(allusers[0]),
         'customer':list(customer),
         'mytickets':mytickets
         }
@@ -24,8 +25,11 @@ def index(request):
 
 def getIssue(request,issueid):
     issue = Ticket.objects.get(id=issueid)
+    
     issueComments = ticketDetails.objects.filter(ticket_id = issueid)
-    allusers =User.objects.all().values('id','username')
+    #allusers =User.objects.all().values('id','username')
+    allusers1 = checkTeams(request)
+    allusers =User.objects.values('id','username').filter(pk__in=allusers1[0] )
     customer = employee.objects.all().values()
 
     #print(issueComments)

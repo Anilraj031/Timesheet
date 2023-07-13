@@ -170,18 +170,21 @@ def adminUser(request):
 def getTeams(request,teamid):
     team = Teams.objects.get(id=teamid)
     members = TeamUsers.objects.filter(team =teamid)
-    return render(request,'Authentication/team.html',{'teams':team,'members':members})
+    manager = TeamLeads.objects.filter(team =teamid)
+    #print(manager[0].lead)
+    return render(request,'Authentication/team.html',{'teams':team,'members':members,'manager':manager})
 
 @csrf_exempt
 def searchUser(request):
     user_name = request.POST.get('name')
-    print(user_name)
+    #print(user_name)
     users = User.objects.filter(username__startswith=user_name).values()
     return JsonResponse({'result':list(users)})
 
 @csrf_exempt
 def addToTeams(request):
     userList = request.POST.getlist('userlist[]')
+    managerList = request.POST.getlist('managerlist[]')
     id = userList[0]
     #print(userList)
     userList.remove(id)
@@ -193,5 +196,26 @@ def addToTeams(request):
         if checkUser.exists() == False:
             tuser = TeamUsers(team=team,user=user)
             tuser.save()
+    #add manager
+    for m in managerList:
+        muser = User.objects.get(username=m)
+        checkManager = TeamLeads.objects.filter(team=team,lead=muser)
+        if checkManager.exists() == False:
+            TeamLeads(team=team,lead=muser).save()
 
     return JsonResponse({'result':'success'})
+
+@csrf_exempt
+def removeFromTeam(request):
+    teamId = request.POST.get('team')
+    userId = request.POST.get('user')
+    type = request.POST.get('type')
+
+    team = Teams.objects.get(id=teamId)
+    user = User.objects.get(id=userId)
+    if type=='manager':
+        TeamLeads.objects.filter(team=team,lead=user).delete() 
+    else:
+        TeamUsers.objects.filter(team=team,user=user).delete()
+    
+    return JsonResponse({'result':"success"})
