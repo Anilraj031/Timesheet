@@ -26,4 +26,5 @@ class Employees(models.Model):
 
 class LoggedUser(models.Model):
     user = models.ForeignKey(User,on_delete=models.SET_NULL,null=True)
+    device = models.CharField( max_length=200,default='before')
 

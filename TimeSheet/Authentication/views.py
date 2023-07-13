@@ -34,10 +34,11 @@ def login_n(request):
             uname = request.POST.get('username')
             upass = request.POST.get('password')
             user = authenticate(username=uname, password=upass)
-            print(user)
+            #print(user)
             if user is not None:
                 login(request,user)
-                LoggedUser(user=request.user).save()
+                device = request.META['HTTP_USER_AGENT']
+                LoggedUser(user=request.user,device=device).save()
                 #print(request.user.id)
                 
                 if request.user.is_authenticated:
@@ -70,7 +71,8 @@ def login_n(request):
             return HttpResponseRedirect(reverse('home'))
 
 def logout_n(request):
-    LoggedUser.objects.filter(user=request.user).delete()
+    device = request.META['HTTP_USER_AGENT']
+    LoggedUser.objects.filter(user=request.user,device=device).delete()
     logout(request)
     return HttpResponseRedirect('login')
 
@@ -172,6 +174,7 @@ def getTeams(request,teamid):
     members = TeamUsers.objects.filter(team =teamid)
     manager = TeamLeads.objects.filter(team =teamid)
     #print(manager[0].lead)
+    #print()
     return render(request,'Authentication/team.html',{'teams':team,'members':members,'manager':manager})
 
 @csrf_exempt

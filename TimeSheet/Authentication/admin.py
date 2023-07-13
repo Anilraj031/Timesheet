@@ -4,7 +4,7 @@ from Authentication.models import LoggedUser,Company,Employees,userDetails
 # Register your models here.
 #@admin.site.register(LoggedUser)
 class LoggedAdmin(admin.ModelAdmin):
-    list_display=('id','user')
+    list_display=('id','user','device')
 
 class compAdmin(admin.ModelAdmin):
     list_display=('user','name','address','phone1','phone2','email','contact_email')
