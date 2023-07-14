@@ -145,6 +145,7 @@ def createSession(request):
     companyid = Employees.objects.get(user=request.user)
     #print(companyid.company.name)
     request.session['company'] =companyid.company.name
+    request.session['comp'] = companyid.company.id
     return True
 @csrf_exempt
 def activateUser(request):

@@ -6,18 +6,24 @@ from Customer.models import employee
 from django.views.decorators.csrf import csrf_exempt
 from django.http import JsonResponse
 from Manager.views import checkTeams
+from Authentication.models import Company,Employees
+import datetime
 
 # Create your views here.
 # function based views
 def index(request):
-    allusers =User.objects.all().values('id','username')
-    ticket = Ticket.objects.all()
+    users = checkTeams(request)
+    comp = request.session['comp']
+    #print(users)
+    allusers =User.objects.filter(pk__in=users[0]).values('id','username')
+    #print(allusers)
+    ticket = Ticket.objects.filter(company__id=comp)
     mytickets = Ticket.objects.filter(assigned_to= request.user)
     customer = employee.objects.all().values()
     #print(customer)
     dic = {
         'ticket':ticket,
-        'users':list(allusers[0]),
+        'users':list(allusers),
         'customer':list(customer),
         'mytickets':mytickets
         }
@@ -25,7 +31,7 @@ def index(request):
 
 def getIssue(request,issueid):
     issue = Ticket.objects.get(id=issueid)
-    
+    print(datetime.date.today())
     issueComments = ticketDetails.objects.filter(ticket_id = issueid)
     #allusers =User.objects.all().values('id','username')
     allusers1 = checkTeams(request)
@@ -48,7 +54,7 @@ def ADD(request):
         assTo = request.POST.get('assTo')
         email = request.POST.get('email')
         comments = request.POST.get('comments')
-
+        comp = Company.objects.get(pk=request.session['comp'])
 
         tickets = Ticket(
             ticket_name = ticketName  ,
@@ -61,7 +67,8 @@ def ADD(request):
             assigned_grp= assGroup,
             assigned_to= User.objects.get(id=assTo),
             email= email,
-            comments=comments
+            comments=comments,
+            company = comp
         )
         tickets.save()
         return redirect('index')
@@ -70,6 +77,7 @@ def ADD(request):
 
 def EDIT(request):
     ticket = Ticket.objects.all()
+    
     context  = {
         'ticket':ticket,
     }
@@ -89,23 +97,22 @@ def Update(request,id):
         assTo = request.POST.get('assTo')
         email = request.POST.get('email')
         comments = request.POST.get('comments')
-        
+        comp = Company.objects.get(pk=request.session['comp'])
 
-    tickets = Ticket(
-            id = id,
+    #tickets = 
+    Ticket.objects.filter(id=id).update(
             ticket_name = ticketName  ,
             ticket_type= ticketType,
             short_desc= shortDesc,
-            open_date= dateOpened,
+            last_updated= datetime.date.today(),
             affected_user= employee.objects.get(id=affUser),
             priority= priority,
             state = state,
-            assigned_grp= assGroup,
             assigned_to= User.objects.get(id=assTo),
-            email= email,
             comments=comments
     )
-    tickets.save()
+    
+    #tickets.save()
     return redirect('index')
     return redirect(request,'allIssues.html')
 

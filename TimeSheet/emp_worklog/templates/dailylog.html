@@ -52,10 +52,11 @@
                 	</div>
             </div>
 			
-			<div class=" table-responsive-sm">
-				<p class="mt-4">This Week</p>
+			<div class=" table-responsive-sm mt-4" >
+				<!-- <p class="mt-4">This Week</p> -->
 				<table class="table display table-sm table-hover table-light shadow rounded" id="thisweeklogTable" >
 					<thead>
+						<tr><th colspan='5' class="text-center1">Current Week<th></tr>
 						<tr class="align-middle ">
 							<th></th>
 							<th>Date</th>
@@ -102,10 +103,11 @@
 				
 			<div>
 			<div class=" table-responsive-sm mt-2">
-				<p class="mt-2">Last Week</p>
+				
 				{% if lastweekdata %}
 				<table class="table display  table-sm table-hover table-light shadow rounded" id="weeklogTable" >
 					<thead>
+						<tr><th colspan='5' class="text-center1">Last Week<th></tr>
 						<tr>
 							<th></th>
 							<th>Date</th>
@@ -152,9 +154,9 @@
 				{% endif %}
 			</div>
 			<div class=" table-responsive-sm mt-4">
-				<p>This Month</p>
 				<table class="table display table-sm table-hover table-light shadow" id="logTable" >
 					<thead>
+						<tr><th colspan='7' class="text-center1">This Month<th></tr>
 						<tr>
 							<th></th>
 							<th scope="col" class="">Date</th>

@@ -237,7 +237,7 @@ def gets(request):
     task_id=request.GET.get('task')
     #print(task_id)   
     if task_id == '1':
-        data=Ticket.objects.filter(Q(state='New')| Q(state='InProgress')).values()
+        data=Ticket.objects.filter(Q(state='New')| Q(state='InProgress'),company=request.session['comp']).values()
     elif task_id == '2':
         data=Project.objects.all().values()
     else:

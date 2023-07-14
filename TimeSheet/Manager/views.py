@@ -24,8 +24,13 @@ def getDetails(request):
 
 def checkTeams(request):
     is_team = False
+    #comp = Employees.objects.get(user=request.user)
+    #users = Employees.objects.filter(company=request.session['comp'])
+    #print(users.user)
     if request.user.is_superuser:
-        users = User.objects.all()
+        #users = User.objects.filter(pk__in=users[].user)
+        users = Employees.objects.values('user').filter(company=request.session['comp'])
+        #print(users)
         is_team=True
     else:
         u_teams = TeamLeads.objects.values('team').filter(lead=request.user)
@@ -39,6 +44,7 @@ def checkTeams(request):
 def getusers(request):
     users =checkTeams(request)
 
+    
     if request.method == 'POST':
         status = request.POST['status']
         if status == '1': #active

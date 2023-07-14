@@ -1,7 +1,7 @@
 from django.shortcuts import render
 from django.http import JsonResponse,HttpResponseRedirect, HttpResponse
 from Attendance.models import Attendance, Leave, LeaveType,User,TrackAttendance
-from Authentication.models import userDetails
+from Authentication.models import userDetails,Company,Employees
 from django.views.decorators.csrf import csrf_exempt
 from django.urls import reverse
 import datetime
@@ -16,7 +16,9 @@ from django.conf import settings
 # Create your views here.
 def attendance(request):
     if request.user.is_authenticated:
-        allusers =User.objects.all().values('id','username')
+        comp = request.session['comp']
+        user = Employees.objects.filter(company=comp).values('user')
+        allusers =User.objects.filter(pk__in=user).values('id','username')
         btnTrack=TrackAttendance.objects.get(user=request.user)
         attenType = userDetails.objects.get(user=request.user)
         #print(btnTrack)

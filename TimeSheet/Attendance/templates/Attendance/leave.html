@@ -55,22 +55,38 @@
                         <th>Action</th>
                       </tr>
                     </thead>
-                    <tbody id="tbody_leave">
+                    <tbody id="tbody_leave" style="overflow:visible !important;">
                       {% for n in result %}
                       <tr style="background-color:{% if n.approval.name == 'Pending' %}lightskyblue{% elif n.approval.name == 'Approved' %}lightgreen{% else %}antiquewhite{% endif %};">
                         <td>{{n.date}}</td><td>{{n.type.name}}</td><td>{{n.leave_from}}</td><td>{{n.leave_to}}</td>
                         <td >{{n.approval.name}}</td>
                         {% if user.is_superuser %}
                         <td>{{n.user}}</td>
-                        <td>
+                        <td><!--
                           <a  id="a_detailss" onclick="updateLeave({{n.id}})">
-                            <!--edit icon svg-->
+                            
                             <i class="fas fa-solid fa-pen text-primary"></i>
                         </a>
-                        <!--delete icon-->
+                        
                         <a  >
                           <i class="fas fa-sharp fa-solid fa-trash text-danger"></i>
-                        </a>
+                        </a> -->
+
+                        <div class="btn-group">
+                          <button type="button" class="btn btn-secondary dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">
+                            <i class="fas fa-ellipsis-v silver-text"></i>
+                          </button>
+                          
+                          <ul class="dropdown-menu dropdown-menu-end" style="overflow:visible !important;">
+                            <li><button class="dropdown-item" type="button">Action</button></li>
+                            <li><button class="dropdown-item" type="button">Another action</button></li>
+                            <li><button class="dropdown-item" type="button">Something else here</button></li>
+                          </ul>
+                        </div>
+
+
+
+
                         </td>
                         {% else %}
                         <td>
@@ -190,6 +206,8 @@
     $("#leaveRequest").click(function(){
       $("#leaveForm").trigger("reset");
     });
+
+
   })
 
   function setModal(){
