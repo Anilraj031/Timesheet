@@ -19,5 +19,6 @@ urlpatterns = [
     
     path('updateLeaveType',views.updateLeaveType, name="updateType"),
     path('getLeaveType',views.getLeaveType,name="getType"),
-    path('getToday',views.getTodayAttendance,name='get_todays_attendance')
+    path('getToday',views.getTodayAttendance,name='get_todays_attendance'),
+    path('getTodayAll',views.getTodayAll,name="getTodaysAllAttendance"),
 ]

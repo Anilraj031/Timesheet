@@ -51,6 +51,10 @@ def getTodayAttendance(request):
     data = Attendance.objects.filter(date=datetime.date.today(),user=request.user).values()
     return JsonResponse({'result':list(data)})
 
+def getTodayAll(request):
+    data = Attendance.objects.filter(date=datetime.date.today()).values()
+    return JsonResponse({'result':list(data)})
+
 @csrf_exempt
 def getAttendance(request):
     month = request.POST['month']

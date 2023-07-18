@@ -6,19 +6,39 @@ import datetime
 from geopy.geocoders import Nominatim
 from django.urls import reverse
 from Authentication.models import LoggedUser
-from Attendance.models import Leave
+from Attendance.models import Leave,Attendance
 from django.contrib.auth.models import User
+from Manager.views import checkTeams
+from Issue.models import Ticket
+from django.db.models import Q
+from django.db.models import Sum
+from emp_worklog.models import worklog
 
 def index(request):
 	if request.user.is_authenticated :
+		issues = Ticket.objects.filter(Q(state='InProgress'))
+		worklogs =worklog.objects.filter(Date__month=datetime.date.today().month)
+		check_users=checkTeams(request)
+		users=User.objects.filter(Q(pk__in=check_users[0]) | Q(id=request.user.id))
+		usr_hour = []
+		for x in users:
+			usr_hour.append({
+				'user':x,
+				'billable':worklog.objects.filter(Date__month=datetime.date.today().month,User = x.id,Billable=True).aggregate(Sum('Hours')).get('Hours__sum', 0.00),
+				'nonbillable':worklog.objects.filter(Date__month=datetime.date.today().month,User = x.id,Billable=False).aggregate(Sum('Hours')).get('Hours__sum', 0.00)
+			})
+		print(usr_hour)
 		if request.user.is_superuser:
+			atdnc = Attendance.objects.filter(date=datetime.date.today())
 			activeUser = LoggedUser.objects.all().count()
 			totalUser = User.objects.all().count()
 			onLeave = Leave.objects.filter(date=datetime.date.today(),approval=1).count()
 			pendingApproval = Leave.objects.filter(date=datetime.date.today(),approval=2).count()
-			return render(request, 'index.html',{'active':activeUser,'total':totalUser,'onleave':onLeave,'pending':pendingApproval})
+			return render(request, 'index.html',{'active':activeUser,'total':totalUser,'onleave':onLeave,'pending':pendingApproval,'todaysAtten':atdnc,'issue':issues,'wlogs':worklogs,'hours':usr_hour})
 		else:
-			return render(request, 'index.html')
+			user = checkTeams(request)
+			atdnc = Attendance.objects.filter(Q(user__in=user[0])|Q(user=request.user),date=datetime.date.today())
+			return render(request, 'index.html',{'todaysAtten':atdnc,'issue':issues,'wlogs':worklogs,'hours':usr_hour})
 	else:
 		return HttpResponseRedirect(reverse('login'))
 

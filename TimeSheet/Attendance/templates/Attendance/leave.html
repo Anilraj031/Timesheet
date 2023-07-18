@@ -9,6 +9,9 @@
     border-bottom:1px solid grey !important;
     border-radius: 0 !important;
   }
+  #leaveTable td {
+    padding: 1rem;
+  }
 </style>
 {% endblock %}
 {% block content %}
@@ -43,9 +46,10 @@
                 </div>
               </div>
               <div  id="change_content" class="table-wrap table-responsive-sm mt-2" style="clear:right;">
-                  <table class="table table-bordered text-center shadow">
+                  <table class="table  text-center shadow display" id="leaveTable">
                     <thead>
                       <tr>
+                        <th></th>
                         <th>Requested</th>
                         <th>Type</th>
                         <th>From</th>
@@ -58,35 +62,19 @@
                     <tbody id="tbody_leave" style="overflow:visible !important;">
                       {% for n in result %}
                       <tr style="background-color:{% if n.approval.name == 'Pending' %}lightskyblue{% elif n.approval.name == 'Approved' %}lightgreen{% else %}antiquewhite{% endif %};">
+                        <td class="p-2 details-control">
+                          <span style="visibility:hidden">{{n.id}}</span>
+                         </td>
                         <td>{{n.date}}</td><td>{{n.type.name}}</td><td>{{n.leave_from}}</td><td>{{n.leave_to}}</td>
                         <td >{{n.approval.name}}</td>
                         {% if user.is_superuser %}
                         <td>{{n.user}}</td>
-                        <td><!--
+                        <td>
                           <a  id="a_detailss" onclick="updateLeave({{n.id}})">
                             
                             <i class="fas fa-solid fa-pen text-primary"></i>
                         </a>
                         
-                        <a  >
-                          <i class="fas fa-sharp fa-solid fa-trash text-danger"></i>
-                        </a> -->
-
-                        <div class="btn-group">
-                          <button type="button" class="btn btn-secondary dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">
-                            <i class="fas fa-ellipsis-v silver-text"></i>
-                          </button>
-                          
-                          <ul class="dropdown-menu dropdown-menu-end" style="overflow:visible !important;">
-                            <li><button class="dropdown-item" type="button">Action</button></li>
-                            <li><button class="dropdown-item" type="button">Another action</button></li>
-                            <li><button class="dropdown-item" type="button">Something else here</button></li>
-                          </ul>
-                        </div>
-
-
-
-
                         </td>
                         {% else %}
                         <td>
@@ -199,6 +187,11 @@
 
 
 <script>
+
+  //for data table
+  $(document).ready(function () {
+    
+  });
   $(document).ready(function(){
     $("#reqLeave").show();
     $("#grantLeave").hide();
@@ -208,7 +201,40 @@
     });
 
 
+    //for creating 
+      $('#leaveTable').dataTable({
+        bInfo:false,
+        bFilter:false,
+        pagingType: 'full_numbers',
+        lengthChange: false
+      });
+
+      $('table.display').on('click', 'td.details-control', function () {
+        var table = $( $(this).closest( 'table') ).DataTable();
+        var tr = $(this).closest('tr');
+        var row = table.row( tr );
+     
+        if ( row.child.isShown() ) {
+          // This row is already open - close it
+          row.child.hide();
+          tr.removeClass('shown');
+        }
+        else {
+          // Open this row
+          get_id = row.data()[0].slice(32, 34);
+          //console.log(row.id());
+          //console.log(row.data()[0]);
+          //alert(get_id);
+          //row.child( format(row.data()) ).show();
+          //alert(get_id);
+          console.log(format(get_id));
+          row.child( format(get_id)).show();
+          tr.addClass('shown');
+        }
+      } );
+  
   })
+  //document ready end
 
   function setModal(){
     $("#reqLeave").show();
@@ -412,6 +438,51 @@
                 
           },
       });
+    }
+
+
+    //get leave information for selected row
+    function format(id)
+    {
+      html="";
+      $.ajax({
+        url: "{% url 'LeaveDetails' %}",
+        method: "POST",
+        data:{id:id},
+        async:false,
+        success: function(data){
+             //console.log(data.result[0].details);
+             var status="";
+             for(i=0;i<data.result.length;i++){
+              status = data.result[i].approval_id;
+              $("#leave_type").val(data.result[i].type_id);
+              $("#leave_start").val(data.result[i].leave_from);
+              $("#leave_end").val(data.result[i].leave_to);
+              $("#leave_details").val(data.result[i].details);
+             }
+             if(status=='2')
+             {
+                $("#grantLeave").show();
+                $("#declineLeave").show();
+                $("#reqLeave").hide();
+             }
+             else if(status == '1')
+             {
+                $("#declineLeave").show();
+                $("#reqLeave").hide();
+                $("#grantLeave").hide();
+             }
+             else{
+              $("#declineLeave").hide();
+              $("#reqLeave").hide();
+              $("#grantLeave").show();
+             }
+             html +='<div class="container p-2 "><h6 class="float-start text-info">Work Details:</h6><br /><div class="float-start ms-2">'+data.result[0].details+'</div></div>';
+             html+='';
+        },
+    });
+    console.log(html);
+    return html;
     }
 </script>
 <script>

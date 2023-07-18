@@ -1,8 +1,17 @@
 {% extends "base.html" %}
 {% block title %}Daily Log{% endblock %}
 {% block script %}
+<!--
 <link href="https://cdn.datatables.net/1.13.5/css/jquery.dataTables.min.css" rel="stylesheet" />
 
+td.details-control {
+		background: url('https://www.datatables.net/examples/resources/details_open.png') no-repeat center center;
+		cursor: pointer;
+	}
+	tr.shown td.details-control {
+		background: url('https://www.datatables.net/examples/resources/details_close.png') no-repeat center center;
+	}
+-->
 <style>
 	table{
 		font-weight:normal !important;
@@ -18,13 +27,7 @@
 		background-color:GhostWhite !important;
 	}
 
-	td.details-control {
-		background: url('https://www.datatables.net/examples/resources/details_open.png') no-repeat center center;
-		cursor: pointer;
-	}
-	tr.shown td.details-control {
-		background: url('https://www.datatables.net/examples/resources/details_close.png') no-repeat center center;
-	}
+	
 
 </style>
 
@@ -102,7 +105,7 @@
 				</table>
 				
 			<div>
-			<div class=" table-responsive-sm mt-2">
+			<div class=" table-responsive-sm mt-4">
 				
 				{% if lastweekdata %}
 				<table class="table display  table-sm table-hover table-light shadow rounded" id="weeklogTable" >

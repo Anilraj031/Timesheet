@@ -1,218 +1,355 @@
 {% extends "base.html" %}
 {% block script %}
+
 <title>Timesheet-Home1</title>
 <style>
-  
+    
+    #tabs .nav-tabs .nav-item.show .nav-link, .nav-tabs .nav-link.active {
+        color: #6495ED !important;
+        background-color: white !important;
+        border-bottom: 4px solid !important;
+        font-size: 15px;
+        font-weight: bold;
+    }
+    .tab-pane.active{
+        background-color:white;
+    }
+    
+    
 </style>
+    $(document).ready(function () {
+
+    });
 {% endblock %}
 {% block content %}
-
-<div class="container-fluid">
-
-    <!-- Page Heading Original
-    <div class="d-sm-flex align-items-center justify-content-between mb-4">
-        <h1 class="h3 mb-0 text-gray-800">Dashboard</h1>
-        <a href="#" class="d-none d-sm-inline-block btn btn-sm btn-primary shadow-sm"><i
-                class="fas fa-download fa-sm text-white-50"></i> Generate Report</a>
-    </div>
- -->
-    {% if user.is_superuser %}
-    <!-- Content Row -->
-    <div class="row">
-        <!-- Earnings (Monthly) Card Example -->
-        <div class="col-xl-3 col-md-6 mb-4">
-            <div class="card border-left shadow h-100 py-2 bg-gradient-success text-light rounded-1">
-                <div class="card-body ">
-                    <div class="row no-gutters align-items-center">
-                        <div class="col mr-2">
-                            <div class="text-xs font-weight-bold text-uppercase mb-1">
-                                <h6>Active Users</h6></div>
-                            <div class="h5 mb-0 font-weight-bold text-gray-800 ml-2">{{active}}</div>
-                        </div>
-                        <div class="col-auto">
-                            <i class="fas fa-solid fa-user fa-2x text-gray-300"></i>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <!-- Earnings (Monthly) Card Example -->
-        <div class="col-xl-3 col-md-6 mb-4">
-            <div class="card bg-gradient-primary shadow h-100 py-2 text-light rounded-1">
-                <div class="card-body">
-                    <div class="row no-gutters align-items-center">
-                        <div class="col mr-2">
-                            <div class="text-xs font-weight-bold text-uppercase mb-1">
-                                <h6>Total Users</h6></div>
-                            <div class="h5 mb-0 font-weight-bold text-gray-800 ml-2">{{total}}</div>
-                        </div>
-                        <div class="col-auto">
-                            <i class="fas fa-dollar-sign fa-2x text-gray-300"></i>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <!-- Earnings (Monthly) Card Example -->
-        <div class="col-xl-3 col-md-6 mb-4">
-            <div class="card border-left-danger shadow h-100 py-2 bg-gradient-danger text-light rounded-1">
-                <div class="card-body">
-                    <div class="row no-gutters align-items-center">
-                        <div class="col mr-2">
-                            <div class="text-xs font-weight-bold  text-uppercase mb-1">
-                                <h6>On Leave Today</h6>
-                            </div>
-                            <div class="row no-gutters align-items-center">
-                                <div class="col-auto">
-                                    <div class="h5 mb-0 mr-2 font-weight-bold text-gray-800 ml-2">{{onleave}}</div>
+<div class="d-sm-flex align-items-center justify-content-between mb-4">
+    <h1 class="h3 mb-0 text-gray-800" style="color:CornflowerBlue;">Dashboard</h1>
+    <a href="#" class="d-none d-sm-inline-block btn btn-sm btn-primary shadow-sm"><i
+            class="fas fa-download fa-sm text-white-50"></i> Generate Report</a>
+</div>
+<div class="tab-content" id="nav-tabs-content">
+    <div class="tab-pane-with-nested-tab fade show active" id="tab1-content" role="tabpanel" aria-labelledby="nav-tab1">
+      <!--tab headers-->
+        <ul role="tablist" aria-owns="nav-linkA nav-linkB nav-linkC nav-linkD" class="nav nav-tabs nav-tabs-light mt-0">
+        <li class="nav-item" role="presentation">
+          <a class="nav-link active" id="nav-linkA" href="#linkA" data-bs-toggle="tab" data-bs-target="#linkA" role="tab" aria-current="page">General</a>
+        </li>
+        <li class="nav-item" role="presentation">
+          <a class="nav-link" id="nav-linkB" href="#linkB" data-bs-toggle="tab" data-bs-target="#linkB" role="tab">Users Activity</a>
+        </li>
+        <li class="nav-item" role="presentation">
+          <a class="nav-link" id="nav-linkC" href="#linkC" data-bs-toggle="tab" data-bs-target="#linkC" role="tab">Teams</a>
+        </li>
+        <li class="nav-item" role="presentation">
+          <a class="nav-link disabled" id="nav-linkD" data-bs-toggle="tab" data-bs-target="#linkD" role="tab">Link D</a>
+        </li>
+      </ul>
+      <!--tab headers end -->
+      <!--tab body start -->
+      <div class="tab-content border-0" id="nav-tabs-light-content">
+            <!--overview contents-->
+            <div class="tab-pane fade show active" id="linkA" role="tabpanel" aria-labelledby="nav-linkA">
+                <div class="mt-2">
+                    {% if user.is_superuser %}
+                    <!-- Content Row -->
+                    <div class="row">
+                        <!-- Earnings (Monthly) Card Example -->
+                        <div class="col-xl-3 col-md-6 mb-4">
+                            <div class="card border-left shadow h-100 py-2 bg-gradient-success text-light rounded-1">
+                                <div class="card-body ">
+                                    <div class="row no-gutters align-items-center">
+                                        <div class="col mr-2">
+                                            <div class="text-xs font-weight-bold text-uppercase mb-1">
+                                                <h6>Active Users</h6></div>
+                                            <div class="h5 mb-0 font-weight-bold text-gray-800 ml-2">{{active}}</div>
+                                        </div>
+                                        <div class="col-auto">
+                                            <i class="fas fa-solid fa-user fa-2x text-gray-300"></i>
+                                        </div>
+                                    </div>
                                 </div>
                             </div>
                         </div>
-                        <div class="col-auto">
-                            <i class="fas fa-clipboard-list fa-2x text-gray-300"></i>
+                
+                        <!-- Earnings (Monthly) Card Example -->
+                        <div class="col-xl-3 col-md-6 mb-4">
+                            <div class="card bg-gradient-primary shadow h-100 py-2 text-light rounded-1">
+                                <div class="card-body">
+                                    <div class="row no-gutters align-items-center">
+                                        <div class="col mr-2">
+                                            <div class="text-xs font-weight-bold text-uppercase mb-1">
+                                                <h6>Total Users</h6></div>
+                                            <div class="h5 mb-0 font-weight-bold text-gray-800 ml-2">{{total}}</div>
+                                        </div>
+                                        <div class="col-auto">
+                                            <i class="fas fa-dollar-sign fa-2x text-gray-300"></i>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                
+                        <!-- Earnings (Monthly) Card Example -->
+                        <div class="col-xl-3 col-md-6 mb-4">
+                            <div class="card border-left-danger shadow h-100 py-2 bg-gradient-danger text-light rounded-1">
+                                <div class="card-body">
+                                    <div class="row no-gutters align-items-center">
+                                        <div class="col mr-2">
+                                            <div class="text-xs font-weight-bold  text-uppercase mb-1">
+                                                <h6>On Leave Today</h6>
+                                            </div>
+                                            <div class="row no-gutters align-items-center">
+                                                <div class="col-auto">
+                                                    <div class="h5 mb-0 mr-2 font-weight-bold text-gray-800 ml-2">{{onleave}}</div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="col-auto">
+                                            <i class="fas fa-clipboard-list fa-2x text-gray-300"></i>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                
+                        <!-- Pending Requests Card Example -->
+                        <div class="col-xl-3 col-md-6 mb-4">
+                            <div class="card shadow h-100 py-2 bg-gradient-warning text-light rounded-1">
+                                <div class="card-body">
+                                    <div class="row no-gutters align-items-center">
+                                        <div class="col mr-2">
+                                            <div class="text-xs font-weight-bold  text-uppercase mb-1">
+                                                <h6>Pending Approval</h6></div>
+                                            <div class="h5 mb-0 font-weight-bold text-gray-800 ml-2">{{pending}}</div>
+                                        </div>
+                                        <div class="col-auto">
+                                            <i class="fas fa-comments fa-2x text-gray-300"></i>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
                     </div>
-                </div>
-            </div>
-        </div>
-
-        <!-- Pending Requests Card Example -->
-        <div class="col-xl-3 col-md-6 mb-4">
-            <div class="card shadow h-100 py-2 bg-gradient-warning text-light rounded-1">
-                <div class="card-body">
-                    <div class="row no-gutters align-items-center">
-                        <div class="col mr-2">
-                            <div class="text-xs font-weight-bold  text-uppercase mb-1">
-                                <h6>Pending Approval</h6></div>
-                            <div class="h5 mb-0 font-weight-bold text-gray-800 ml-2">{{pending}}</div>
+                    {% endif %}
+                    <!-- Content Row -->
+                
+                    <div class="row">
+                
+                        <!-- Area Chart -->
+                        <div class="col-xl-8 col-lg-7">
+                            <div class="card shadow mb-4">
+                                <!-- Card Header - Dropdown -->
+                                <div
+                                    class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
+                                    <h6 class="m-0 font-weight-bold text-primary">Attendance</h6>
+                                    <div class="dropdown no-arrow">
+                                        <a class="dropdown-toggle" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                            <i class="fas fa-ellipsis-v fa-sm fa-fw text-gray-400"></i>
+                                        </a>
+                                        <ul class="dropdown-menu">
+                                            <li><a class="dropdown-item" href="#">Action</a></li>
+                                            <li><a class="dropdown-item" href="#">Another action</a></li>
+                                            <li><a class="dropdown-item" href="#">Something else here</a></li>
+                                        </ul>
+                                    </div>
+                                </div>
+                                <!-- Card Body -->
+                                <div class="card-body">
+                                    <div class="chart-area">
+                                        <canvas id="barChart" ></canvas>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
-                        <div class="col-auto">
-                            <i class="fas fa-comments fa-2x text-gray-300"></i>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-    {% endif %}
-    <!-- Content Row -->
-
-    <div class="row">
-
-        <!-- Area Chart -->
-        <div class="col-xl-8 col-lg-7">
-            <div class="card shadow mb-4">
-                <!-- Card Header - Dropdown -->
-                <div
-                    class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
-                    <h6 class="m-0 font-weight-bold text-primary">Attendance</h6>
-                    <div class="dropdown no-arrow">
-                        <a class="dropdown-toggle" href="#" role="button" id="dropdownMenuLink"
-                            data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                            <i class="fas fa-ellipsis-v fa-sm fa-fw text-gray-400"></i>
-                        </a>
-                        <div class="dropdown-menu dropdown-menu-right shadow animated--fade-in"
-                            aria-labelledby="dropdownMenuLink">
-                            <div class="dropdown-header">Dropdown Header:</div>
-                            <a class="dropdown-item" href="#">Action</a>
-                            <a class="dropdown-item" href="#">Another action</a>
-                            <div class="dropdown-divider"></div>
-                            <a class="dropdown-item" href="#">Something else here</a>
-                        </div>
-                    </div>
-                </div>
-                <!-- Card Body -->
-                <div class="card-body">
-                    <div class="chart-area">
-                        <canvas id="barChart" ></canvas>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <!-- Pie Chart -->
-        <div class="col-xl-4 col-lg-5">
-            <div class="card shadow mb-4">
-                <!-- Card Header - Dropdown -->
-                <div
-                    class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
-                    <h6 class="m-0 font-weight-bold text-primary">Hours Achieved This Month</h6>
-                    <div class="dropdown no-arrow">
-                        <a class="dropdown-toggle" href="#" role="button" id="dropdownMenuLink"
-                            data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                            <i class="fas fa-ellipsis-v fa-sm fa-fw text-gray-400"></i>
-                        </a>
-                        <div class="dropdown-menu dropdown-menu-right shadow animated--fade-in"
-                            aria-labelledby="dropdownMenuLink">
-                            <div class="dropdown-header">Dropdown Header:</div>
-                            <a class="dropdown-item" href="#">Action</a>
-                            <a class="dropdown-item" href="#">Another action</a>
-                            <div class="dropdown-divider"></div>
-                            <a class="dropdown-item" href="#">Something else here</a>
+                
+                        <!-- Pie Chart -->
+                        <div class="col-xl-4 col-lg-5">
+                            <div class="card shadow mb-4">
+                                <!-- Card Header - Dropdown -->
+                                <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
+                                    <h6 class="m-0 font-weight-bold text-primary">Hours Achieved This Month</h6>
+                                    <div class="dropdown no-arrow">
+                                        <a class="dropdown-toggle" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                            <i class="fas fa-ellipsis-v fa-sm fa-fw text-gray-400"></i>
+                                        </a>
+                                        <ul class="dropdown-menu">
+                                            <li><a class="dropdown-item" href="#">Action1</a></li>
+                                            <li><a class="dropdown-item" href="#">Another action</a></li>
+                                            <li><a class="dropdown-item" href="#">Something else here</a></li>
+                                        </ul>
+                                    </div>
+                                </div>
+                                <!-- Card Body -->
+                                <div class="card-body">
+                                    <div class="chart-pie"><!--
+                                        <div style="width: 100%; height: 40px; position: absolute; top: 50%; left: 0; margin-top: 5px; line-height:19px; text-align: center; z-index: 999999999999999">
+                                            <h3>80Hr</h3>
+                                        </div>-->
+                                        <canvas id="doughnutChart"></canvas>
+                                    </div>
+                                    <div class="mt-4 text-center small">
+                                        <span class="mr-2">
+                                            <i class="fas fa-circle text-primary"></i> Direct
+                                        </span>
+                                        <span class="mr-2">
+                                            <i class="fas fa-circle text-success"></i> Social
+                                        </span>
+                                        <span class="mr-2">
+                                            <i class="fas fa-circle text-info"></i> Referral
+                                        </span>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
                     </div>
-                </div>
-                <!-- Card Body -->
-                <div class="card-body">
-                    <div class="chart-pie"><!--
-                        <div style="width: 100%; height: 40px; position: absolute; top: 50%; left: 0; margin-top: 5px; line-height:19px; text-align: center; z-index: 999999999999999">
-                            <h3>80Hr</h3>
-                        </div>-->
-                        <canvas id="doughnutChart"></canvas>
-                    </div>
-                    <div class="mt-4 text-center small">
-                        <span class="mr-2">
-                            <i class="fas fa-circle text-primary"></i> Direct
-                        </span>
-                        <span class="mr-2">
-                            <i class="fas fa-circle text-success"></i> Social
-                        </span>
-                        <span class="mr-2">
-                            <i class="fas fa-circle text-info"></i> Referral
-                        </span>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <div class="">
-        <!-- Area Chart -->
-        <div class="col-xl-12 col-lg-12">
-            <div class="card shadow mb-4">
-                <!-- Card Header - Dropdown -->
-                <div
-                    class="card-header  d-flex flex-row align-items-center justify-content-between">
-                    <h6 class="m-0 font-weight-bold text-primary">Current Year Progress</h6>
-                    <div class="dropdown no-arrow">
-                        <a class="dropdown-toggle" href="#" role="button" id="dropdownMenuLink"
-                            data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                            <i class="fas fa-ellipsis-v fa-sm fa-fw text-gray-400"></i>
-                        </a>
-                        <div class="dropdown-menu dropdown-menu-right shadow animated--fade-in"
-                            aria-labelledby="dropdownMenuLink">
-                            <div class="dropdown-header">Dropdown Header:</div>
-                            <a class="dropdown-item" href="#">Action</a>
-                            <a class="dropdown-item" href="#">Another action</a>
-                            <div class="dropdown-divider"></div>
-                            <a class="dropdown-item" href="#">Something else here</a>
-                        </div>
-                    </div>
-                </div>
-                <!-- Card Body -->
-                <div class="card-body">
+                
                     <div class="">
-                        <canvas id="lineChart" class="chart-area"></canvas>
+                        <!-- Area Chart -->
+                        <div class="col-xl-12 col-lg-12">
+                            <div class="card shadow mb-4">
+                                <!-- Card Header - Dropdown -->
+                                <div
+                                    class="card-header  d-flex flex-row align-items-center justify-content-between">
+                                    <h6 class="m-0 font-weight-bold text-primary">Current Year Progress</h6>
+                                    <div class="dropdown no-arrow">
+                                        <a class="dropdown-toggle" href="#" role="button" id="dropdownMenuLink"
+                                            data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                            <i class="fas fa-ellipsis-v fa-sm fa-fw text-gray-400"></i>
+                                        </a>
+                                        <div class="dropdown-menu dropdown-menu-right shadow animated--fade-in"
+                                            aria-labelledby="dropdownMenuLink">
+                                            <div class="dropdown-header">Dropdown Header:</div>
+                                            <a class="dropdown-item" href="#">Action</a>
+                                            <a class="dropdown-item" href="#">Another action</a>
+                                            <div class="dropdown-divider"></div>
+                                            <a class="dropdown-item" href="#">Something else here</a>
+                                        </div>
+                                    </div>
+                                </div>
+                                <!-- Card Body -->
+                                <div class="card-body">
+                                    <div class="">
+                                        <canvas id="lineChart" class="chart-area"></canvas>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
                     </div>
+                    
                 </div>
             </div>
+            <!--second tab-->
+            <div class="tab-pane" id="linkB" role="tabpanel" aria-labelledby="nav-linkB">
+                <div style="height:100% !important;" class="mt-2">
+                <div class="accordion" id="AttendanceAccordion">
+                    {% for a in todaysAtten %}
+                    <div class="accordion-item">
+                    <h2 class="accordion-header" id="headingOne{{a.id}}">
+                        <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseOne{{a.id}}" aria-expanded="false" aria-controls="panelsStayOpen-collapseOne">
+                            <div class="d-flex align-items-center"><img class="rounded-circle" src="https://i.imgur.com/C4egmYM.jpg" width="30"><span class="ms-2 text-primary">{{a.user.username}}</span></div>
+                            
+                            <span class="ms-4"><span class="text-success">Entry:{{a.entry}}</span> <span class="ms-4 text-warning">Break: {% if a.lbreak1 != None %}{{a.lbreak1}}{% else %}Not Started{% endif%}</span></span>
+                        </button>
+                    </h2>
+                    <div id="collapseOne{{a.id}}" class="accordion-collapse collapse" aria-labelledby="headingOne{{a.id}}" style="">
+                        <div class="accordion-body">
+                            <div class="row container">
+                                <div class="col-md-7 col-sm-12 shadow">
+                                    <div class="">
+                                    <h6 class="text-info">Assigned Issues</h6>
+                                    <table class="table table-responsive"><thead>
+                                        <tr><th>Name</th>
+                                            <th>Type</th>
+                                            <th></th></tr>
+                                        </thead><tbody>
+                                    {% for i in issue %}
+                                    {% if i.assigned_to == a.user %}
+                                    <tr>
+                                        <td>{{i.ticket_name}}
+                                            <span class="badge rounded-0 {% if i.priority == 'high' %}text-bg-danger{% elif i.priority == 'medium' %}text-bg-info{% elif i.priority == 'low' %}text-bg-primary{% endif %}">{{i.priority}}</span>
+                                            <span class="badge rounded-0 {% if i.state == 'New' %}text-bg-primary{% elif i.state == 'InProgress' %}text-bg-info{% elif i.state == 'Completed' %}text-bg-success{% elif i.state == 'Hold' %}text-bg-warning{% elif i.state == 'Canceled' %}text-bg-danger{% endif %}">{{i.state}}</span>
+                                        </td>
+                                        <td>{{i.ticket_type}}</td>
+                                        <td>
+                                            <a href="{% url 'issueDetails' issueid=i.id %}" class="btn btn-info btn-sm bg-transparent p-1 border-0 pb-0"><i class="fas fa-solid fa-pen text-primary"></i></a>
+                                        </td>
+                                    </tr>
+                                    {% endif %}
+                                    {% endfor %}
+                                    </tbody></table>
+                                    
+                                    </div>                         
+                                </div>
+                                <div class="col-md-5 ">
+                                    <div class="">
+                                        <div class="card shadow border border-0">
+                                            <!-- Card Header - Dropdown -->
+                                            <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
+                                                <h6 class="m-0 font-weight-bold text-primary">Hours Achieved This Month</h6>
+                                                <div class="dropdown no-arrow">
+                                                    <a class="dropdown-toggle" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                                        <i class="fas fa-ellipsis-v fa-sm fa-fw text-gray-400"></i>
+                                                    </a>
+                                                    <ul class="dropdown-menu">
+                                                        <li><a class="dropdown-item" href="#">View All</a></li>
+                                                        <li><a class="dropdown-item" href="#">Billable</a></li>
+                                                        <li><a class="dropdown-item" href="#">Non-Billable</a></li>
+                                                    </ul>
+                                                </div>
+                                            </div>
+                                            <!-- Card Body -->
+                                            <div class="card-body">
+                                                <canvas id="myChart{{a.id}}" style="height:100%" ></canvas>
+                                        
+                                                {% for h in hours %}
+                                                    {% if h.user == a.user %}
+                                                    <script>
+                                                        $(document).ready(function () {
+                                                            loadUsersChart({{a.id}},{{h.billable}},{{h.nonbillable}});
+                                                        });
+                                                    
+                                                    </script>
+                                                    {% endif %}
+                                                {% endfor %}
+                                            </div>
+                                        </div>
+                                        
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    </div>
+                    {% endfor %}
+                    {% if not todaysAtten  %}
+                        <div class="p-5 text-center" style="background-color:rgb(245, 243, 243) !important;">
+                            <span class="text-info "><h3>No Users has made any entry!</h3></span>
+                            <p>Users who have started working are displayed here</p>
+                        </div>
+                    {% endif %}
+                </div>
+                </div>
+            </div>
+            <!--second tab end-->
+            <!--third tab start-->
+            <div class="tab-pane" id="linkC" role="tabpanel" aria-labelledby="nav-linkC">Content of Link C</div>
+            <!--third tab end-->
+            <!--fourth tab start-->
+            <div class="tab-pane" id="linkD" role="tabpanel" aria-labelledby="nav-linkD">Content of Link D</div>
+            <!--fourth tab end-->
         </div>
+      <!--tab body end-->
     </div>
-   
+</div> 
 
-</div>
+
+
+
+
+
+
+
+
 
 <script>
 getChartData();
@@ -281,33 +418,34 @@ function getDChartData()
         //loadDChart(get_data);
         //console.log(get_data.users[0].hour.hour__sum)
         label_name = [];
-    label_data = [];
-    for(i=0;i<data1.users.length;i++){
-        label_name[i]=""+data1.users[i].user;
-        if(data1.users[i].hour != null)
-        {
-            label_data[i]=""+data1.users[i].hour;
-        }
-        else{
-            label_data[i]="0";
-        }
-        
-    }
-    console.log(data1.requiredHr);
-    Chart.pluginService.register({
-        beforeDraw: function(chart) {
-          var width = chart.chart.width,
-              height = chart.chart.height,
-              ctx = chart.chart.ctx,
-              type = chart.config.type;
+        label_data = [];
+        for(i=0;i<data1.users.length;i++){
+            label_name[i]=""+data1.users[i].user;
+            if(data1.users[i].hour != null)
+            {
+                label_data[i]=""+data1.users[i].hour;
+            }
+            else{
+                label_data[i]="0";
+            }
+                
+            }
+        //console.log(data1.requiredHr);
+        Chart.pluginService.register({
+            beforeDraw: function(chart) {
+            var width = chart.chart.width,
+                height = chart.chart.height,
+                //ctx = chart.chart.ctx,
+                ctx = document.getElementById("doughnutChart").getContext('2d'),
+                type = chart.config.type;
       //console.log(chart.config.data.datasets[0].data[2]);
           if (type == 'doughnut')
           {
             //var percent = Math.round(((chart.config.data.datasets[0].data[0]+chart.config.data.datasets[0].data[1]+chart.config.data.datasets[0].data[2]) * 100) / 160);
             var oldFill = ctx.fillStyle;
-            var percent = (data1.hour/(data1.requiredHr*4))*100;
+            var percent = ((data1.hour/(data1.requiredHr*4))*100).toFixed(2);
             
-            var fontSize = ((height - chart.chartArea.top) / 100).toFixed(2);
+            var fontSize = ((height - chart.chartArea.top) / 100);
             
             ctx.restore();
             ctx.font = fontSize + "em sans-serif";
@@ -409,5 +547,84 @@ function getAreaData()
     });
     
 }
+
+
+
+function loadUsersChart(id,hr1,hr2)
+{
+    
+    let b= parseInt(hr1);
+    let nb = parseInt(hr2);
+    var xValues = ["BIllable", "Non-Billable"];
+    var yValues = [b,nb];
+     /* {% for h in hours %}
+        {% if h.user == a.user %}
+        
+        b{{a.id}}=parseInt({{h.billable}});
+        nb{{a.id}}=parseInt({{h.nonbillable}});
+        {% endif %}
+    {% endfor %} */
+                    
+    var barColors = [
+    "#00aba9",
+    "#e8c3b9",
+    ];
+
+    //alert(((b+nb)/160)*100);
+    Chart.pluginService.register({
+        beforeDraw: function(chart) {
+        var width = chart.chart.width,
+            height = chart.chart.height,
+            //ctx = chart.chart.ctx,
+            ctx = document.getElementById("myChart"+parseInt(id)).getContext('2d'),
+            type = chart.config.type;
+  //console.log(chart.config.data.datasets[0].data[2]);
+      if (type == 'doughnut')
+      {
+        //var percent = Math.round(((chart.config.data.datasets[0].data[0]+chart.config.data.datasets[0].data[1]+chart.config.data.datasets[0].data[2]) * 100) / 160);
+        var oldFill = ctx.fillStyle;
+        var percent = (((b+nb)/160)*100).toFixed(2);
+        
+        var fontSize = ((height - chart.chartArea.top) / 100);
+        
+        ctx.restore();
+        ctx.font = fontSize + "em sans-serif";
+        ctx.textBaseline = "middle"
+  
+        var text = percent + "%",
+            textX = Math.round((width - ctx.measureText(text).width) / 2),
+            textY = (height + chart.chartArea.top) / 2;
+              
+        ctx.fillStyle = chart.config.data.datasets[0].backgroundColor[0];
+        ctx.fillText(text, textX, textY);
+        ctx.fillStyle = oldFill;
+        ctx.save();
+      }
+    }
+  });
+
+    new Chart("myChart"+parseInt(id), {
+    type: "doughnut",
+    data: {
+        labels: xValues,
+        datasets: [{
+        backgroundColor: barColors,
+        data: yValues
+        }]
+    },
+    options: {
+        title: {
+        display: false,
+        text: "Hours for this month"
+        }
+    }
+    });
+    
+}
+
+
+</script>
+<script>
+
 </script>
 {% endblock %}
