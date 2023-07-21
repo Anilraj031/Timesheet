@@ -1,5 +1,5 @@
 from django.contrib import admin
-from Authentication.models import LoggedUser,Company,Employees,userDetails
+from Authentication.models import LoggedUser,Company,Employees,userDetails,userManager
 
 # Register your models here.
 #@admin.site.register(LoggedUser)
@@ -13,8 +13,12 @@ class userCompAdmin(admin.ModelAdmin):
     list_display = ('company','user')
 
 class uDetails(admin.ModelAdmin):
-    list_display = ('user','attendanceType','mrequest')
+    list_display = ('user','attendanceType','mrequest','is_manager')
 
+class uManager(admin.ModelAdmin):
+    list_display = ('manager','user')
+
+admin.site.register(userManager,uManager)
 admin.site.register(userDetails,uDetails)
 admin.site.register(Employees,userCompAdmin)
 admin.site.register(LoggedUser,LoggedAdmin)

@@ -3,7 +3,7 @@ from django.http import JsonResponse
 from django.contrib.auth.models import User,Permission
 from .models import InitialPassword,Teams,TeamLeads,TeamUsers
 from django.views.decorators.csrf import csrf_exempt
-from Authentication.models import Company, userDetails,Employees
+from Authentication.models import Company, userDetails,Employees,userManager
 from Attendance.models import Attendance,Leave,TrackAttendance
 from datetime import date,datetime
 import numpy as np
@@ -129,8 +129,15 @@ def viewUser(request,userId):
     perm = Permission.objects.filter(user=getUser)
     loginType = userDetails.objects.get(user=getUser)
     is_manager=checkTeams(request)
+
     #print(loginType.attendanceType)
     #user work details
+    getMembers = None
+    if loginType.is_manager == True:
+        udetails = userDetails.objects.get(user=getUser)
+        getMembers = userManager.objects.filter(manager=udetails)
+        #print(getMembers)
+
     issue = worklog.objects.filter(User=getUser,TaskType=1).count()
     totalIssue = worklog.objects.filter(TaskType=1).count()
     totalProjectCount = worklog.objects.filter(User=getUser,TaskType=2)
@@ -190,7 +197,8 @@ def viewUser(request,userId):
         #'hours':totalProject,
         'task':task,
         'loginType':loginType,
-        'manager':is_manager[1]
+        'manager':is_manager[1],
+        'members':getMembers
     }
     #print(getUser.last_name)
     return render(request,'Reports/userDetails.html',data)
@@ -280,7 +288,7 @@ def updateLoginType(request):
     typeTo = request.POST.get('type')
     userid = request.POST.get('user')
     user = User.objects.get(id=userid)
-    print(l_type)
+    #print(l_type)
     if(l_type == 'update'):
         userDetails.objects.filter(user=user).update(attendanceType=typeTo)
         if typeTo == 'Physical':
@@ -288,4 +296,39 @@ def updateLoginType(request):
     else:
         userDetails.objects.filter(user=user).update(mrequest=True)
     
+    return JsonResponse({'result':'success'})
+
+@csrf_exempt
+def addManagerMember(request):
+    userList = request.POST.getlist('userlist[]')
+    id = userList[0]
+    userList.remove(id)
+
+    userDetails.objects.filter(user__id=id).update(is_manager=True)
+    
+    for u in userList:
+        user = User.objects.get(username=u)
+        checkUser = userManager.objects.filter(manager__user__id=id,user=user)
+        
+        if checkUser.exists() == False:
+            manager = userDetails.objects.get(user__id=id) 
+            userManager(manager=manager,user=user).save()
+            
+    return JsonResponse({'result':'success'})
+
+
+
+
+@csrf_exempt
+def removeMember(request):
+    manager = request.POST.get('manager')
+    user = request.POST.get('user')
+    userManager.objects.filter(manager__user__id=manager,user__username=user).delete()
+    return JsonResponse({'result':user})
+
+@csrf_exempt
+def removeManager(request):
+    userid = request.POST.get('id')
+    userDetails.objects.filter(user__id=userid).update(is_manager=False)
+    userManager.objects.filter(manager__user__id=userid).delete()
     return JsonResponse({'result':'success'})

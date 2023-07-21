@@ -11,4 +11,7 @@ urlpatterns = [
     path('LoginType',views.updateLoginType,name="updateLoginType"),
     path('Company/',views.company,name="company"),
     path('Report/',views.report,name='createReport'),
+    path('AddMember',views.addManagerMember,name="addtoManager"),
+    path('Member',views.removeMember,name="removeMember"),
+    path('removeManager',views.removeManager,name="removeManager")
 ]

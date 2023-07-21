@@ -31,7 +31,7 @@ def index(request):
 
 def getIssue(request,issueid):
     issue = Ticket.objects.get(id=issueid)
-    print(datetime.date.today())
+    #print(datetime.date.today())
     issueComments = ticketDetails.objects.filter(ticket_id = issueid)
     #allusers =User.objects.all().values('id','username')
     allusers1 = checkTeams(request)

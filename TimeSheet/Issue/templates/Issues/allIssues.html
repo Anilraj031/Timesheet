@@ -36,14 +36,14 @@
 
         <div id="myAssignedView" class="mt-2 mb-3">
             <div class="row">
-                <div class="column column-todo col-12 col-md-3 col-sm-6" id="new" ondrop="drop(event)" ondragover="allowDrop(event)" >
-                    <div class="d-flex justify-content-between">
+                <div class="column column-todo col-12 col-md-3 col-sm-6" id="new" ondrop="drop(event)" ondragover="allowDrop(event)" style="height:500px;">
+                    <div class="d-flex justify-content-between" style="border-bottom: 4px solid blue !important;">
                         <div ><h5 class="text-primary">New</h5></div>
                         <div ><a href="#" data-bs-toggle="modal" data-bs-target="#ticketModal"><span>Add Ticket</span></a></div>
                     </div>
                     {%for i in mytickets %}
                     {% if i.state == 'New' %}
-                    <div draggable="true" ondragstart="drag(event)" data-id="{{i.id}}" class="card  mb-3 rounded-1" style="border-left: 0.25rem solid {% if i.priority == 'high' %} #e74a3b {% elif i.priority == 'medium' %}#36b9cc{% elif i.priority == 'low' %}#4e73df {% endif %};">
+                    <div draggable="true" ondragstart="drag(event)" data-id="{{i.id}}" class="card  mb-3 rounded-1 mt-2" style="border-left: 0.25rem solid {% if i.priority == 'high' %} #e74a3b {% elif i.priority == 'medium' %}#36b9cc{% elif i.priority == 'low' %}#4e73df {% endif %};">
                         <div class="card-body text-primary">
                         <h6 class="card-title">{{i.ticket_name}}</h6>
                         <span class="fw-light">{{i.ticket_type}}</span>
@@ -58,12 +58,12 @@
                     {% endfor %}
                 </div>
                 <div class="column column-todo col-12 col-md-3 col-sm-6" id="inprogress" ondrop="drop(event)" ondragover="allowDrop(event)">
-                    <div class="d-flex justify-content-between">
+                    <div class="d-flex justify-content-between" style="border-bottom: 4px solid cyan !important;">
                         <div ><h5 class="text-info">In Progress</h5></div>
                     </div>
                     {%for i in mytickets %}
                     {% if i.state == 'InProgress' %}
-                    <div draggable="true" ondragstart="drag(event)" data-id="{{i.id}}" class="card  mb-3 rounded-1" style="border-left: 0.25rem solid{% if i.priority == 'high' %}#e74a3b{% elif i.priority == 'medium' %}#36b9cc{% elif i.priority == 'low' %}#4e73df {% endif %};">
+                    <div draggable="true" ondragstart="drag(event)" data-id="{{i.id}}" class="card mt-2  mb-3 rounded-1" style="border-left: 0.25rem solid{% if i.priority == 'high' %}#e74a3b{% elif i.priority == 'medium' %}#36b9cc{% elif i.priority == 'low' %}#4e73df {% endif %};">
                         <div class="card-body text-primary">
                         <h6 class="card-title">{{i.ticket_name}}</h6>
                         <span class="fw-light">{{i.ticket_type}}</span>
@@ -78,12 +78,12 @@
                     {% endfor %}
                 </div>
                 <div class="column column-todo col-12 col-md-3 col-sm-6" id="hold" ondrop="drop(event)" ondragover="allowDrop(event)">
-                    <div class="d-flex justify-content-between">
+                    <div class="d-flex justify-content-between" style="border-bottom: 4px solid brown !important;">
                         <div ><h5 class="text-secondary">On Hold</h5></div>
                     </div>
                     {%for i in mytickets %}
                     {% if i.state == 'Hold' %}
-                    <div draggable="true" ondragstart="drag(event)" data-id="{{i.id}}" class="card  mb-3 rounded-1" style="border-left: 0.25rem solid{% if i.priority == 'high' %}#e74a3b{% elif i.priority == 'medium' %}#36b9cc{% elif i.priority == 'low' %}#4e73df {% endif %};">
+                    <div draggable="true" ondragstart="drag(event)" data-id="{{i.id}}" class="card mt-2 mb-3 rounded-1" style="border-left: 0.25rem solid{% if i.priority == 'high' %}#e74a3b{% elif i.priority == 'medium' %}#36b9cc{% elif i.priority == 'low' %}#4e73df {% endif %};">
                         <div class="card-body text-primary">
                         <h6 class="card-title">{{i.ticket_name}}</h6>
                         <span class="fw-light">{{i.ticket_type}}</span>
@@ -98,12 +98,12 @@
                     {% endfor %}
                 </div>
                 <div class="column column-todo col-12 col-md-3 col-sm-6" id="complete" ondrop="drop(event)" ondragover="allowDrop(event)">
-                    <div class="d-flex justify-content-between">
+                    <div class="d-flex justify-content-between" style="border-bottom: 4px solid seagreen !important;">
                         <div ><h5 class="text-success">Completed</h5></div>
                     </div>
                     {%for i in mytickets %}
                     {% if i.state == 'Completed' %}
-                    <div draggable="true" ondragstart="drag(event)" data-id="{{i.id}}" class="card  mb-3 rounded-1" style="border-left: 0.25rem solid{% if i.priority == 'high' %}#e74a3b{% elif i.priority == 'medium' %}#36b9cc{% elif i.priority == 'low' %}#4e73df {% endif %};">
+                    <div draggable="true" ondragstart="drag(event)" data-id="{{i.id}}" class="card mt-2 mb-3 rounded-1" style="border-left: 0.25rem solid{% if i.priority == 'high' %}#e74a3b{% elif i.priority == 'medium' %}#36b9cc{% elif i.priority == 'low' %}#4e73df {% endif %};">
                         <div class="card-body text-primary">
                         <h6 class="card-title">{{i.ticket_name}}</h6>
                         <span class="fw-light">{{i.ticket_type}}</span>
@@ -118,12 +118,12 @@
                     {% endfor %}
                 </div>
                 <div class="column column-todo col-12 col-md-3 col-sm-6" id="canceled" ondrop="drop(event)" ondragover="allowDrop(event)">
-                    <div class="d-flex justify-content-between">
+                    <div class="d-flex justify-content-between" style="border-bottom: 4px solid darkred !important;">
                         <div ><h5 class="text-danger">Canceled</h5></div>
                     </div>
                     {%for i in mytickets %}
                     {% if i.state == 'Canceled' %}
-                    <div draggable="true" ondragstart="drag(event)" data-id="{{i.id}}" class="card  mb-3 rounded-1" style="border-left: 0.25rem solid{% if i.priority == 'high' %}#e74a3b{% elif i.priority == 'medium' %}#36b9cc{% elif i.priority == 'low' %}#4e73df {% endif %};">
+                    <div draggable="true" ondragstart="drag(event)" data-id="{{i.id}}" class="card mt-2 mb-3 rounded-1" style="border-left: 0.25rem solid{% if i.priority == 'high' %}#e74a3b{% elif i.priority == 'medium' %}#36b9cc{% elif i.priority == 'low' %}#4e73df {% endif %};">
                         <div class="card-body text-primary">
                         <h6 class="card-title">{{i.ticket_name}}</h6>
                         <span class="fw-light">{{i.ticket_type}}</span>

@@ -64,6 +64,7 @@ def dailylog(request):
     
     
     all_data=worklog.objects.filter(User = request.user,Date__month=today.month)
+    #all_data=worklog.objects.filter(User = request.user)
     # pagination
     paginator=Paginator(all_data,10)
     page_number=request.GET.get('page')

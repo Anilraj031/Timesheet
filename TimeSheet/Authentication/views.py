@@ -12,6 +12,7 @@ from django.contrib.auth.hashers import check_password
 from Attendance.models import LeaveType
 from django.views.decorators.csrf import csrf_exempt
 from .forms import loginForm
+from django.db.models import Q
 # Create your views here.
 
 def sign_up(request):
@@ -146,6 +147,7 @@ def createSession(request):
     #print(companyid.company.name)
     request.session['company'] =companyid.company.name
     request.session['comp'] = companyid.company.id
+    
     return True
 @csrf_exempt
 def activateUser(request):
@@ -182,7 +184,7 @@ def getTeams(request,teamid):
 def searchUser(request):
     user_name = request.POST.get('name')
     #print(user_name)
-    users = User.objects.filter(username__startswith=user_name).values()
+    users = User.objects.filter(~Q(id=request.user.id),username__startswith=user_name).values()
     return JsonResponse({'result':list(users)})
 
 @csrf_exempt
@@ -223,3 +225,5 @@ def removeFromTeam(request):
         TeamUsers.objects.filter(team=team,user=user).delete()
     
     return JsonResponse({'result':"success"})
+
+

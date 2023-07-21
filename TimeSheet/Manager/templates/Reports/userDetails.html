@@ -50,6 +50,10 @@
   .f-right {
       float: right;
   }
+
+  .borderless td, .borderless th {
+    border: none !important;
+}
 </style>
 {% endblock %}
 {% block content %}
@@ -114,14 +118,14 @@
                     <div class="col-sm-9 text-secondary">
                       <div class="row">
                         <div class="col-6 col-sm-6">
-                          <select class="form-control form-control-sm" id="loginType" onchange="LoginType('update',{{users.id}})" {% if manager != True  %}disabled{% endif %}>
+                          <select class="form-control form-control-sm" id="loginType" onchange="LoginType('update',{{users.id}})" {% if manager != True   %}disabled{% endif %}>
                             <option value="Physical" {% if loginType.attendanceType == 'Physical' %}selected{% endif %}>Physical</option>
                             <option value="Remote" {% if loginType.attendanceType == 'Remote' %}selected{% endif %}>Remote</option>
                           </select>
                         </div>
                         <div class="col-6 col-sm-6 col-md-6">
                           <div class="form-check">
-                            <input class="form-check-input" type="checkbox" value="" id="loginRequest" onclick="LoginType('request',{{users.id}})" {% if loginType.mrequest ==  True %}checked disabled{% endif %}>
+                            <input class="form-check-input" type="checkbox" value="" id="loginRequest" onclick="LoginType('request',{{users.id}})" {% if loginType.mrequest ==  True or loginType.attendanceType == 'Remote' %}checked disabled{% endif %}>
                             <label class="form-check-label" for="flexCheckChecked">
                               Request Remote Login
                             </label>
@@ -143,8 +147,10 @@
                         {% if users.is_active %}<a class="btn btn-sm btn-danger" onclick="activate('false',{{users.id}})">Deactivate</a>{% else %}<a class="btn btn-sm btn-info" onclick="activate('true',{{users.id}})">Activate</a>{% endif %}
                       {% endif %}
                       {% if user.is_superuser and users != user %}
-                      {% if users.is_superuser %}<a class="btn btn-sm btn-danger" onclick="makeadmin('false',{{users.id}})">Remove Admin</a>{% else %}<a class="btn btn-sm btn-info" onclick="makeadmin('true',{{users.id}})">Make Admin</a>{% endif %}
+                      {% if users.is_superuser %}<a class="btn btn-sm btn-danger" onclick="makeadmin('false',{{users.id}})">Remove Admin</a>{% else %}<a class="btn btn-sm btn-info" onclick="makeadmin('true',{{users.id}})">Make Admin</a>
                       {% endif %}
+                      {% endif %}
+                      <a class="btn btn-sm btn-primary" type="button" data-bs-toggle="modal" data-bs-target="#managerModal">Make Manager</a>
                     </div>
                   </div>
                 </div>
@@ -350,7 +356,7 @@
           <button class="btn-close" type="button" data-bs-dismiss="modal" aria-label="Close"></button>
       </div>
         <div class="modal-body">
-          <table class="table table-hover text-center table-sm table-borderless">
+          <table class="table table-borderless table-hover text-center table-sm">
             <thead>
               <tr>
                 <th>For</th>
@@ -401,6 +407,65 @@
       </div>
     </div>
   </div>
+
+
+  <div class="modal" id="managerModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-centered" role="document">
+      <div class="modal-content rounded-0">
+        <div class="modal-header">
+          <h5 class="modal-title" id="rolesModalLabel">Make Manager</h5>
+          <button class="btn-close" type="button" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+        <div class="modal-body">
+          <div>
+            <div class="form-group row">
+              <div class="col-md-4 col-sm-12">
+                  <input id="search" name= "search" type="text" class="form-control form-control-sm rounded-0" required placeholder="search" oninput="searchUser();">
+              </div>
+          </div>
+          <div class="form-group row mt-2" >
+              <div class=" col-md-6 col-sm-12 userList border border-info" style="height: 210px;overflow-x: hidden; overflow-y: auto;text-align:justify;">
+                  <p>search result</p>
+                  <table class="table table-sm" id="usersList" style="width:100%;">
+                      <thead>
+                          <tr>
+                              <th>Select</th><th>Username</th>
+                          </tr>
+                      </thead>
+                      <tbody id="userTable">
+
+                      </tbody>
+                  </table>
+              </div>
+              <div class="col-6 col-md-6 col-sm-12 selecteduserList border border-info p-3">
+                  {% for m in members  %}
+                  <span class='selectedlist badge bg-secondary me-1' id='{{m.user.username}}'>{{m.user.username}}
+                    <button class='ms-1' style='border:none;background-color:transparent;' onclick='remove({{users.id}},"{{m.user.username}}")'><i class='fas fa-remove' style='color: red;font-size:14px;'></i></button></span>
+                  {% endfor %}
+                  
+              </div>
+          </div>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-info btn-sm" data-bs-dismiss="modal" onclick="removeManager({{users.id}})">Remove Manager</button>
+          <button type="button" class="btn btn-danger btn-sm" data-bs-dismiss="modal">Cancel</button>
+          {% if 'auth.change_permission' in perms or user.is_superuser %}
+          <button type="button" class="btn btn-success btn-sm ps-4 pe-4" onclick="addMembers()">Save</button>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+  </div>
+
+
+
+
+
+
+
+
+
 
   <div id="alert" class="alert alert-success alert-dismissible fade show text-center fixed-bottom">
     <strong>Success!</strong> Permissions for {{users.username}} updated successfully.
@@ -502,6 +567,112 @@ function LoginType(type,id)
       alert(data.result);
     },
   });
+}
+
+//for manager
+function searchUser()
+    {
+      var user = $("#search").val();
+      //alert(user);
+      data={name:user}
+      $.ajax({
+          url: "{% url 'searchuser' %}",
+          method: "POST",
+          data: data,
+          success: function(data){
+              $("#usersList").find("tr:gt(0)").remove();
+              for(i=0;i<data.result.length;i++)
+              {
+                  var table = document.getElementById("usersList");
+                  var row = table.insertRow(-1);
+                  var cell1 = row.insertCell(0);
+                  var cell2 = row.insertCell(1);
+                  cell1.innerHTML = "<input onclick='selectUser(this)' class='form-check-input' type='checkbox'  name='option1' value='"+data.result[i].username+"'/>";
+                  cell2.innerHTML = data.result[i].username;
+              }   
+                  
+          },
+      });
+  }
+
+  function selectUser(row)
+  {
+      //selecteduserList
+      //alert(row);
+      //console.log(row.value);
+      //alert(row.checked);
+      var p = document.getElementById(row.value);
+      //alert(p)
+      if(p != null && row.checked == false)
+      {
+          p.remove();
+      }
+      else if(p != null && row.checked == true){}
+      else{
+          //alert(row.value);
+          var st = ""+row.value;
+          let div = document.querySelector('.selecteduserList');
+          div.innerHTML += "<span class='selectedlist badge bg-secondary me-1' id='"+row.value+"'>"+row.value+""+
+                        "<button class='ms-1' style='border:none;background-color:transparent;' onclick='remove("+{{users.id}}+","+'"'+st+'"'+")'><i class='fas fa-remove' style='color: red;font-size:14px;'></i></button></span>";
+          
+      }
+      
+  }
+
+  function addMembers()
+  {   
+      list = document.getElementsByClassName("selectedlist");
+      //console.log(list[0].innerText);
+      //console.log(list.length);
+      var ulist = ['{{users.id}}'];
+      //add members
+      for(var i=0;i<list.length;i++)
+      {
+        ulist.push((list[i].innerText).split(" ").join(""));
+      }
+
+      //console.log(ulist);
+      data={'userlist[]':ulist,};
+      $.ajax({
+          url: "{% url 'addtoManager' %}",
+          method: "POST",
+          data: data,
+          success: function(data){
+              window.location.reload();
+          },
+      }); 
+  
+  }
+
+
+function remove(manager,user){
+  //console.log(user);
+  data={'manager':manager,'user':user};
+      $.ajax({
+          url: "{% url 'removeMember' %}",
+          method: "POST",
+          data: data,
+          success: function(data){
+             // window.location.reload(); selecteduserList
+             console.log(data.result);
+             child = document.getElementById(data.result);
+             child.parentNode.removeChild(child);
+              
+          },
+      }); 
+}
+
+function removeManager(id){
+  data={'id':id};
+  $.ajax({
+    url: "{% url 'removeManager' %}",
+    method: "POST",
+    data: data,
+    success: function(data){
+       // window.location.reload(); 
+        
+    },
+}); 
 }
 </script>
 
