@@ -34,10 +34,13 @@ def checkTeams(request):
         is_team=True
     else:
         u_teams = TeamLeads.objects.values('team').filter(lead=request.user)
-        if u_teams != None:
+        print(u_teams)
+        if u_teams.exists():
             is_team=True
+            print("Updated")
             users = TeamUsers.objects.values('user').filter(team__in=u_teams)
-        
+        else:
+            users = User.objects.filter(username=request.user.username)
     return users,is_team
 
 @csrf_exempt

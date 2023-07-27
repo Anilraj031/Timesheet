@@ -6,7 +6,7 @@ from Issue.models import Ticket
 from django.core.paginator import Paginator
 from django.utils import timezone
 from datetime import datetime, timedelta
-from django.http import JsonResponse
+from django.http import JsonResponse,HttpResponse
 from django.db.models import Q
 from dateutil.relativedelta import relativedelta,MO
 from django.db.models import Sum
@@ -14,6 +14,7 @@ from django.contrib.auth.models import User
 from Customer.models import customer
 from Manager.views import checkTeams
 from django.views.decorators.csrf import csrf_exempt
+import pandas as pd
 
 
 # Create your views here.
@@ -108,6 +109,7 @@ def dailylog(request):
             'totalpage':[n+1 for n in range(totalpage)],
             'users':allusers
         }
+        print(getTeam_users[1])
         return render(request, 'dailylog.html', context)
         
 #jquery filed name display
@@ -282,9 +284,92 @@ def getHoursData(request):
     return JsonResponse({'requiredHr':gethour,'users':usr_hour,'hour':achievedhr})
 
 
+
+def usersLog(request):
+    getTeam_users = checkTeams(request)
+    allusers = User.objects.filter(pk__in=getTeam_users[0])
+    task =tasktype.objects.all().values()
+    team = checkTeams(request)
+    context={
+        'users' : allusers,
+        'task' :task,
+        'is_team':team[1],
+    }
+    return render(request, 'AllLog.html', context)
+
+@csrf_exempt
+def getLogByUsers(request):
+    if request.method =='POST':
+        id = request.POST.get('user')
+        start_date = request.POST.get('from')
+        end_date = request.POST.get('to')
+        log = request.POST.get('log')
+        task = request.POST.get('task')
+        if id == None:
+            id=request.user.id
+        data = createReportData(id,start_date,end_date,log,task)
+        
+        print(id)
+    return JsonResponse({'result':data})
+
+
+def createReportData(id,start_date,end_date,log,task):
+    if log == 'None' and task =='None':
+        data = worklog.objects.filter(User__id=id,Date__range=(start_date,end_date))
+    elif task =='None' or log =='None':
+        if task == 'None':
+            data = worklog.objects.filter(User__id=id,Date__range=(start_date,end_date),Billable=log)
+        else: 
+                data = worklog.objects.filter(User__id=id,Date__range=(start_date,end_date),TaskType=task)
+    else: 
+        data = worklog.objects.filter(User__id=id,Date__range=(start_date,end_date),Billable=log,TaskType=task)
+    
+    readable_data = []
+    for d in data:
+        taskname = 'None'
+        if d.TaskType_id == 1:
+            taskname = d.task.ticket_name
+        if d.TaskType_id == 2:
+            taskname = d.project_id.name
+        readable_data.append({
+            'user':d.User.username,
+            'date':d.Date,
+            'task':d.TaskType.TaskType,
+            'taskname':taskname,
+            'billable':d.Billable,
+            'details':d.Workdone
+        })
+    return readable_data
+"""
 @csrf_exempt
 def getLogByUsers(request):
     if request.method =='POST':
         u_id = request.POST.get('id')
 
+    return JsonResponse({'result':'success'})
+"""
+@csrf_exempt
+def download_excel_data(request):
+    """
+    data = []
+    get_data = worklog.objects.filter(User_id=55)
+    
+    for d in get_data:
+        data.append({
+            'Employee':d.User.username,
+            'Date':d.Date,
+            'Task':d.TaskType.TaskType,
+            'Billable':d.Billable
+        })
+    pd.DataFrame(data).to_excel('LogReport.xlsx')
+"""
+    if request.method =='POST':
+        id = request.POST.get('user')
+        start_date = request.POST.get('from')
+        end_date = request.POST.get('to')
+        log = request.POST.get('log')
+        task = request.POST.get('task')
+        user = User.objects.get(id=id)
+        data = createReportData(id,start_date,end_date,log,task)
+        pd.DataFrame(data).to_excel('Log_Report_'+user.username+'_'+start_date+'.xlsx')
     return JsonResponse({'result':'success'})

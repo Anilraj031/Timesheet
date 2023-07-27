@@ -1,0 +1,194 @@
+{% extends "base.html" %}
+{% block title %}Users Daily Log{% endblock %}
+{% block script %}
+
+
+{% endblock %}
+{% block content %} 
+ <div class="container" style="background-color:GhostWhite !important;">
+	<h5 class="text-info">Download Log Report</h5>
+	<div class="btn-group btn-group-sm" role="group" aria-label="Small button group">
+		{% if is_team == True %}
+		<select class="rounded-1 form-select form-select-sm" id="user_s"   name="users">
+			<option value="{{user.id}}">{{user.username}}</option>
+			{% for n in users %}
+			{% if n.username != user.username %}
+				<option class="" value="{{n.id}}">{{n.username}}</option>
+				{% endif %}
+			{% endfor %}
+			<option value="0">all</option>
+		</select>
+		{% endif %}
+		<input type="text" class="form-control form-control-sm" placeholder="Start Date" onfocus="(this.type='date')" onblur="(this.type='text')" id="start_date" name ="start_date"/>
+		<input type="text" class="form-control form-control-sm" placeholder="End Date" onfocus="(this.type='date')" onblur="(this.type='text')" id="end_date" name ="end_date" />
+		<select name="tasktype" id="task_type" class="form-select form-select-sm" id="exampleFormControlSelect1" onchange="gettask()" required>
+			<option value="None">Task Type</option>
+			{% for n in task %}
+			<option value="{{n.id}}">{{n.TaskType}}</option>
+			{% endfor %}                            
+		</select>
+		<select class="rounded-1 form-select form-select-sm" id="log_type"  name="logType">
+			<option value="None">Log Type</option>
+			<option class="" value="True">Billable</option>
+			<option class="" value="False">Non-Billable</option>
+		</select>
+		<button class="btn btn-success btn-sm" onclick="getResult()">Filter</button>
+	</div>
+	
+	<div id="filter_result" style="display:none;">
+		<div class="d-sm-flex align-items-center justify-content-between mt-4 mb-1">
+			<h1 class="h3 mb-0 text-gray-800" style="color:CornflowerBlue;"></h1>
+			<a href="#" class="d-none d-sm-inline-block btn btn-sm btn-primary " onclick="logDownload()"><i
+					class="fas fa-download fa-sm text-white-50"></i> Download Excel</a>
+		</div>
+		<table class="table table-responsive" id="logDetails">
+			<thead>
+				<tr>
+					<th>User</th>
+					<th>Date</th>
+					<th>Details</th>
+					<th>Task Name</th>
+					<th>TaskType</th>
+					<th>Billable</th>
+				</tr>
+			</thead>
+			<tbody id="filter">
+
+			</tbody>
+		</table>
+	</div>
+ </div>
+<script>
+	/*
+$(document).ready(function () {
+	$('#logDetails').dataTable({
+		bPaginate: false,
+		bFilter:false,
+		bInfo:false,
+		  pagingType: 'full_numbers',
+		  lengthChange: true
+	  });
+});
+*/
+$(document).ready(function() {
+    $('#logDetails').DataTable( {
+        dom: 'Bfrtip',
+		bFilter:false,
+        columnDefs: [
+            {
+                targets: 1,
+                className: 'noVis'
+            }
+        ],
+        buttons: [
+            {
+                extend: 'colvis',
+				text: 'Columns',
+                columns: ':not(.noVis)',
+				className: 'btn btn-primary btn-sm mb-2'
+            },
+			{
+                extend: 'csv',
+                columns: ':not(.noVis)',
+				className: 'btn btn-primary btn-sm mb-2',
+				filename: function(){
+					var u = $('#user_soption:selected').text();
+					var d1 = $('#start_date').val();
+					var d2 = $('#end_date').val();
+					return 'Log_report_'+u+'_'+d1+'_'+d2;
+				},
+            },
+			{
+                extend: 'excel',
+                columns: ':not(.noVis)',
+				className: 'btn btn-primary btn-sm mb-2'
+            },
+			{
+                extend: 'pdf',
+                columns: ':not(.noVis)',
+				className: 'btn btn-primary btn-sm mb-2',
+				filename: function(){
+					var u = $('#user_s option:selected').text();
+					var d1 = $('#start_date').val();
+					var d2 = $('#end_date').val();
+					return 'Log_report_'+u+'_'+d1+'_to_'+d2;
+				},
+            }],
+		initComplete: function () {
+            var btns = $('.dt-button');
+            btns.removeClass('dt-button');
+
+        }
+    } );
+} );
+
+
+function getResult()
+{
+	user = $('#user_s').val();
+	s_date = $('#start_date').val();
+	e_date = $('#end_date').val();
+	l_type = $('#log_type').val();
+	t_type = $('#task_type').val();
+	//alert(user+":"+s_date+":"+e_date);
+	data = {user:user,from:s_date,to:e_date,log:l_type,task:t_type};
+	$.ajax({
+		url: "{% url 'getlogbyuser' %}",
+		method: "POST",
+		data: data,
+		success: function(data){
+			$('#filter_result').show();
+			console.log(data.result);
+			dataset = [];
+			dataset1 = [];
+			for(i=0;i<data.result.length;i++)
+			{
+				html='';
+				if(data.result[i].billable == true)
+					{
+						html='<input class="form-check-input" type="checkbox" Checked />';
+					}
+				else{
+					html='<input class="form-check-input" type="checkbox"  />';
+				}
+				dataset1.push(
+					data.result[i].user,
+					data.result[i].date,
+					data.result[i].details,
+					data.result[i].taskname,
+					data.result[i].task,
+					html
+					
+					)
+				dataset.push(dataset1);
+				dataset1=[];
+			}
+			//console.log(dataset1)
+			var table = $('#logDetails').DataTable();
+			table.clear();
+			table.rows.add(dataset).draw();
+		},
+	});
+}
+
+function logDownload()
+{
+	user = $('#user_s').val();
+	s_date = $('#start_date').val();
+	e_date = $('#end_date').val();
+	l_type = $('#log_type').val();
+	t_type = $('#task_type').val();
+	//alert(user+":"+s_date+":"+e_date);
+	data = {user:user,from:s_date,to:e_date,log:l_type,task:t_type};
+	$.ajax({
+		url: "{% url 'downloadLog' %}",
+		method: "POST",
+		data:data,
+		success: function(data){
+			console.log(data);
+			
+		},
+	});
+}
+</script>
+{% endblock %}

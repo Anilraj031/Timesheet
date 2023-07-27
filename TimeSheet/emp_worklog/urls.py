@@ -20,7 +20,9 @@ urlpatterns = [
     path('subproject',views.subproject, name='subproject'),
     path('gethours',views.getMonthlyHours,name='getMonthlyHours'),
     path('hours',views.getHoursData,name="getHours"),
-
+    path('usersLog',views.usersLog,name="usersLog"),
+    path('getUserLog',views.getLogByUsers,name="getlogbyuser"),
+    path('downloadLog',views.download_excel_data,name="downloadLog")
     # path('filter/', views.filter)
 ]
  

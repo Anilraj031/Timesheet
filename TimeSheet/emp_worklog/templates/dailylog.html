@@ -20,9 +20,6 @@ td.details-control {
 	thead > tr > th{
 		opacity:0.6 !important;
 	}
-	.table-wrapper{
-		
-	}
 	.modal-content{
 		background-color:GhostWhite !important;
 	}
@@ -34,27 +31,28 @@ td.details-control {
 {% endblock %}
 {% block content %} 
     <div class="">
-        <div class="table-wrapper">
-            <div class="table-title">
-                	<div class="row">	
-						<div class="">				
-							<!-- <a href="#addEmployeeModal" class="btn btn-success" data-toggle="modal"><span>Add New Record</span></a> -->
-							<a id="logBtn" class="btn btn-success btn-sm ps-4 pe-4 rounded-1" data-bs-toggle="modal" data-bs-target="#addLog" style="float:left;">Add Log</a>
-							{% if user.is_superuser or is_team == True %}
-								<select class="form-control form-control-sm col-xs-2 w-25 rounded-0" id="user_s" onchange="getuserLog();">
-									<option value="{{user.id}}">{{user.username}}</option>
-									{% for n in users %}
-									{% if n.username != user.username %}
-										<option class="active" value="{{n.id}}">{{n.username}}</option>
-									{% endif %}
-									{% endfor %}
-									<option value="0">all</option>
-								</select>
-							{% endif %}
-						</div>
-                	</div>
-            </div>
-			
+		<div class="d-flex ">
+			<div class="input-group w-auto">
+				<button class="btn btn-success btn-sm ps-4 pe-4" type="button" id="logBtn" data-bs-toggle="modal" data-bs-target="#addLog" >
+					Add Log
+				</button>
+				{% if user.is_superuser or is_team == True %}
+				<select class="rounded-1 form-select form-select-sm" id="user_s" onchange="getuserLog();" >
+						<option value="{{user.id}}">{{user.username}}</option>
+						{% for n in users %}
+						{% if n.username != user.username %}
+							<option class="active" value="{{n.id}}">{{n.username}}</option>
+						{% endif %}
+						{% endfor %}
+					</select>
+					
+				{% endif %}
+				<a href="{% url 'usersLog' %}" >View All</a>
+			</div>
+		</div>
+
+
+        <div class="table-wrapper mt-4">
 			<div class=" table-responsive-sm mt-4" >
 				<!-- <p class="mt-4">This Week</p> -->
 				<table class="table display table-sm table-hover table-light shadow rounded" id="thisweeklogTable" >
@@ -106,8 +104,6 @@ td.details-control {
 				
 			<div>
 			<div class=" table-responsive-sm mt-4">
-				
-				{% if lastweekdata %}
 				<table class="table display  table-sm table-hover table-light shadow rounded" id="weeklogTable" >
 					<thead>
 						<tr><th colspan='5' class="text-center1">Last Week<th></tr>
@@ -144,17 +140,17 @@ td.details-control {
 						{% endfor %}
 					</tbody>
 					<tfoot>
+						{% if lastweekdata %}
 						<tr>
 							<td colspan="3">Total</td>
 							<td colspan="3">
 								{{lastweektotal.Hours__sum}}
 							</td>
 						</tr>
+						{% endif %}
 					</tfoot>
 				</table>
-				{% else %}
-				<div class="align-center text-center text-secondary">No Record Found For Last Week!</div>
-				{% endif %}
+				
 			</div>
 			<div class=" table-responsive-sm mt-4">
 				<table class="table display table-sm table-hover table-light shadow" id="logTable" >
@@ -310,6 +306,7 @@ td.details-control {
 
 <script>
 	$(document).ready(function () {
+
 		$(' #thisweeklogTable, #weeklogTable').dataTable({
 			bPaginate: false,
 			bInfo:false,
@@ -369,6 +366,7 @@ td.details-control {
 	});
 	 
 
+
 $(document).ready(function(){
 	$("#logBtn").click(function(){
         $("#LogForm").trigger("reset");
@@ -376,6 +374,7 @@ $(document).ready(function(){
 		$("#btnUpdate").hide();
     });
 });
+
 
 function gettask()
 {
