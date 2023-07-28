@@ -479,7 +479,7 @@ function updateLog(){
 	work=$("#workdone").val()
 	billable=$("#billable").val();
 	csr =$("input[name=csrfmiddlewaretoken]").val();
-	alert(project);
+	//alert(project);
 	data={id:id,date:date,tasktype:tasktype,sublist:project,issue_list:task,workdone:work,hours:hour,billable:billable,action:'update',csrfmiddlewaretoken:csr}
 	$.ajax({
 		url:"{% url 'addLog' %}",

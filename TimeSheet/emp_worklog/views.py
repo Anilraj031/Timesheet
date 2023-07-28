@@ -109,7 +109,7 @@ def dailylog(request):
             'totalpage':[n+1 for n in range(totalpage)],
             'users':allusers
         }
-        print(getTeam_users[1])
+        #print(getTeam_users[1])
         return render(request, 'dailylog.html', context)
         
 #jquery filed name display
@@ -164,11 +164,12 @@ def ADD(request):
         action = request.POST.get('action')
         id=request.POST.get('id')
 
-        if billable == 'on': 
+        if billable == 'on' or billable == 'true': 
             b1=True 
         else:
             b1=False
-        print(project_id)
+        
+        print('i am herer')
         if project_id != None:
             project = SubProject.objects.get(id=project_id)
         else:
@@ -181,6 +182,8 @@ def ADD(request):
         
         if action == 'update':
             worklog.objects.filter(id=id).update(Date=date,TaskType_id=tasktype,project_id=project,task=task,Workdone=workdone,Hours=hours,Billable=b1)
+        if action == 'updateManager':
+              worklog.objects.filter(id=id).update(Workdone=workdone,Hours=hours,Billable=b1)
         else:
             datas = worklog (
                 User = request.user ,
@@ -309,7 +312,7 @@ def getLogByUsers(request):
             id=request.user.id
         data = createReportData(id,start_date,end_date,log,task)
         
-        print(id)
+        #print(id)
     return JsonResponse({'result':data})
 
 
@@ -332,12 +335,14 @@ def createReportData(id,start_date,end_date,log,task):
         if d.TaskType_id == 2:
             taskname = d.project_id.name
         readable_data.append({
+            'id':d.id,
             'user':d.User.username,
             'date':d.Date,
             'task':d.TaskType.TaskType,
             'taskname':taskname,
             'billable':d.Billable,
-            'details':d.Workdone
+            'details':d.Workdone,
+            'hour':d.Hours,
         })
     return readable_data
 """
@@ -350,19 +355,6 @@ def getLogByUsers(request):
 """
 @csrf_exempt
 def download_excel_data(request):
-    """
-    data = []
-    get_data = worklog.objects.filter(User_id=55)
-    
-    for d in get_data:
-        data.append({
-            'Employee':d.User.username,
-            'Date':d.Date,
-            'Task':d.TaskType.TaskType,
-            'Billable':d.Billable
-        })
-    pd.DataFrame(data).to_excel('LogReport.xlsx')
-"""
     if request.method =='POST':
         id = request.POST.get('user')
         start_date = request.POST.get('from')
@@ -370,6 +362,18 @@ def download_excel_data(request):
         log = request.POST.get('log')
         task = request.POST.get('task')
         user = User.objects.get(id=id)
+
         data = createReportData(id,start_date,end_date,log,task)
-        pd.DataFrame(data).to_excel('Log_Report_'+user.username+'_'+start_date+'.xlsx')
+        #pd.DataFrame(data).to_excel('Log_Report_'+user.username+'_'+start_date+'.xlsx')
+
+
+        #df = pd.DataFrame({'user': data.user, 'date': data.date, 'details': data.details, 'taskname': data.taskname,'tasktype':data.task,'hour':data.hour,'billable':data.billable})
+        df = pd.DataFrame(data)
+        writer = pd.ExcelWriter('Log_Report_'+user.username+'_'+start_date+'_to_'+end_date+'.xlsx')
+        df.to_excel(writer, sheet_name='Sheet1', startrow=1, index=False) 
+        worksheet = writer.sheets['Sheet1']
+        worksheet.write_string(0, 3, 'Employees Daily Log')
+
+        writer.close()
+
     return JsonResponse({'result':'success'})

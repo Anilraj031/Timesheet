@@ -1,7 +1,29 @@
 {% extends "base.html" %}
 {% block title %}Users Daily Log{% endblock %}
 {% block script %}
-
+<style>
+	textarea, .inputHr {
+		border:none !important;
+		outline:none !important;
+		height: 1em;
+		width: 50%;
+		padding: 3px;
+		transition: all 0.5s ease;
+		background-color:transparent !important;
+		overflow:hidden;
+	}
+	
+	textarea:focus {
+		height: 4em;
+		border: 1px solid grey !important;
+		background-color:GhostWhite !important;
+		overflow:auto;
+	}
+	.inputHr:focus {
+		border: 1px solid grey !important;
+		background-color:GhostWhite !important;
+	}
+</style>
 
 {% endblock %}
 {% block content %} 
@@ -36,6 +58,7 @@
 	</div>
 	
 	<div id="filter_result" style="display:none;">
+		{% csrf_token %}
 		<div class="d-sm-flex align-items-center justify-content-between mt-4 mb-1">
 			<h1 class="h3 mb-0 text-gray-800" style="color:CornflowerBlue;"></h1>
 			<a href="#" class="d-none d-sm-inline-block btn btn-sm btn-primary " onclick="logDownload()"><i
@@ -46,9 +69,10 @@
 				<tr>
 					<th>User</th>
 					<th>Date</th>
-					<th>Details</th>
+					<th class="w-25">Details</th>
 					<th>Task Name</th>
 					<th>TaskType</th>
+					<th>Hour</th>
 					<th>Billable</th>
 				</tr>
 			</thead>
@@ -71,6 +95,8 @@ $(document).ready(function () {
 });
 */
 $(document).ready(function() {
+	
+	//load datatable
     $('#logDetails').DataTable( {
         dom: 'Bfrtip',
 		bFilter:false,
@@ -146,17 +172,19 @@ function getResult()
 				html='';
 				if(data.result[i].billable == true)
 					{
-						html='<input class="form-check-input" type="checkbox" Checked />';
+						html='<input class="form-check-input" type="checkbox"   Checked id="check-'+data.result[i].id+'" onchange="updateRow(this,'+data.result[i].id+')" />';
 					}
 				else{
-					html='<input class="form-check-input" type="checkbox"  />';
+					html='<input class="form-check-input" type="checkbox"    id="check-'+data.result[i].id+'" onchange="updateRow(this,'+data.result[i].id+')" />';
 				}
 				dataset1.push(
 					data.result[i].user,
 					data.result[i].date,
-					data.result[i].details,
+					//data.result[i].details,
+					"<textarea class='form-control' rows='1' onchange='updateRow(this,"+data.result[i].id+")' id='tarea-"+data.result[i].id+"'>"+data.result[i].details+"</textarea>",
 					data.result[i].taskname,
 					data.result[i].task,
+					'<input class="form-control inputHr" id="hr-'+data.result[i].id+'" type="text" value="'+data.result[i].hour+'" style="width:100%;height:100%;" />',
 					html
 					
 					)
@@ -185,10 +213,36 @@ function logDownload()
 		method: "POST",
 		data:data,
 		success: function(data){
-			console.log(data);
+			//console.log(data);
 			
 		},
 	});
+}
+
+function updateRow(get_row,id)
+{
+	var text = $("#tarea-"+id).val()
+	var cBox = $("#check-"+id).is(":checked");
+	var hr = $("#hr-"+id).val();
+
+	csr =$("input[name=csrfmiddlewaretoken]").val();
+	var table = $( $(get_row).closest( 'table') ).DataTable();
+	var tr = $(get_row).closest('tr');
+	var row = table.row( tr );
+	//var hr = row.data()[5];
+	
+	
+	data = {id:parseInt(id),workdone:text,hours:hr,billable:cBox,action:'updateManager',csrfmiddlewaretoken:csr};
+	$.ajax({
+		url: "{% url 'addLog' %}",
+		method: "POST",
+		data:data,
+		success: function(data){
+			console.log('from here');
+			
+		},
+	});
+	
 }
 </script>
 {% endblock %}
