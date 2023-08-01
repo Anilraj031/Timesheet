@@ -28,6 +28,7 @@
 {% endblock %}
 {% block content %} 
  <div class="container" style="background-color:GhostWhite !important;">
+	
 	<h5 class="text-info">Download Log Report</h5>
 	<div class="btn-group btn-group-sm" role="group" aria-label="Small button group">
 		{% if is_team == True %}
@@ -61,8 +62,9 @@
 		{% csrf_token %}
 		<div class="d-sm-flex align-items-center justify-content-between mt-4 mb-1">
 			<h1 class="h3 mb-0 text-gray-800" style="color:CornflowerBlue;"></h1>
-			<a href="#" class="d-none d-sm-inline-block btn btn-sm btn-primary " onclick="logDownload()"><i
-					class="fas fa-download fa-sm text-white-50"></i> Download Excel</a>
+			<span id="downloadLink">
+				
+			</span>
 		</div>
 		<table class="table table-responsive" id="logDetails">
 			<thead>
@@ -164,7 +166,10 @@ function getResult()
 		data: data,
 		success: function(data){
 			$('#filter_result').show();
-			console.log(data.result);
+			//console.log(data.result);
+			const test = data.filter;
+			$('#downloadLink').html('<a href="/Worklog/downloadLog/'+test+'" class="d-none d-sm-inline-block btn btn-sm btn-primary " ><i class="fas fa-download fa-sm text-white-50"></i> Download Excel</a>');
+
 			dataset = [];
 			dataset1 = [];
 			for(i=0;i<data.result.length;i++)
@@ -199,26 +204,6 @@ function getResult()
 	});
 }
 
-function logDownload()
-{
-	user = $('#user_s').val();
-	s_date = $('#start_date').val();
-	e_date = $('#end_date').val();
-	l_type = $('#log_type').val();
-	t_type = $('#task_type').val();
-	//alert(user+":"+s_date+":"+e_date);
-	data = {user:user,from:s_date,to:e_date,log:l_type,task:t_type};
-	$.ajax({
-		url: "{% url 'downloadLog' %}",
-		method: "POST",
-		data:data,
-		success: function(data){
-			//console.log(data);
-			
-		},
-	});
-}
-
 function updateRow(get_row,id)
 {
 	var text = $("#tarea-"+id).val()
@@ -244,5 +229,7 @@ function updateRow(get_row,id)
 	});
 	
 }
+
+
 </script>
 {% endblock %}

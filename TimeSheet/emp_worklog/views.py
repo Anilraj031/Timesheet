@@ -1,6 +1,6 @@
 from django.shortcuts import render, redirect
 # from django.http import HttpResponse
-from .models import worklog,tasktype
+from .models import worklog,tasktype,LogApproval
 from Project.models import Project, SubProject
 from Issue.models import Ticket
 from django.core.paginator import Paginator
@@ -13,9 +13,10 @@ from django.db.models import Sum
 from django.contrib.auth.models import User
 from Customer.models import customer
 from Manager.views import checkTeams
+from Manager.models import FilterQuery
 from django.views.decorators.csrf import csrf_exempt
 import pandas as pd
-
+import xlwt
 
 # Create your views here.
 def dailylog1(request):
@@ -311,9 +312,11 @@ def getLogByUsers(request):
         if id == None:
             id=request.user.id
         data = createReportData(id,start_date,end_date,log,task)
-        
-        #print(id)
-    return JsonResponse({'result':data})
+        user=User.objects.get(pk=id)
+        FilterQuery(type='worklog',user=user,date1=start_date,date2=end_date,task_type=task,log_type=log).save()
+        f_id=FilterQuery.objects.last()
+
+    return JsonResponse({'result':data,'filter':f_id.id})
 
 
 def createReportData(id,start_date,end_date,log,task):
@@ -337,7 +340,7 @@ def createReportData(id,start_date,end_date,log,task):
         readable_data.append({
             'id':d.id,
             'user':d.User.username,
-            'date':d.Date,
+            'date':str(d.Date),
             'task':d.TaskType.TaskType,
             'taskname':taskname,
             'billable':d.Billable,
@@ -354,7 +357,7 @@ def getLogByUsers(request):
     return JsonResponse({'result':'success'})
 """
 @csrf_exempt
-def download_excel_data(request):
+def download_excel_data1(request,id):
     if request.method =='POST':
         id = request.POST.get('user')
         start_date = request.POST.get('from')
@@ -363,10 +366,10 @@ def download_excel_data(request):
         task = request.POST.get('task')
         user = User.objects.get(id=id)
 
+        """file is created on local machine"""
+        print('i am here')
         data = createReportData(id,start_date,end_date,log,task)
         #pd.DataFrame(data).to_excel('Log_Report_'+user.username+'_'+start_date+'.xlsx')
-
-
         #df = pd.DataFrame({'user': data.user, 'date': data.date, 'details': data.details, 'taskname': data.taskname,'tasktype':data.task,'hour':data.hour,'billable':data.billable})
         df = pd.DataFrame(data)
         writer = pd.ExcelWriter('Log_Report_'+user.username+'_'+start_date+'_to_'+end_date+'.xlsx')
@@ -375,5 +378,64 @@ def download_excel_data(request):
         worksheet.write_string(0, 3, 'Employees Daily Log')
 
         writer.close()
+       
+        return HttpResponse
+    else:
+        return JsonResponse({'result':'success'})
 
-    return JsonResponse({'result':'success'})
+@csrf_exempt
+def download_excel_data(request,id):
+    #print('I am id'+id)
+    filter = FilterQuery.objects.get(id=id)
+    data = createReportData(filter.user.id,filter.date1,filter.date2,filter.log_type,filter.task_type)
+    #print(data)
+    response = HttpResponse(content_type='application/ms-excel')
+    response['Content-Disposition'] = 'attachment; filename="users.xls"'
+
+    wb = xlwt.Workbook(encoding='utf-8')
+    ws = wb.add_sheet('Users Log Data') # this will make a sheet named Users Data
+
+    # Sheet header, first row
+    row_num = 0
+
+    font_style = xlwt.XFStyle()
+    font_style.font.bold = True
+
+    columns = ['id','Username', 'Date','Task Type', 'Task Name','Billable','Details','Hour' ]
+
+    for col_num in range(len(columns)):
+        ws.write(row_num, col_num, columns[col_num], font_style) # at 0 row 0 column 
+
+    # Sheet body, remaining rows
+    font_style = xlwt.XFStyle()
+
+    #rows = User.objects.all().values_list('username', 'first_name', 'last_name', 'email')
+    
+    rows = data
+    """
+    for row in rows:
+        row_num += 1
+        for col_num in range(len(row)):
+            ws.write(row_num, col_num, row[col_num], font_style)
+    """
+    columns = list(data[0].keys()) # list() is not need in Python 2.x
+    for i, row in enumerate(data):
+        for j, col in enumerate(columns):
+            ws.write(i+1, j, row[col])
+
+    wb.save(response)
+
+    return response
+
+@csrf_exempt
+def hourApproval(request):
+    if request.method == 'POST':
+        month = request.POST.get('month')
+        check = LogApproval.objects.filter(user=request.user,month=month)
+        print(check)
+        if not check:
+            LogApproval(user=request.user,month=month,request=True,status=False).save()
+            return JsonResponse({'result':'success'})
+        else:
+            return JsonResponse({'result':'Already requested for selected month!'})
+            

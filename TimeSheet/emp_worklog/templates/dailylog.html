@@ -37,7 +37,7 @@ td.details-control {
 					Add Log
 				</button>
 				{% if user.is_superuser or is_team == True %}
-				<select class="rounded-1 form-select form-select-sm" id="user_s" onchange="getuserLog();" >
+				<select class=" btn btn-secondary rounded-1 form-select form-select-sm" id="user_s" onchange="getuserLog();" >
 						<option value="{{user.id}}">{{user.username}}</option>
 						{% for n in users %}
 						{% if n.username != user.username %}
@@ -47,8 +47,10 @@ td.details-control {
 					</select>
 					
 				{% endif %}
-				<a href="{% url 'usersLog' %}" >View All</a>
+				<a class="btn btn-info btn-sm" href="{% url 'usersLog' %}" >View All</a>
+				<button class="btn btn-primary btn-sm" type="button" id="approveBtn" data-bs-toggle="modal" data-bs-target="#approveLog" >Request Approval</button>
 			</div>
+			
 		</div>
 
 
@@ -298,6 +300,43 @@ td.details-control {
 						<a href="" type="submit" class="btn btn-danger btn-sm"> Yes </a>
 					</div>
 				</form>
+			</div>
+		</div>
+	</div>	
+
+	<div class="modal" id="approveLog" tabindex="-1" role="dialog" aria-labelledby="deleteLogLabel" aria-hidden="true">
+		<div class="modal-dialog modal-dialog-centered" role="document">
+			<div class="modal-content rounded-0">
+					<div class="modal-header">						
+						<h4 class="modal-title">Request Hours Approval</h4>
+						<button class="btn-close" type="button" data-bs-dismiss="modal" aria-label="Close"></button>
+					</div>
+					<div class="modal-body">	
+						<div class="row mb-3">
+							<label for="month" class="col-sm-4 col-form-label">Select Month</label>
+							<div class="col-sm-8">
+								<select class="form-control form-control-sm col-xs-2 w-50" id="month" style="float:left;" onchange="getMonthData()">
+									<option value="1">January</option>
+									<option value="2">February</option>
+									<option value="3">March</option>
+									<option value="4">April</option>
+									<option value="5">May</option>
+									<option value="6">June</option>
+									<option value="7">July</option>
+									<option value="8">August</option>
+									<option value="9">September</option>
+									<option value="10">October</option>
+									<option value="11">November</option>
+									<option value="12">December</option>
+								</select>
+							</div>
+						</div>
+						<span id='approvalError'></span>
+					</div>
+					<div class="modal-footer">
+						<input type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal" aria-label="Close" value="Cancel">
+						<button  class="btn btn-primary btn-sm ps-2 pe-2" onclick="requestApproval()"> Request </button>
+					</div>
 			</div>
 		</div>
 	</div>	
@@ -626,6 +665,27 @@ function addUsersLogTableBackup(data)
 			var table = $('#weeklogTable').DataTable();
 			table.clear();
 			table.rows.add(dataset).draw();
+}
+
+function requestApproval()
+{
+	month = $('#month').val();
+	alert(month);
+	$.ajax({
+		url:"{% url 'requestApproval' %}",
+		method:'POST',
+		data:{month:month},
+		success:function(data){
+			if(data.result =='success')
+			{
+				$('#approveLog').modal('hide');
+			}
+			else{
+				$('#approvalError').html('<p class="text-danger">'+data.result+'</p>')
+			}
+		},
+
+	});
 }
 </script>
 {% endblock %}

@@ -22,7 +22,9 @@ urlpatterns = [
     path('hours',views.getHoursData,name="getHours"),
     path('usersLog',views.usersLog,name="usersLog"),
     path('getUserLog',views.getLogByUsers,name="getlogbyuser"),
-    path('downloadLog',views.download_excel_data,name="downloadLog")
+    #path('downloadLog',views.download_excel_data,name="downloadLog"),
+    path('downloadLog/<id>',views.download_excel_data,name="downloadLog"),
+    path('approvalRequest',views.hourApproval,name='requestApproval'),
     # path('filter/', views.filter)
 ]
  
