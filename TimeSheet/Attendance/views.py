@@ -8,6 +8,7 @@ import datetime
 from geopy.geocoders import Nominatim
 from django.db.models import Sum
 from math import radians, cos, sin, asin, sqrt
+from Manager.views import checkTeams
 #for email send
 from django.core.mail import send_mail
 from django.conf import settings
@@ -16,9 +17,13 @@ from django.conf import settings
 # Create your views here.
 def attendance(request):
     if request.user.is_authenticated:
-        comp = request.session['comp']
-        user = Employees.objects.filter(company=comp).values('user')
-        allusers =User.objects.filter(pk__in=user).values('id','username')
+        #comp = request.session['comp']
+        #user = Employees.objects.filter(company=comp).values('user')
+        #allusers =User.objects.filter(pk__in=user).values('id','username')
+
+        getTeam_users = checkTeams(request)
+        allusers = User.objects.filter(pk__in=getTeam_users[0])
+
         btnTrack=TrackAttendance.objects.get(user=request.user)
         attenType = userDetails.objects.get(user=request.user)
         #print(btnTrack)
@@ -228,7 +233,7 @@ def getLocation_Name(user_location):
 def getLeave(request):
     status = request.POST.get('status')
     user_id = request.POST.get('user')
-    #print(status)
+    #print(user_id)
     if user_id == '0':
         if status == '0':
             result = Leave.objects.all()
@@ -245,7 +250,12 @@ def getLeave(request):
         result = Leave.objects.filter(approval=status,user=user_id)
 
     all_leaves = getUsernamesForLeave(request, result)
-    return JsonResponse({'result':all_leaves})
+    getmanager = userDetails.objects.get(user__id=request.user.id)
+    if getmanager.is_manager == True or request.user.is_superuser:
+        manager = True
+    else: 
+        manager = False
+    return JsonResponse({'result':all_leaves,'is_manager':manager})
 
 def getUsernamesForLeave(request,result):
     if request.user.is_superuser:

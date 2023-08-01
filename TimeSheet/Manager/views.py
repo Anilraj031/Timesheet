@@ -1,6 +1,6 @@
 from django.shortcuts import render
 from django.http import JsonResponse
-from django.contrib.auth.models import User,Permission
+from django.contrib.auth.models import User,Permission,Group
 from .models import InitialPassword,Teams,TeamLeads,TeamUsers
 from django.views.decorators.csrf import csrf_exempt
 from Authentication.models import Company, userDetails,Employees,userManager
@@ -33,21 +33,26 @@ def checkTeams(request):
         #print(users)
         is_team=True
     else:
-        u_teams = TeamLeads.objects.values('team').filter(lead=request.user)
-        print(u_teams)
+        #u_teams = TeamLeads.objects.values('team').filter(lead=request.user)
+        is_manager = userDetails.objects.get(user__id=request.user.id)
+        if is_manager.is_manager == True:
+            users = userManager.objects.values('user').filter(manager=is_manager)
+            is_team=True
+        else:
+            users = User.objects.filter(username=request.user.username)
+        """
         if u_teams.exists():
             is_team=True
-            print("Updated")
             users = TeamUsers.objects.values('user').filter(team__in=u_teams)
         else:
             users = User.objects.filter(username=request.user.username)
+        """
     return users,is_team
 
 @csrf_exempt
 def getusers(request):
     users =checkTeams(request)
 
-    
     if request.method == 'POST':
         status = request.POST['status']
         if status == '1': #active
@@ -174,6 +179,9 @@ def viewUser(request,userId):
     
     leave = Leave.objects.filter(user=getUser).count()
     attendance = Attendance.objects.filter(user=getUser).count()
+
+    groups = Group.objects.all()
+
     details = {
         'issue':issue,
         'totalIssue':totalIssue,
@@ -201,7 +209,8 @@ def viewUser(request,userId):
         'task':task,
         'loginType':loginType,
         'manager':is_manager[1],
-        'members':getMembers
+        'members':getMembers,
+        'groups':groups,
     }
     #print(getUser.last_name)
     return render(request,'Reports/userDetails.html',data)

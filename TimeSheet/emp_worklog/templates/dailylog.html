@@ -37,7 +37,7 @@ td.details-control {
 					Add Log
 				</button>
 				{% if user.is_superuser or is_team == True %}
-				<select class=" btn btn-secondary rounded-1 form-select form-select-sm" id="user_s" onchange="getuserLog();" >
+				<select class=" btn btn-secondary form-select form-select-sm" id="user_s" onchange="getuserLog();" >
 						<option value="{{user.id}}">{{user.username}}</option>
 						{% for n in users %}
 						{% if n.username != user.username %}
@@ -195,8 +195,6 @@ td.details-control {
 								<a  data-bs-toggle="modal" data-bs-target="#deleteLog"><i class="fas fa-sharp fa-solid fa-trash text-danger"></i></a>
 							</td>
 						</tr>
-						{% empty %}
-						<center><h1><b>Record Not Found.</b></h1></center>
 						{% endfor %}
 					</tbody>
 				</table>
@@ -345,7 +343,9 @@ td.details-control {
 
 <script>
 	$(document).ready(function () {
-
+		const d = new Date();
+    	let month = d.getMonth();
+    	document.getElementById("month").selectedIndex = month;
 		$(' #thisweeklogTable, #weeklogTable').dataTable({
 			bPaginate: false,
 			bInfo:false,
@@ -356,6 +356,7 @@ td.details-control {
 		  $('#logTable').dataTable({
 			bPaginate: false,
 			bInfo:false,
+			bFilter:false,
 		  	pagingType: 'full_numbers',
 		  	lengthChange: true
 	  	});
@@ -670,7 +671,7 @@ function addUsersLogTableBackup(data)
 function requestApproval()
 {
 	month = $('#month').val();
-	alert(month);
+	//alert(month);
 	$.ajax({
 		url:"{% url 'requestApproval' %}",
 		method:'POST',

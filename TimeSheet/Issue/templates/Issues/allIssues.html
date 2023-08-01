@@ -347,7 +347,7 @@
                                 <select  name="assTo"  class="form-control form-control-sm rounded-0">
                                     <option value='0'>Select User</option>
                                     {% for u in users %}
-                                    <option value='{{u.id}}'>{{u.username}}</option>
+                                        <option value='{{u.id}}'>{{u.username}}</option>
                                     {% endfor %}
                                 </select>
                                 <input hidden id="statelist" name="state" value="New" class="form-control form-control-sm rounded-0" />

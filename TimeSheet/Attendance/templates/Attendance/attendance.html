@@ -62,10 +62,10 @@ function showError(error) {
     <h1 class="display-1 text-success"><span id="trackTime">00:00:00</span></h1>
     
     <div class="text-center">
-      <button name="start1" class="btn btn-lg btn-primary ps-5 pe-5" style="display:{% if btn.btn1 == True or today.exit != None %}none;{% elif btn.btn1 == False  %}; {% endif %}" onclick="make_attendance('start',{{today.exit}})" id="btnstart">Start</button>
-      <button name="reset" class="btn btn-lg btn-danger ps-5 pe-5" style="display:{% if btn.btn3 == True  %}none;{% elif btn.btn3 == False %}; {% endif %}" onclick="make_attendance('stop')" id="btnstop">End</button>
-      <button name="stop" class="btn btn-lg btn-warning ps-5 pe-5" style="display:{% if btn.btn2 == True or today.lbreak1 != None or today.exit != None %}none;{% elif btn.btn2 == False %}; {% endif %}" onclick="make_attendance('break')" id="btnbreak1">Time Off</button>
-      <button name="start" class="btn btn-lg btn-warning ps-5 pe-5" style="display:{% if btn.btn2 == False %}none;{% elif btn.btn2 == False %}; {% endif %}" onclick="make_attendance('resume')" id="btnbreak2">Continue</button>
+      <button name="start1" class="btn btn-lg btn-primary ps-5 pe-5" style="display:{% if today.entry != None  %}none;{% else  %}visible; {% endif %}" onclick="make_attendance('start',{{today.exit}})" id="btnstart">Start</button>
+      <button name="reset" class="btn btn-lg btn-danger ps-5 pe-5" style="display:{% if today.entry == None or today.exit != None  %}none;{% else %}visible; {% endif %}" onclick="make_attendance('stop')" id="btnstop">End</button>
+      <button name="stop" class="btn btn-lg btn-warning ps-5 pe-5" style="display:{% if today.lbreak1 != None or today.exit != None or today.entry == None %}none;{% else %}visible; {% endif %}" onclick="make_attendance('break')" id="btnbreak1">Time Off</button>
+      <button name="start" class="btn btn-lg btn-warning ps-5 pe-5" style="display:{% if today.lbreak2 != None or today.lbreak1 == None %}none;{% else %}visible; {% endif %}" onclick="make_attendance('resume')" id="btnbreak2">Continue</button>
     </div>
   </div>
   <hr>
@@ -166,7 +166,6 @@ function showError(error) {
             <option class="active" value="{{n.id}}">{{n.username}}</option>
           {% endif %}
         {% endfor %}
-        <option value="0">all</option>
       </select>
       {% endif %}
     </div>
@@ -333,7 +332,7 @@ function showError(error) {
       if(type == 'resume')
       {
         data ={date:f_date,lbreak2:time1,btn:3};
-        $("#btnbreak1").show();
+        
         $("#btnbreak2").hide();
         $("#breakendTime").text(time1);
         startTimer();
@@ -359,7 +358,8 @@ function showError(error) {
           alert("End your break first");
         }
       }
-      if(data != ''){
+      if(data != '')
+      {
         $.ajax({
           url: "{% url 'makeattendance' %}",
           method: "POST",
@@ -464,19 +464,23 @@ function showError(error) {
         url: "{% url 'get_todays_attendance' %}",
         method: "GET",
         success: function(data){
-                console.log(data);
-                if(data.result[0].lbreak1 != null && data.result[0].lbreak2 == null)
+                console.log('testToday '+data.result.length);
+                if(data.result.length !=0)
                 {
-                  pauseTimer();
-                  $timer.text(data.result[0].lbreak1);
-                }
-                else if(data.result[0].exit == null)
-                {
-                  checkTimer(data.result[0].entry+":00")
-                }
-                else{
+                  if(data.result[0].lbreak1 != null && data.result[0].lbreak2 == null)
+                  {
+                    pauseTimer();
+                    $timer.text(data.result[0].lbreak1);
+                  }
+                  else if(data.result[0].exit == null)
+                  {
+                    checkTimer(data.result[0].entry+":00")
+                  }
+                  else{
 
+                  }
                 }
+                
                 
         },
     });

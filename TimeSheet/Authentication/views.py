@@ -13,6 +13,8 @@ from Attendance.models import LeaveType
 from django.views.decorators.csrf import csrf_exempt
 from .forms import loginForm
 from django.db.models import Q
+
+from Manager.views import checkTeams
 # Create your views here.
 
 def sign_up(request):
@@ -184,7 +186,8 @@ def getTeams(request,teamid):
 def searchUser(request):
     user_name = request.POST.get('name')
     #print(user_name)
-    users = User.objects.filter(~Q(id=request.user.id),username__startswith=user_name).values()
+    allusers = checkTeams(request)
+    users = User.objects.filter(~Q(id=request.user.id),username__startswith=user_name,pk__in=allusers[0]).values()
     return JsonResponse({'result':list(users)})
 
 @csrf_exempt

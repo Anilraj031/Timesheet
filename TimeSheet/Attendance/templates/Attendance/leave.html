@@ -227,7 +227,7 @@
           //alert(get_id);
           //row.child( format(row.data()) ).show();
           //alert(get_id);
-          console.log(format(get_id));
+          //console.log(format(get_id));
           row.child( format(get_id)).show();
           tr.addClass('shown');
         }
@@ -321,39 +321,41 @@
         method: "POST",
         data: data,
         success: function(data){
+          console.log(data.is_manager);
             var html = '';
-                console.log(data.result);
+                //console.log(data.result);
                 for(i=0;i<data.result.length;i++)
                 {
                   if(data.result[i].approval=='Pending')
                     {
-                        html += '<tr style="background-color:lightskyblue">';
+                        html += '<tr style="background-color:lightskyblue"><td class="p-2 details-control"><span style="visibility:hidden">'+data.result[i].id+'</span></td>';
                     }
                     else if(data.result[i].approval=='Approved')
                     {
-                      html += '<tr style="background-color:lightgreen">';
+                      html += '<tr style="background-color:lightgreen"><td class="p-2 details-control"><span style="visibility:hidden">'+data.result[i].id+'</span></td>';
                     }
                     else{
-                      html += '<tr style="background-color:antiquewhite">';
+                      html += '<tr style="background-color:antiquewhite"><td class="p-2 details-control"><span style="visibility:hidden">'+data.result[i].id+'</span></td>';
                     }
                     html+='<td>'+data.result[i].date+'</td>'+
                     '<td>'+data.result[i].type+'</td>'+
                     '<td>'+data.result[i].leave_from+'</td>'+
                     '<td>'+data.result[i].leave_to+'</td>'+
                     '<td>'+data.result[i].approval+'</td>';
-                    if(is_admin=='True')
+                    if(data.is_manager==true)
                     {
                       html +='<td>'+data.result[i].user+'</td>';
-                   }
-                    if((is_admin !='True'))
-                    {
-                      html+='<td><a  href="LeaveDetails/'+data.result[i].id+'" id="a_details"><i class="bi bi-pencil-square"></i></a></td>';
                     }
-                  else{
-                        html+='<td><a  href="LeaveDetails/'+data.result[i].id+'" id="a_details"><i class="bi bi-x-square"></i></a></td>'
-                  }
+                    if(data.is_manager == true)
+                    {
+                      html+='<td><a  href="#" id="a_detailss" onclick="updateLeave('+data.result[i].id+')"><i class="fas fa-solid fa-pen text-primary"></i></a></td>';
+                    }
+                    else{
+                          html+='<td><a  href="LeaveDetails/'+data.result[i].id+'" id="a_details"><i class="bi bi-x-square"></i></a></td>'
+                    }
                 }
                 $("#tbody_leave").html(html); 
+                
         },
     });
     }
