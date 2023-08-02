@@ -13,5 +13,7 @@ urlpatterns = [
     path('Report/',views.report,name='createReport'),
     path('AddMember',views.addManagerMember,name="addtoManager"),
     path('Member',views.removeMember,name="removeMember"),
-    path('removeManager',views.removeManager,name="removeManager")
+    path('removeManager',views.removeManager,name="removeManager"),
+
+    path('send_invite_email/',views.send_invite_email,name='send_invite_email'),
 ]

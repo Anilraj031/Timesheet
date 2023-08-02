@@ -7,6 +7,7 @@ class userDetails(models.Model):
     attendanceType = models.CharField(max_length=100,null=True,default="Physical")
     mrequest = models.BooleanField("Request", default=False, null=True)
     is_manager = models.BooleanField("Manager", default=False, null=True)
+    is_mfa = models.BooleanField("MFA", default=False, null=True)
 
     def __str__(self):
       return self.user.username

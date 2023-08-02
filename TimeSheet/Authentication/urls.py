@@ -16,4 +16,10 @@ urlpatterns = [
     path('searchUsers',views.searchUser,name="searchuser"),
     path('addUsersTeam',views.addToTeams,name='addtoteam'),
     path('removefromTeam',views.removeFromTeam,name='removeFromTeam'),
+
+    #manoj
+    path('VerifyLogin/',views.VerifyLoginOTP,name='VerifyLogin'),
+    path('VerifySignup/',views.VerifySignupOTP,name='VerifySignup'),
+    path('addown/',views.addown,name='addown'),
+
 ]

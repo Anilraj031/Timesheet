@@ -102,7 +102,6 @@
                       {{users.first_name}} {{users.last_name}}
                     </div>
                   </div>
-                  
                   <div class="row mt-2">
                     <div class="col-sm-3">
                       <h6 class="mb-0">Date Joined</h6>
@@ -111,7 +110,16 @@
                       {{users.date_joined}}
                     </div>
                   </div>
-                  
+                  <div class="row mt-2">
+                    <div class="col-sm-3">
+                      <h6 class="mb-0">Enable MFA</h6>
+                    </div>
+                    <div class="col-sm-9 text-secondary">
+                      <div class="form-check form-switch">
+                        <input class="form-check-input" type="checkbox" role="switch" id="user_mfa" onclick="LoginType('mfa',{{users.id}})" value="{{mfa}}"  {% if mfa %}checked{% endif %}/>
+                      </div>
+                    </div>
+                  </div>
                   <div class="row mt-2">
                     <div class="col-sm-3">
                       <h6 class="mb-0">LogIn Type</h6>
@@ -561,6 +569,11 @@ function LoginType(type,id)
     val1 = $('#loginType').val();
     data ={type:val1,action:'update',user:id};
   }
+  else if(type=='mfa')
+  {
+    val1 = $('#user_mfa').val();
+    data ={type:val1,action:'mfa',user:id};
+  }
   else{
     val1 = $('#loginRequest').is(':checked');
     data ={type:val1,action:'request',user:id};
@@ -570,7 +583,7 @@ function LoginType(type,id)
     method:"POST",
     data:data,
     success:function(data){
-      alert(data.result);
+      //alert(data.result);
     },
   });
 }

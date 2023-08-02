@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+        <meta charset="UTF-8">
+        <meta http-equiv="X-UA-Compatible" content="IE=edge">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Verify Your Login</title>
+        <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.1/jquery.min.js"></script>
+
+         <!-- Custom fonts for this template-->
+    <link href="/static/css/styles.css" rel="stylesheet" />
+    <link
+        href="https://fonts.googleapis.com/css?family=Nunito:200,200i,300,300i,400,400i,600,600i,700,700i,800,800i,900,900i"
+        rel="stylesheet">
+</head>
+<body>
+<main>
+        <div class="container mt-5">
+            <div class="row justify-content-center">
+                <div class="col-lg-5">
+                    <div class="card shadow-lg border-0 rounded-lg mt-5">
+                        <div class="card-header"><h3 class="text-center font-weight-light my-4">Verify With OTP</h3></div>
+                        <div class="card-body form-group">
+                            {% comment %} <form action=''  method="POST">
+                                {% csrf_token %} {% endcomment %}
+                                <div class="mt-3">
+                                        <label class="">We Have Send An OTP in Your Email {{email}}</label>
+                                <div>
+                                {% comment %} OTP Is {{otp}} {% endcomment %}
+                                <div class="mt-3">
+                                    <input type="text" name="otp" id="otp" class="form-control" placeholder="Enter OTP"  required/>
+                                </div>
+                                <div class="d-flex align-items-center justify-content-end mt-4 mb-0">
+                                    <input type="submit" value="Submit" class="btn btn-primary" />
+                                </div>
+                            {% comment %} </form> {% endcomment %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+
+ 
+
+        <script>
+                $('#otp').change(function(){
+                let otp = $('#otp').val();
+                console.log("OTP: ", otp)
+                if (otp == '{{otp}}'){
+                console.log("OTP Matched")
+                $.ajax({
+                type: "POST",
+                url: '{% url "VerifyLogin" %}',
+                data: {'otp': otp, 'username':'{{username}}', 'password': "{{password}}"},
+                success: function(data){
+                console.log("OTP Success")
+                window.location.href = "/"
+                }
+                })
+                }
+                })
+        </script>
+
+</body>
+</html>

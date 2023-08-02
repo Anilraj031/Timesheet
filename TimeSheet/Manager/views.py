@@ -13,8 +13,41 @@ from django.db.models import Sum
 from Project.models import Project,SubProject
 from Issue.models import Ticket
 from django.db.models import Count
+from django.core.mail import send_mail
+from urllib.parse import quote
+from django.conf import settings
 
 # Create your views here.
+def send_invite_email(request):
+    if request.method == 'POST':
+        company_id = Employees.objects.get(user=request.user)
+        email = request.POST.get('email')
+        company = quote(company_id.company.name)
+        # link = "<a href='http://127.0.0.1:8000/validate/addown?email="+email+"&company="+company_id.company.name+"'>Join Company</a>"
+        link=f"http://127.0.0.1:8000/validate/addown/?email={email}&company={company}"
+        # message = f"Join With Us:\n From Here: '{link}',\n Your Email: '{email}',\n Company Id: '{company_id}'"
+
+        try:
+            send_mail(
+                "Invitation From Glacier",
+                f"Join With Us: {link}",
+                settings.EMAIL_HOST_USER,
+                [email],
+                fail_silently=False
+            )
+            return JsonResponse({'message': 'Invitation sent successfully'})
+        except Exception as e:
+            return JsonResponse({'message': 'Failed to send invitation'}, status=500)
+
+    return JsonResponse({'message': 'Invalid request'}, status=400)
+
+
+
+
+
+
+
+
 def getDetails(request):
     allusers =User.objects.all().values('id','username')
     data = {
@@ -208,6 +241,7 @@ def viewUser(request,userId):
         #'hours':totalProject,
         'task':task,
         'loginType':loginType,
+        'mfa':loginType.is_mfa,
         'manager':is_manager[1],
         'members':getMembers,
         'groups':groups,
@@ -300,14 +334,19 @@ def updateLoginType(request):
     typeTo = request.POST.get('type')
     userid = request.POST.get('user')
     user = User.objects.get(id=userid)
-    #print(l_type)
-    if(l_type == 'update'):
+    
+    if l_type == 'update':
         userDetails.objects.filter(user=user).update(attendanceType=typeTo)
         if typeTo == 'Physical':
             userDetails.objects.filter(user=user).update(mrequest=False)
-    else:
+    elif l_type == 'request':
         userDetails.objects.filter(user=user).update(mrequest=True)
-    
+    else:
+        if typeTo == 'True':
+            userDetails.objects.filter(user=user).update(is_mfa=False)
+        else:
+            userDetails.objects.filter(user=user).update(is_mfa=True)
+        
     return JsonResponse({'result':'success'})
 
 @csrf_exempt

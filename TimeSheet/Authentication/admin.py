@@ -13,7 +13,7 @@ class userCompAdmin(admin.ModelAdmin):
     list_display = ('company','user')
 
 class uDetails(admin.ModelAdmin):
-    list_display = ('user','attendanceType','mrequest','is_manager')
+    list_display = ('user','attendanceType','mrequest','is_manager','is_mfa')
 
 class uManager(admin.ModelAdmin):
     list_display = ('manager','user')

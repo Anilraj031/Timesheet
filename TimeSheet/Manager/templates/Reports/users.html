@@ -14,6 +14,20 @@
 {% block content %}
 
 <div class="container">
+  <div>
+    <form action="/Manage/send_invite_email/" method='post' id="emailForm">
+      {% csrf_token %}
+      <div class="row  mb-3">
+        <div class="input-group input-group-sm w-50">
+          <input type="email" name="email" Placeholder="email " class="form-control " />
+          <button class="btn btn-success btn-sm" type="button" id="sendEmailBtn">Invite Team</button>
+        </div>
+      </div>
+    </form>
+  </div>
+
+
+
     <div class="row row-cols-lg-auto g-2 " style="float:left;">
       <div class="col">
         <select class="form-control form-control-sm " id="status" onchange="getUser()">
@@ -110,6 +124,23 @@
   </div>
 </div>
 
+<!--invite team success message-->
+<div class="modal" id="inviteTeam" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content rounded-0">
+      <div class="modal-header">
+        <h1 class="modal-title fs-5" id="exampleModalLabel">Invite Sent</h1>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <p>Successfully sent invitation to <a href="#"><span id="inviteEmail"></span></a></p>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">Close</button>
+      </div>
+    </div>
+  </div>
+</div>
 
 
 <script>
@@ -119,6 +150,30 @@
         "bFilter": false,
         "bInfo": false
     });
+
+    $("#sendEmailBtn").click(function() {
+      var email = $("input[name='email']").val();
+      var csrfToken = $("input[name='csrfmiddlewaretoken']").val();
+      $("#inviteEmail").text(email);
+      
+      $.ajax({
+        url: "{% url 'send_invite_email' %}",
+        type: "POST",
+        data: {
+          email: email,
+          csrfmiddlewaretoken: csrfToken
+        },
+        success: function(response) {
+          //alert(response.message); // Display success message or handle response
+          $('#inviteTeam').modal('show');
+        },
+        error: function(xhr, status, error) {
+          alert("Failed to send email: " + error);  // Display error message or handle error
+        }
+      });
+    });
+
+//end fxn
 });
     function getUser(){
       status = $("#status").val();

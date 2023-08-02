@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    
+
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <meta name="description" content="">
+    <meta name="author" content="">
+
+    <title>Login Info</title>
+
+    <link href="/static/css/styles.css" rel="stylesheet" />
+    <link
+        href="https://fonts.googleapis.com/css?family=Nunito:200,200i,300,300i,400,400i,600,600i,700,700i,800,800i,900,900i"
+        rel="stylesheet">
+
+    <!-- Custom styles for this template-->
+    <link href="/static/css/sb-admin-2.min.css" rel="stylesheet">
+
+</head>
+
+<body class="bg-gradient-primary" onload='xyz()'>
+<div class="container">
+    <div id="layoutAuthentication">
+        <div id="layoutAuthentication_content ">
+            <main>
+                <div class="container mt-5">
+                    <div class="row justify-content-center">
+                        <div class="col-lg-5">
+                            <div class="card shadow-lg border-0 rounded-lg mt-5">
+                                <div class="card-header">
+                                    <h3 class="text-center font-weight-light my-4">Create User!</h3>
+                                </div>
+                                <div class="card-body form-group">
+                                    <form action='/validate/addown/' class="user" method="POST">
+                                        {% csrf_token %}
+                                        <!--{{form.as_p}} -->
+
+                                        <div class="form-floating mb-3">
+                                            <input type="email" class="form-control" name="email" id="email" placeholder="Email" value="{{email}}" readonly/>
+                                            <label for="exampleFormControlInput1" class="form-label">Email address</label>
+                                        </div>
+                                        <div class="form-floating mb-3">
+                                            <input type="text" class="form-control" name="username"  placeholder="Username" value="{{ forms.username}}" required/>
+                                            <label for="exampleFormControlInput1" class="form-label">Username</label>
+                                        </div>
+                                        <div class="form-floating mb-3">
+                                            <input type="password" class="form-control" name="password1"  placeholder="Password1" value="" required/>
+                                            <label for="floatingInputGrid">Password</label>
+                                        </div>
+                                        <div class="form-floating mb-3">
+                                            <input type="password" class="form-control" name="password2" placeholder="Password2" value="" required/>
+                                            <label for="floatingInputGrid">Confirm Password</label>
+                                        </div>
+                                        <div class="form-floating mb-3">
+                                            <input type="text" class="form-control" name="company" id="company" placeholder="Company" value="" readonly/>
+                                            <label for="floatingInputGrid">Company</label>
+                                        </div>
+                                        <div class="d-flex justify-content-end">
+                                            <input type="submit" value="Submit" class="btn btn-primary btn-sm" />
+                                        </div>
+                                    </form>
+                                </div>
+                                {% comment %} <div class="card-footer text-center py-3">
+                                    <div class="small">
+                                        <a class="small" href="{% url 'login' %}">Already have an account? Login!</a>
+                                    </div>
+                                </div> {% endcomment %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </main>
+        </div>
+    </div>
+</div>
+    <!-- Bootstrap core JavaScript-->
+    <script src="/static/vendor/jquery/jquery.min.js"></script>
+    <script src="/static/vendor/bootstrap/js/bootstrap.bundle.min.js"></script>
+
+    <!-- Core plugin JavaScript-->`1                                                                                `
+    <script src="/static/vendor/jquery-easing/jquery.easing.min.js"></script>
+
+    <!-- Custom scripts for all pages-->
+    <script src="/static/js/sb-admin-2.min.js"></script>
+
+</body>
+
+</html>
+
+<script>
+    $(document).ready(function(){
+        
+    })
+    xyz();
+    function xyz(){
+        
+        var abc=window.location.href;
+        //alert(abc);
+        var url = new URL(abc);
+        var c = url.searchParams.get("email");
+        var d = url.searchParams.get("company");
+
+        //alert(c);
+        document.getElementById("email").value=c;
+        document.getElementById("company").value=d;
+
+    }
+</script>

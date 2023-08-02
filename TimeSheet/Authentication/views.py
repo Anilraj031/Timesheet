@@ -4,7 +4,7 @@ from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.models import User
 from django.contrib import messages
 from django.urls import reverse
-from django.http import JsonResponse
+from django.http import JsonResponse,HttpResponse
 from .models import LoggedUser,Company,Employees
 from Manager.models import InitialPassword,Teams,TeamLeads,TeamUsers
 import re
@@ -13,10 +13,135 @@ from Attendance.models import LeaveType
 from django.views.decorators.csrf import csrf_exempt
 from .forms import loginForm
 from django.db.models import Q
-
 from Manager.views import checkTeams
+import random
+from django.core.mail import send_mail
+from django.conf import settings
 # Create your views here.
 
+
+#manoj
+def VerifySignupOTP(request):
+    if request.method == "POST":
+        userotp = request.POST.get('otp')
+        first_name = request.POST.get('first_name')
+        last_name = request.POST.get('last_name')
+        username = request.POST.get('username')
+        email = request.POST.get('email')
+        password1 = request.POST.get('password1')
+        password2 = request.POST.get('password2')
+
+        if password1 == password2:
+            form = User(first_name=first_name, last_name=last_name, email=email, username=username, password=password1)
+            form.save()
+            #print("OTP: ", userotp)
+            return HttpResponse('Hello')  # Replace JsonResponse with HttpResponse
+        else:
+            return HttpResponse(status=400)  # Return an appropriate response if passwords do not match
+    return HttpResponse(status=400)  # Return an appropriate response for other request methods
+
+
+def sign_up(request):
+    form = UserCreationForm()
+    if request.method == "POST":
+        email = request.POST.get('email')
+        first_name = request.POST.get('first_name')
+        last_name = request.POST.get('last_name')
+        username = request.POST.get('username')
+        password1 = request.POST.get('password1')
+        password2 = request.POST.get('password2')
+        form = UserCreationForm(request.POST)
+        if form.is_valid():
+            otp = random.randint(1000, 9999)
+            send_mail("Signup OTP Email", f"Verify Your Mail by the OTP: {otp}", settings.EMAIL_HOST_USER, [email], fail_silently=True)
+            messages.success(request, 'User saved successfully')
+            return render(request, 'Authentication/VerifySignup.html', {'otp': otp, 'first_name': first_name, 'last_name': last_name, 'email': email, 'username': username, 'password1': password1, 'password2': password2})        
+        else:
+            print("Form Error: ", form.errors)
+            messages.error(request, form.errors)
+        context = {'form': form}
+        return render(request, 'Authentication/register.html', context)
+    return render(request, 'Authentication/register.html', {'form': form})
+
+@csrf_exempt
+def VerifyLoginOTP(request):
+    if request.method == "POST":
+        userotp = request.POST.get('otp')
+        uname = request.POST.get('username')
+        upass = request.POST.get('password')
+        email = request.POST.get('email') 
+        user = authenticate(username=uname, password=upass, email=email)
+    if user is not None:
+        login(request, user)
+        print("Login Done")
+        print("OTP: ", userotp)
+    return JsonResponse({'data': 'Hello'}, status=200)
+
+
+def login_n(request):
+    if not request.user.is_authenticated:
+        if request.method == 'POST':
+            uname = request.POST.get('username')
+            upass = request.POST.get('password')
+            email = request.POST.get('email') 
+            user = authenticate(username=uname, password=upass)
+            # print(user)
+            if user is not None:
+                login(request, user)
+                LoggedUser(user=request.user).save()
+                email = User.objects.get(username=uname).email
+                otp = random.randint(1000, 9999)
+                send_mail("Login OTP Email: ", f"Verify Your Mail by the OTP: {otp}", settings.EMAIL_HOST_USER, [email], fail_silently=True)
+                # print(send_mail)
+                messages.success(request, 'User saved Successfully')
+                createSession(request)
+                return render(request, 'Authentication/VerifyLogin.html', {'otp': otp, 'username': uname, 'password': upass})
+            fm = {
+                'username': request.POST.get('username'),
+                'password': request.POST.get('password'),
+                'error': True
+            }
+        else:
+            fm = {}
+        context = {
+            "forms": fm
+        }
+        return render(request, 'Authentication/login.html', context)
+    else:
+        checkPassword = InitialPassword.objects.get(user=request.user.id)
+        if checkPassword.first_changed == False:
+            return HttpResponseRedirect(reverse('newPassword'))
+        else:
+            return HttpResponseRedirect(reverse('home'))
+
+
+def addown(request):
+    form = UserCreationForm()
+    if request.method == "POST":
+        form = UserCreationForm(request.POST)
+        email=request.POST.get('email')
+        get_company = request.POST.get('company')  # Retrieve the 'company' value from the form
+        company_id=Company.objects.get(name=get_company)
+        #company=Company.objects.get(pk=company_id.Company)
+        #print(company_id)
+        if form.is_valid():
+            user=form.save()  # Save the user object to the database
+            if user is not None:
+                User.objects.filter(username=user).update(email=email) 
+                newuser=User.objects.get(username=user)
+                Employees(company=company_id, user=newuser).save()
+
+            messages.success(request, 'Sign up successful!')
+            #return render(request, 'Authentication/login.html')
+            return HttpResponseRedirect(reverse('login'))
+    else:
+        context = {
+            'form': form,
+        }
+        return render(request, 'Authentication/addown.html', context)
+
+
+"""
 def sign_up(request):
     if request.method == "POST":
         fm=UserCreationForm(request.POST)
@@ -72,7 +197,7 @@ def login_n(request):
             return HttpResponseRedirect(reverse('newPassword'))
         else:
             return HttpResponseRedirect(reverse('home'))
-
+"""
 def logout_n(request):
     device = request.META['HTTP_USER_AGENT']
     LoggedUser.objects.filter(user=request.user,device=device).delete()
