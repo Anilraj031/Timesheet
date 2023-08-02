@@ -24,9 +24,9 @@ def attendance(request):
         getTeam_users = checkTeams(request)
         allusers = User.objects.filter(pk__in=getTeam_users[0])
 
-        btnTrack=TrackAttendance.objects.get(user=request.user)
+        #btnTrack=TrackAttendance.objects.get(user=request.user)
         attenType = userDetails.objects.get(user=request.user)
-        #print(btnTrack)
+        print(attenType.attendanceType)
         #send_mail('A cool subject', 'A stunning message', settings.EMAIL_HOST_USER, ['anilrajbanshi31@gmail.com'])
         #getDistance(request) #distance calculator
         date = datetime.date.today()
@@ -44,7 +44,7 @@ def attendance(request):
         data = {
             'result': result,
             'users' :allusers,
-            'btn' :btnTrack,
+            #'btn' :btnTrack,
             'attendanceType':attenType,
             'today':today
         }
@@ -175,11 +175,10 @@ def checkLeave(request):
 
 def getleave(request):
     #all_leaves = Leave.objects.all()
-    allusers =User.objects.all().values('id','username')
-    if request.user.is_superuser :
-        all_leaves = Leave.objects.all()
-    else:
-        all_leaves = Leave.objects.filter(user=request.user)
+    usr = checkTeams(request)
+    allusers =User.objects.filter(pk__in=usr[0]).values('id','username')
+    all_leaves = Leave.objects.filter(user__id__in=usr[0])
+    
     type = LeaveType.objects.all().values()
     return render(request, 'Attendance/leave.html',{'result':all_leaves,'users' :allusers,'LeaveTypes':type})
 
@@ -189,12 +188,22 @@ def request_leave(request):
     leave_to = request.POST['leave_to']
     details = request.POST['details']
     leaveType = LeaveType.objects.get(id=type)
-    leave = Leave(user = request.user,type=leaveType,leave_from=leave_from,leave_to=leave_to,details=details)
-    leave.save()
+    id = request.POST['id']
+    if id != "":
+        Leave.objects.filter(id=id).update(user = request.user,type=leaveType,leave_from=leave_from,leave_to=leave_to,details=details)
+    else:
+        Leave(user = request.user,type=leaveType,leave_from=leave_from,leave_to=leave_to,details=details).save()
+        
     if request.user.is_superuser:
         result = Leave.objects.all()
     else:
         result = Leave.objects.filter(user=request.user)
+
+    getmanager = userDetails.objects.get(user__id=request.user.id)
+    if getmanager.is_manager == True or request.user.is_superuser:
+        manager = True
+    else: 
+        manager = False
     list_data = []
     for x in result:
         list_data.append({
@@ -208,7 +217,7 @@ def request_leave(request):
         })
     #data = list(result)
     #print(list_data)
-    return JsonResponse({'result':list_data})
+    return JsonResponse({'result':list_data,'is_manager':manager})
 
 def getLocation_Name(user_location):
     if user_location != None:
@@ -233,12 +242,13 @@ def getLocation_Name(user_location):
 def getLeave(request):
     status = request.POST.get('status')
     user_id = request.POST.get('user')
-    #print(user_id)
+    usr = checkTeams(request)
+    print(user_id)
     if user_id == '0':
         if status == '0':
-            result = Leave.objects.all()
+            result = Leave.objects.filter(user__id__in=usr[0])
         else:
-            result = Leave.objects.filter(approval = status)
+            result = Leave.objects.filter(approval = status,user__id__in=usr[0])
     elif user_id == None:
         if status=='0':
             result = Leave.objects.filter(user=request.user)
@@ -290,10 +300,12 @@ def getUsernamesForLeave(request,result):
 @csrf_exempt
 def LeaveDetails(request):#leave_id):
     #leave = Leave.objects.get(id=leave_id)
+    is_manager = checkTeams(request)
+
     id=request.POST.get('id')
     leave = Leave.objects.filter(id=id).values()
     #return render(request, 'Attendance/leaveDetails.html',{'leave':leave})
-    return JsonResponse({'result':list(leave)})
+    return JsonResponse({'result':list(leave),'is_manager':is_manager[1]})
 
 @csrf_exempt
 def updateLeave(request):
@@ -314,9 +326,10 @@ def getLeaveCount(request):
     return JsonResponse({'app':approved,'pend':pending,'dec':declined})
 
 def getattendanceCount(request):
-    approved = Leave.objects.filter(approval=1).count()
-    users = User.objects.all().count()
-    attendance = Attendance.objects.filter(date__month=datetime.date.today().month).count()
+    usr =checkTeams(request)
+    approved = Leave.objects.filter(approval=1,user__id__in=usr[0]).count()
+    users = User.objects.filter(pk__in=usr[0]).count()
+    attendance = Attendance.objects.filter(date__month=datetime.date.today().month,user__id__in=usr[0]).count()
     #print(attendance)
     return JsonResponse({'onLeave':approved,'users':users,'active':attendance})
 
@@ -337,7 +350,6 @@ def updateLeaveType(request):
         name = request.POST.get('name')
         days = request.POST.get('day')
         id = request.POST.get('id')
-        print(name)
         if action == "add":
             getname = LeaveType.objects.filter(name=name).exists()
             if getname == True:

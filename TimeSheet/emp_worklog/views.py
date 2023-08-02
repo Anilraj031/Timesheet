@@ -275,17 +275,20 @@ def getMonthlyHours(request):
 
 
 def getHoursData(request):
-    gethour = customer.objects.all().aggregate(Sum('contract_hr')).get('contract_hr__sum', 0.00)
-    users = User.objects.all()
+    usr = checkTeams(request)
+    #gethour = customer.objects.all().aggregate(Sum('contract_hr')).get('contract_hr__sum', 0.00)
+    gethour = usr[0].count()*40
+    users = User.objects.filter(pk__in=usr[0])
     usr_hour = []
     for x in users:
         usr_hour.append({
             'user':x.username,
-            'hour':worklog.objects.filter(Date__month=datetime.today().month,User = x.id).aggregate(Sum('Hours')).get('Hours__sum', 0.00)
+            'hour':worklog.objects.filter(Date__month=datetime.today().month,User = x.id,Billable=True).aggregate(Sum('Hours')).get('Hours__sum', 0.00),
         })
-    
-    achievedhr = worklog.objects.filter(Date__month=datetime.today().month,Billable=True).aggregate(Sum('Hours')).get('Hours__sum', 0.00)
-    return JsonResponse({'requiredHr':gethour,'users':usr_hour,'hour':achievedhr})
+    #print(usr_hour)
+    achievedhr = worklog.objects.filter(Date__month=datetime.today().month,Billable=True,User__id__in=usr[0]).aggregate(Sum('Hours')).get('Hours__sum', 0.00)
+    nonbillable = worklog.objects.filter(Date__month=datetime.today().month,Billable=False,User__id__in=usr[0]).aggregate(Sum('Hours')).get('Hours__sum', 0.00)
+    return JsonResponse({'requiredHr':gethour,'users':usr_hour,'hour':achievedhr,'nonBillable':nonbillable})
 
 
 

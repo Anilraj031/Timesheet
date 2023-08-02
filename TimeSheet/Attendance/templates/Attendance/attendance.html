@@ -15,7 +15,8 @@
 <script>
 $(document).ready(function(){
     is_admin = '{% if user.is_superuser %}True{% else %}False{% endif %}';
-    checkAType = '{{attendanceType.attendanceType}}'
+    checkAType = '{{attendanceType.attendanceType}}';
+    
     if(checkAType == 'Physical')
     {
       getLocation();
@@ -243,11 +244,12 @@ function showError(error) {
   <div class="modal-dialog  modal-dialog-centered ">
     <div class="modal-content " style="border-radius:0px;">
       <div class="modal-header">
-        <h1 class="modal-title fs-5 text-danger" id="exampleModalLabel">Access Location!</h1>
+        <h1 class="modal-title fs-5 text-danger" id="exampleModalLabel">Location Permission!</h1>
         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
       </div>
       <div class="modal-body">
-        <p >Please request your manager for remote work!</p>
+        <p>Enable Location Permission to start the attendance</p> 
+        <p class="text-secondary">Or request your manager for remote work!</p>
       </div>
       <div class="modal-footer">
         <button type="button" class="btn btn-sm btn-secondary" data-bs-dismiss="modal">Close</button>

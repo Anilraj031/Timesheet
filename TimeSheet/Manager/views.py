@@ -6,6 +6,7 @@ from django.views.decorators.csrf import csrf_exempt
 from Authentication.models import Company, userDetails,Employees,userManager
 from Attendance.models import Attendance,Leave,TrackAttendance
 from datetime import date,datetime
+from django.db.models import Q
 import numpy as np
 import re
 from emp_worklog.models import worklog
@@ -69,7 +70,9 @@ def checkTeams(request):
         #u_teams = TeamLeads.objects.values('team').filter(lead=request.user)
         is_manager = userDetails.objects.get(user__id=request.user.id)
         if is_manager.is_manager == True:
-            users = userManager.objects.values('user').filter(manager=is_manager)
+            users1 = userManager.objects.values('user').filter(manager=is_manager)
+            
+            users = User.objects.filter(Q(pk__in=users1)| Q(pk=request.user.id))
             is_team=True
         else:
             users = User.objects.filter(username=request.user.username)
@@ -135,20 +138,17 @@ def newUser(request):
             elif check != 'Success':
                 return JsonResponse({'result':check})
             else:
-                newUser = User.objects.create_user(username=username,email=n_email,password=pass2)
-                #newUser.first_name=fname
-                #newUser.last_name =lname
-                newUser.save()
+                newUser = User.objects.create_user(username=username,email=n_email,password=pass2).save()
+
                 new_user = User.objects.get(username=username)
-                #print(new_user.id)
+
                 newP=InitialPassword(user=new_user,first_password=pass1,first_changed=False).save()
-                #newP.save()
-                attendanceTrack = TrackAttendance(user=new_user,btn1=False,btn2=False,btn3=True).save()
-                #attendanceTrack.save()
+
+                #attendanceTrack = TrackAttendance(user=new_user,btn1=False,btn2=False,btn3=True).save()
                 comp = Company.objects.get(user =request.user)
                 emp = Employees(company=comp,user=new_user).save()
 
-                udetails = userDetails(user=new_user,attendanceType="Physical").save()
+                udetails = userDetails(user=new_user).save()
                 #udetails.save()
                 
                 return JsonResponse({'result':"Success"})

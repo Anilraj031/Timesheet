@@ -181,21 +181,15 @@
                                 </div>
                                 <!-- Card Body -->
                                 <div class="card-body">
-                                    <div class="chart-pie"><!--
-                                        <div style="width: 100%; height: 40px; position: absolute; top: 50%; left: 0; margin-top: 5px; line-height:19px; text-align: center; z-index: 999999999999999">
-                                            <h3>80Hr</h3>
-                                        </div>-->
+                                    <div class="chart-pie">
                                         <canvas id="doughnutChart"></canvas>
                                     </div>
                                     <div class="mt-4 text-center small">
                                         <span class="mr-2">
-                                            <i class="fas fa-circle text-primary"></i> Direct
+                                            <i class="fas fa-circle text-success"></i> <span id="b"></span>
                                         </span>
                                         <span class="mr-2">
-                                            <i class="fas fa-circle text-success"></i> Social
-                                        </span>
-                                        <span class="mr-2">
-                                            <i class="fas fa-circle text-info"></i> Referral
+                                            <i class="fas fa-circle text-primary"></i> <span id="nb"></span>
                                         </span>
                                     </div>
                                 </div>
@@ -371,7 +365,7 @@ function loadBarChart(get_data)
     var myBarChart = new Chart(ctxB, {
     type: 'bar',
     data: {
-        labels: ["Declined", "Pending", "Approved", "Green", "Purple", "Orange"],
+        labels: ["Declined", "Pending", "Approved"],
         datasets: [{
             label: 'Active Users',
             data:[get_data.users,get_data.users,get_data.users],
@@ -413,12 +407,11 @@ function getDChartData()
     url: "{% url 'getHours' %}",
     method: "GET",
     success: function(data1){
-        //console.log(get_data.onLeave+':'+get_data.users+':'+get_data.active);
-        //console.log(get_data);
-        //loadDChart(get_data);
-        //console.log(get_data.users[0].hour.hour__sum)
+        //alert(data1.hour+":"+data1.requiredHr);
         label_name = [];
         label_data = [];
+        $('#b').text('Billable:'+data1.hour);
+        $('#nb').text('Non-Billable:'+data1.nonBillable);
         for(i=0;i<data1.users.length;i++){
             label_name[i]=""+data1.users[i].user;
             if(data1.users[i].hour != null)
@@ -443,7 +436,7 @@ function getDChartData()
           {
             //var percent = Math.round(((chart.config.data.datasets[0].data[0]+chart.config.data.datasets[0].data[1]+chart.config.data.datasets[0].data[2]) * 100) / 160);
             var oldFill = ctx.fillStyle;
-            var percent = ((data1.hour/(data1.requiredHr*4))*100).toFixed(2);
+            var percent = ((data1.hour/data1.requiredHr)*100).toFixed(2);
             
             var fontSize = ((height - chart.chartArea.top) / 100);
             

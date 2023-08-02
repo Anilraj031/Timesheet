@@ -5,7 +5,7 @@ from django.contrib.auth.models import User
 from django.contrib import messages
 from django.urls import reverse
 from django.http import JsonResponse,HttpResponse
-from .models import LoggedUser,Company,Employees
+from .models import LoggedUser,Company,Employees,userDetails
 from Manager.models import InitialPassword,Teams,TeamLeads,TeamUsers
 import re
 from django.contrib.auth.hashers import check_password
@@ -122,17 +122,16 @@ def addown(request):
         email=request.POST.get('email')
         get_company = request.POST.get('company')  # Retrieve the 'company' value from the form
         company_id=Company.objects.get(name=get_company)
-        #company=Company.objects.get(pk=company_id.Company)
-        #print(company_id)
+
         if form.is_valid():
             user=form.save()  # Save the user object to the database
             if user is not None:
                 User.objects.filter(username=user).update(email=email) 
                 newuser=User.objects.get(username=user)
                 Employees(company=company_id, user=newuser).save()
+                userDetails(user=user).save()
 
             messages.success(request, 'Sign up successful!')
-            #return render(request, 'Authentication/login.html')
             return HttpResponseRedirect(reverse('login'))
     else:
         context = {

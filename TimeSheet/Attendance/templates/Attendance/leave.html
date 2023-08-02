@@ -55,7 +55,7 @@
                         <th>From</th>
                         <th>To</th>
                         <th>Approval</th>
-                        {% if user.is_superuser %}<th>User</th>{% endif %}
+                        {% if 'Attendance.change_leave' in perms %}<th>User</th>{% endif %}
                         <th>Action</th>
                       </tr>
                     </thead>
@@ -67,7 +67,7 @@
                          </td>
                         <td>{{n.date}}</td><td>{{n.type.name}}</td><td>{{n.leave_from}}</td><td>{{n.leave_to}}</td>
                         <td >{{n.approval.name}}</td>
-                        {% if user.is_superuser %}
+                        {% if 'Attendance.change_leave' in perms %}
                         <td>{{n.user}}</td>
                         <td>
                           <a  id="a_detailss" onclick="updateLeave({{n.id}})">
@@ -171,10 +171,12 @@
       </div>
       <div class="modal-footer">
         <input type="hidden" value="" id=leaveId />
-        {% if user.is_superuser or perms.attendance.view_leaves %}
-        <button id="grantLeave" class="btn btn-sm btn-success" onclick="update_leave(1)">Grant Leave</button>
-        <a id="declineLeave" class="btn btn-sm btn-danger" onclick="update_leave(3)">Decline</a>
+        {% if 'Attendance.change_leave' in perms %} 
+        <button id="grantLeave" class="btn btn-sm btn-success" onclick="update_leave(1)" >Grant Leave</button>
+        <a id="declineLeave" class="btn btn-sm btn-danger" onclick="update_leave(3)">Reject</a>
         {% endif %}
+
+        <input id="updateLeave" class="btn btn-info btn-sm" type="button" value="Update" onclick="make_leave();"/>
         <input id="reqLeave" class="btn btn-info btn-sm" type="button" value="Request" onclick="make_leave();"/>
       </div>
     </div>
@@ -196,6 +198,7 @@
     $("#reqLeave").show();
     $("#grantLeave").hide();
     $("#declineLeave").hide();
+    $("#updateLeave").hide();
     $("#leaveRequest").click(function(){
       $("#leaveForm").trigger("reset");
     });
@@ -258,6 +261,7 @@
     function make_leave()
     {
       var data='';
+      var id=$("#leaveId").val();
       var leave_type = $("#leave_type").val();
       var leave_start = $("#leave_start").val();
       var leave_end = $("#leave_end").val();
@@ -265,7 +269,7 @@
       var csr =$("input[name=csrfmiddlewaretoken]").val();
       //alert(leave_type);
       $('#leave_modal').modal('hide');
-      data ={type:leave_type,leave_from:leave_start,leave_to:leave_end,details:leave_details,csrfmiddlewaretoken:csr};
+      data ={id:id,type:leave_type,leave_from:leave_start,leave_to:leave_end,details:leave_details,csrfmiddlewaretoken:csr};
       
       $.ajax({
           url: "{% url 'requestLeave' %}",
@@ -273,36 +277,36 @@
           data: data,
           success: function(data){
             var html = '';
-                  console.log(data.result);
+                  //console.log(data.result);
                   for(i=0;i<data.result.length;i++)
                   {
                     if(data.result[i].approval=='Pending')
                     {
-                        html += '<tr style="background-color:lightskyblue">';
+                        html += '<tr style="background-color:lightskyblue"><td class="p-2 details-control"><span style="visibility:hidden">'+data.result[i].id+'</span></td>';
                     }
                     else if(data.result[i].approval=='Approved')
                     {
-                      html += '<tr style="background-color:lightgreen">';
+                      html += '<tr style="background-color:lightgreen"><td class="p-2 details-control"><span style="visibility:hidden">'+data.result[i].id+'</span></td>';
                     }
                     else{
-                      html += '<tr style="background-color:antiquewhite">';
+                      html += '<tr style="background-color:antiquewhite"><td class="p-2 details-control"><span style="visibility:hidden">'+data.result[i].id+'</span></td>';
                     }
                     html += '<td>'+data.result[i].date+'</td>'+
                       '<td>'+data.result[i].type+'</td>'+
                       '<td>'+data.result[i].leave_from+'</td>'+
                       '<td>'+data.result[i].leave_to+'</td>'+
                       '<td>'+data.result[i].approval+'</td>';
-                      if(is_admin=='True')
+                      if(data.is_manager== true)
                       {
                         html +='<td>'+data.result[i].user+'</td>';
                       }
                       
-                      if((is_admin !='True'))
+                      if(data.is_manager != true)
                       {
-                        html+='<td><a  href="LeaveDetails/'+data.result[i].id+'" id="a_details"><i class="bi bi-pencil-square"></i></a></td>';
+                        html+='<td><a  href="LeaveDetails/'+data.result[i].id+'" id="a_details"><i class="fas fa-solid fa-pen text-primary"></i></a></td>';
                       }
                     else{
-                          html+='<td><a  href="LeaveDetails/'+data.result[i].id+'" id="a_details"><i class="bi bi-x-square"></i></a></td>'
+                          html+='<td><a  href="LeaveDetails/'+data.result[i].id+'" id="a_details"><i class="fas fa-solid fa-pen text-primary"></i></a></td>'
                     }
                   }
                   $("#tbody_leave").html(html); 
@@ -321,7 +325,7 @@
         method: "POST",
         data: data,
         success: function(data){
-          console.log(data.is_manager);
+          //console.log(data.is_manager);
             var html = '';
                 //console.log(data.result);
                 for(i=0;i<data.result.length;i++)
@@ -351,7 +355,7 @@
                       html+='<td><a  href="#" id="a_detailss" onclick="updateLeave('+data.result[i].id+')"><i class="fas fa-solid fa-pen text-primary"></i></a></td>';
                     }
                     else{
-                          html+='<td><a  href="LeaveDetails/'+data.result[i].id+'" id="a_details"><i class="bi bi-x-square"></i></a></td>'
+                          html+='<td><a  href="#" id="a_details" onclick="updateLeave('+data.result[i].id+')"><i class="fas fa-solid fa-pen text-info"></i></a></td>'
                     }
                 }
                 $("#tbody_leave").html(html); 
@@ -398,6 +402,7 @@
         data: data,
         success: function(data){
              //console.log(data.result);
+             
              var status="";
              for(i=0;i<data.result.length;i++){
               status = data.result[i].approval_id;
@@ -411,12 +416,21 @@
                 $("#grantLeave").show();
                 $("#declineLeave").show();
                 $("#reqLeave").hide();
+                $("#updateLeave").show();
              }
              else if(status == '1')
              {
                 $("#declineLeave").show();
                 $("#reqLeave").hide();
                 $("#grantLeave").hide();
+                $("#updateLeave").hide();
+             }
+             else if(data.is_manager == false)
+             {
+              $("#updateLeave").show();
+              $("#declineLeave").hide();
+              $("#reqLeave").hide();
+              $("#grantLeave").hide();
              }
              else{
               $("#declineLeave").hide();
@@ -437,7 +451,8 @@
           method: "POST",
           data: data,
           success: function(data){
-                
+                $('#leave_modal').modal('hide');
+                location.reload();
           },
       });
     }
@@ -479,11 +494,11 @@
               $("#reqLeave").hide();
               $("#grantLeave").show();
              }
-             html +='<div class="container p-2 "><h6 class="float-start text-info">Work Details:</h6><br /><div class="float-start ms-2">'+data.result[0].details+'</div></div>';
+             html +='<div class="container p-2 "><h6 class="float-start text-info">Leave Details:</h6><br /><div class="float-start ms-2">'+data.result[0].details+'</div></div>';
              html+='';
         },
     });
-    console.log(html);
+    //console.log(html);
     return html;
     }
 </script>
