@@ -71,13 +71,14 @@ def VerifyLoginOTP(request):
         upass = request.POST.get('password')
         email = request.POST.get('email') 
         user = authenticate(username=uname, password=upass, email=email)
-    if user is not None:
-        login(request, user)
-        print("Login Done")
-        print("OTP: ", userotp)
-    return JsonResponse({'data': 'Hello'}, status=200)
-
-
+        if user is not None:
+            login(request, user)
+            LoggedUser(user=request.user).save()
+            createSession(request)
+            print("Login Done")
+            print("OTP: ", userotp)
+        return JsonResponse({'data': 'Hello'}, status=200)
+        
 def login_n(request):
     if not request.user.is_authenticated:
         if request.method == 'POST':
@@ -87,15 +88,22 @@ def login_n(request):
             user = authenticate(username=uname, password=upass)
             # print(user)
             if user is not None:
-                login(request, user)
-                LoggedUser(user=request.user).save()
-                email = User.objects.get(username=uname).email
-                otp = random.randint(1000, 9999)
-                send_mail("Login OTP Email: ", f"Verify Your Mail by the OTP: {otp}", settings.EMAIL_HOST_USER, [email], fail_silently=True)
-                # print(send_mail)
-                messages.success(request, 'User saved Successfully')
-                createSession(request)
-                return render(request, 'Authentication/VerifyLogin.html', {'otp': otp, 'username': uname, 'password': upass})
+
+                user_Details= userDetails.objects.get(user=user)
+                print(user_Details.is_mfa)
+
+                if user_Details.is_mfa:
+                    email = User.objects.get(username=uname).email
+                    otp = random.randint(1000, 9999)
+                    send_mail("Login OTP Email: ", f"Verify Your Mail by the OTP: {otp}", settings.EMAIL_HOST_USER, [email], fail_silently=True)
+                    return render(request, 'Authentication/VerifyLogin.html', {'otp': otp, 'username': uname, 'password': upass})
+                else:
+                    login(request, user)
+                    LoggedUser(user=request.user).save()
+                    createSession(request)
+                    return HttpResponseRedirect(reverse('home'))
+
+                # messages.success(request, 'User saved Successfully')
             fm = {
                 'username': request.POST.get('username'),
                 'password': request.POST.get('password'),

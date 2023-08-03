@@ -4,8 +4,11 @@ from emp_worklog.models import worklog
 from django.views.decorators.csrf import csrf_exempt
 from django.http import JsonResponse
 from decimal import Decimal
+from django.contrib.auth.decorators import login_required
+
 
 # Create your views here.
+@login_required
 def projects(request):
     all = Project.objects.all()
     result ={

@@ -8,9 +8,12 @@ from django.http import JsonResponse
 from Manager.views import checkTeams
 from Authentication.models import Company,Employees
 import datetime
+from django.contrib.auth.decorators import login_required
+
 
 # Create your views here.
 # function based views
+@login_required
 def index(request):
     users = checkTeams(request)
     comp = request.session['comp']

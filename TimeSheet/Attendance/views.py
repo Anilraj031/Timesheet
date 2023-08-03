@@ -14,7 +14,11 @@ from django.core.mail import send_mail
 from django.conf import settings
 # email 
 
+# new add
+from django.contrib.auth.decorators import login_required
+
 # Create your views here.
+@login_required
 def attendance(request):
     if request.user.is_authenticated:
         #comp = request.session['comp']
@@ -163,6 +167,7 @@ def getUsernames(request,result):
     
     return alldata
 
+@login_required
 @csrf_exempt
 def checkLeave(request):
     d_date = datetime.datetime.now()
@@ -172,7 +177,7 @@ def checkLeave(request):
     print(leave.count())
     return JsonResponse({'available':count.days,'taken':leave.count()})
 
-
+@login_required
 def getleave(request):
     #all_leaves = Leave.objects.all()
     usr = checkTeams(request)
@@ -237,7 +242,7 @@ def getLocation_Name(user_location):
         return location
     else:
         return 'Location Disabled'
-
+@login_required
 @csrf_exempt
 def getLeave(request):
     status = request.POST.get('status')

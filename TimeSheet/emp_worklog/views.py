@@ -18,6 +18,7 @@ from django.views.decorators.csrf import csrf_exempt
 import pandas as pd
 import xlwt
 
+from django.contrib.auth.decorators import login_required
 # Create your views here.
 def dailylog1(request):
     all_data=worklog.objects.all()
@@ -48,6 +49,7 @@ def enterrecord(request):
 def addrecord(request):
     return render(request, 'addrecord.html')
 
+@login_required
 @csrf_exempt
 def dailylog(request):
     #view list of users if users is admin or team leader

@@ -17,6 +17,8 @@ from django.db.models import Count
 from django.core.mail import send_mail
 from urllib.parse import quote
 from django.conf import settings
+from django.contrib.auth.decorators import login_required
+
 
 # Create your views here.
 def send_invite_email(request):
@@ -48,7 +50,7 @@ def send_invite_email(request):
 
 
 
-
+@login_required
 def getDetails(request):
     allusers =User.objects.all().values('id','username')
     data = {
@@ -85,6 +87,7 @@ def checkTeams(request):
         """
     return users,is_team
 
+@login_required
 @csrf_exempt
 def getusers(request):
     users =checkTeams(request)
@@ -262,7 +265,7 @@ def addPermissions(request):
         nUser.user_permissions.remove(np)
     return JsonResponse({'result':"Success"})
 
-
+@login_required
 def company(request):
     comp = Company.objects.get(id=1)
     return render(request,'Reports/company.html',{'company':comp})
