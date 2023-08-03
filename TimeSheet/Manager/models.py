@@ -32,3 +32,13 @@ class FilterQuery(models.Model):
     task_type = models.CharField(null=True,max_length=100)
     log_type = models.CharField(null=True,max_length=100)
 
+class Notifications(models.Model):
+    table = models.CharField(null=True,max_length=100)
+    row = models.IntegerField(null=True)
+    user = models.ForeignKey(User, null=True, on_delete=models.CASCADE)
+    
+    details = models.BooleanField(default=False, null=True)
+    alert_status = models.BooleanField(default=False, null=True)
+    seen_status = models.BooleanField(default=False, null=True)
+    
+
