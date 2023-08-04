@@ -111,16 +111,20 @@ def login_n(request):
             }
         else:
             fm = {}
-        context = {
-            "forms": fm
-        }
-        return render(request, 'Authentication/login.html', context)
+            context = {
+                "forms": fm
+            }
+            #print("yes")
+            return render(request,'Authentication/login.html')
     else:
+        """
         checkPassword = InitialPassword.objects.get(user=request.user.id)
         if checkPassword.first_changed == False:
             return HttpResponseRedirect(reverse('newPassword'))
         else:
             return HttpResponseRedirect(reverse('home'))
+        """
+        return render(request, 'Authentication/login.html')
 
 
 def addown(request):

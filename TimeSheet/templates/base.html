@@ -198,11 +198,29 @@
             <!-- Nav Item - Alerts -->
             <ul class="navbar-nav ms-auto ms-md-0 ">
                 <li class="nav-item dropdown">
-                    <a class="nav-link dropdown-toggle" id="navbarDropdown" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false"> <i class="fas fa-bell"></i><span class="badge badge-sm badge-danger badge-counter bg-danger rounded-circle " style="margin-left:-10px;">3</span></a>
+                    <a class="nav-link dropdown-toggle" id="navbarDropdown" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false"> <i class="fas fa-bell"></i><span class="badge badge-sm badge-danger badge-counter bg-danger rounded-circle " style="margin-left:-10px;">{{ n_leaves.count|add:n_log_approval.count}}</span></a>
                     <ul class="dropdown-menu dropdown-menu-end rounded-0 mt-2" aria-labelledby="navbarDropdown">
-                        <li><a class="dropdown-item" href="#">
-                            <i class="fas fa-bell mr-2 text-gray-400"></i>
-                            Profile
+                        
+                            {% if n_leaves is not None and manager == False %}
+                                {% for nl in n_leaves %}
+                                <li><a class="dropdown-item" href="{% url 'getLeaveDetails' leave_id=nl.id   %}">
+                                You leave request has beed {{nl.approval}}
+                                </li>
+                                {% endfor %}
+                            {% else %}
+                                {% for nl in n_leaves %}
+                                <li><a class="dropdown-item" href="{% url 'getLeaveDetails' leave_id=nl.id   %}">
+                                {{nl.user.username}} has requested leave
+                                </li>
+                                {% endfor %}
+                            {% endif %}
+                            {% if n_log_approval is not None and manager == True %}
+                                {% for n in n_log_approval %}
+                                <li><a class="dropdown-item" href="#">
+                                    {{n.user.username}} has requested log approval for {{n.month}}
+                                    </li>
+                                {% endfor %}
+                            {% endif %}
                         </a></li>
                     </ul>
                 </li> 
@@ -281,7 +299,8 @@
                             </a>
                             <div class="collapse" id="collapseDetails" aria-labelledby="headingOne" data-bs-parent="#sidenavAccordion">
                                 <nav class="sb-sidenav-menu-nested nav">
-                                    {% if user.is_superuser or 'auth.view_user' in perms %}
+                                    
+                                    {% if manager == True or  'auth.view_user' in perms %}
                                     <a class="nav-link" href="{% url 'getall' %}">Users</a>
                                     <a class="nav-link" href="{% url 'company' %}">Company</a>
                                     <a class="nav-link" href="{% url 'allcustomers' %}">Customer</a>
@@ -395,3 +414,6 @@
 
     </body>
 </html>
+<script>
+
+</script>

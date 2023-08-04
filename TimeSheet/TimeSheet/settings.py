@@ -72,6 +72,10 @@ TEMPLATES = [
                 'django.template.context_processors.request',
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
+
+                #load initial data
+                'Attendance.context_processors.getNewLeaves',
+                'Attendance.context_processors.getLogApproval'
             ],
         },
     },
@@ -147,3 +151,6 @@ EMAIL_PORT = 465
 EMAIL_USE_SSL = True
 EMAIL_HOST_USER = 'anil.rajbanshi@glaciersystemsinc.com'
 EMAIL_HOST_PASSWORD = 'Anilkumar31!'
+
+
+LOGIN_URL = '/validate/login/' # Set the login URL for redirection

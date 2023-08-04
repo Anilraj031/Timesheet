@@ -6,7 +6,7 @@ from django.views.decorators.csrf import csrf_exempt
 from django.urls import reverse
 import datetime
 from geopy.geocoders import Nominatim
-from django.db.models import Sum
+from django.db.models import Sum,Q
 from math import radians, cos, sin, asin, sqrt
 from Manager.views import checkTeams
 #for email send
@@ -313,6 +313,11 @@ def LeaveDetails(request):#leave_id):
     return JsonResponse({'result':list(leave),'is_manager':is_manager[1]})
 
 @csrf_exempt
+def getLeaveDetails(request,leave_id):
+    leave = Leave.objects.get(id=leave_id)
+    return render(request, 'Attendance/leaveDetails.html',{'leave':leave})
+
+@csrf_exempt
 def updateLeave(request):
     approval =request.POST['status']
     leave = request.POST['leave_id']
@@ -409,3 +414,4 @@ def getDistance(request):
     LoA = -90.19
     LoB = -75.14
     print ("The distance between St Louis and Philadelphia is: ", distance_d(LaA, LaB, LoA, LoB), "K.M") 
+

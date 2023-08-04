@@ -11,7 +11,8 @@ urlpatterns = [
     path('GetAttendance',views.getAttendance, name='getattendance'),
     path('getLeaves',views.getLeave,name='getLeave'),
     path('checkLeave',views.checkLeave,name="checkLeave"),
-    #path('LeaveDetails/<leave_id>',views.LeaveDetails,name='LeaveDetails'),
+    
+    path('getLeaveDetails/<leave_id>',views.getLeaveDetails,name='getLeaveDetails'),
     
     path('LeaveDetails',views.LeaveDetails,name='LeaveDetails'),
     path('updateLeave',views.updateLeave,name='updateLeave'),

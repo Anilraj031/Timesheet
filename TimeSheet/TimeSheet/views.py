@@ -16,6 +16,7 @@ from emp_worklog.models import worklog
 
 def index(request):
 	if request.user.is_authenticated :
+		#is_manager = checkTeams(request)
 		issues = Ticket.objects.filter(Q(state='InProgress'))
 		worklogs =worklog.objects.filter(Date__month=datetime.date.today().month)
 		check_users=checkTeams(request)
