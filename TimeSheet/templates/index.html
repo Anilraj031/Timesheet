@@ -54,7 +54,7 @@
                     {% if manager == True %}
                     <!-- Content Row -->
                     <div class="row">
-                        <!-- Earnings (Monthly) Card Example -->
+                        <!-- active users Card Example -->
                         <div class="col-xl-3 col-md-6 mb-4">
                             <div class="card border-left shadow h-100 py-2 bg-gradient-success text-light rounded-1">
                                 <div class="card-body ">
@@ -174,15 +174,14 @@
                                             <i class="fas fa-ellipsis-v fa-sm fa-fw text-gray-400"></i>
                                         </a>
                                         <ul class="dropdown-menu">
-                                            <li><a class="dropdown-item" href="#">Action1</a></li>
-                                            <li><a class="dropdown-item" href="#">Another action</a></li>
-                                            <li><a class="dropdown-item" href="#">Something else here</a></li>
+                                            <li><a class="dropdown-item" href="#" onclick="getDChartData(true)">my team</a></li>
+                                            <li><a class="dropdown-item" href="#" onclick="getDChartData(false)">my hours</a></li>
                                         </ul>
                                     </div>
                                 </div>
                                 <!-- Card Body -->
                                 <div class="card-body">
-                                    <div class="chart-pie">
+                                    <div class="chart-pie" id='hours_chart'>
                                         <canvas id="doughnutChart"></canvas>
                                     </div>
                                     <div class="mt-4 text-center small">
@@ -337,17 +336,71 @@
     </div>
 </div> 
 {% else %}
-<div>
+<div class="tab-content container">
     <div class="row">
         <!-- Area Chart -->
         <div class="col-xl-8 col-lg-7">
             <div class="row">
-                <div class="col-6 card shadow" id="task_assigned"></div>
-                <div class="col-6 card shadow"></div>
+                <div class="col-md-6 col-12 card shadow mb-4">
+                    <!-- Card Header - Dropdown -->
+                    <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
+                        <h6 class="m-0 font-weight-bold text-primary">Active Tickets</h6>
+                        <div class="dropdown no-arrow">
+                            <a class="dropdown-toggle" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                <i class="fas fa-ellipsis-v fa-sm fa-fw text-gray-400"></i>
+                            </a>
+                            <ul class="dropdown-menu">
+                                <li><a class="dropdown-item" href="#">Action1</a></li>
+                                <li><a class="dropdown-item" href="#">Another action</a></li>
+                                <li><a class="dropdown-item" href="#">Something else here</a></li>
+                            </ul>
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        <ul class="list-group list-group-flush" id='activeTask'>
+                        </ul>
+                    </div>
+                </div>
+                <div class="col-md-6 col-12 card shadow mb-4">
+                    <!-- Card Header - Dropdown -->
+                    <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
+                        <h6 class="m-0 font-weight-bold text-primary">Active Projects</h6>
+                        <div class="dropdown no-arrow">
+                            <a class="dropdown-toggle" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                <i class="fas fa-ellipsis-v fa-sm fa-fw text-gray-400"></i>
+                            </a>
+                            <ul class="dropdown-menu">
+                                <li><a class="dropdown-item" href="#">Action1</a></li>
+                                <li><a class="dropdown-item" href="#">Another action</a></li>
+                                <li><a class="dropdown-item" href="#">Something else here</a></li>
+                            </ul>
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        <ul class="list-group list-group-flush" id='activeProject'>
+                            None
+                        </ul>
+                    </div>
+                </div>
             </div>
-            <div class="row">
-                <div class="col-6 card shadow"></div>
-                <div class="col-6 card shadow"></div>
+            <div class="row mt-2 card shadow">
+               <!-- Card Header - Dropdown -->
+               <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
+                <h6 class="m-0 font-weight-bold text-primary">Activity: last <span id="f_day"></span> days</h6>
+                <div class="dropdown no-arrow">
+                    <a class="dropdown-toggle" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                        <i class="fas fa-ellipsis-v fa-sm fa-fw text-gray-400"></i>
+                    </a>
+                    <ul class="dropdown-menu">
+                        <li><a class="dropdown-item" href="#" onclick="getmyactivity(7)">last 7 days</a></li>
+                        <li><a class="dropdown-item" href="#" onclick="getmyactivity(15)">last 15 days</a></li>
+                    </ul>
+                </div>
+            </div>
+            <div class="card-body">
+                <ul class="list-group list-group-flush" id='activity'>
+                </ul>
+            </div>
             </div>
 
         </div>
@@ -371,7 +424,7 @@
                 </div>
                 <!-- Card Body -->
                 <div class="card-body">
-                    <div class="chart-pie">
+                    <div class="chart-pie" id="hours_chart">
                         <canvas id="doughnutChart"></canvas>
                     </div>
                     <div class="mt-4 text-center small">
@@ -399,7 +452,17 @@
 
 
 <script>
-getChartData();
+{% if manager != True %}
+    getmytask();
+    getmyactivity(7);
+    getDChartData(false);
+
+{% else %}
+    getChartData();
+    getDChartData(true);
+    getAreaData();
+{% endif %}
+
 function getChartData()
 {
     $.ajax({
@@ -453,14 +516,23 @@ function loadBarChart(get_data)
     }
     });
 }
-getDChartData();
-function getDChartData()
+
+
+function getDChartData(is_manager)
 {
     $.ajax({
     url: "{% url 'getHours' %}",
     method: "GET",
+    data:{manager:is_manager},
     success: function(data1){
         //alert(data1.hour+":"+data1.requiredHr);
+        //first clear and redraw
+        //chart_id = 
+        var ChartContent = document.getElementById('hours_chart');
+        ChartContent.innerHTML = '';
+        $('#hours_chart').append('<canvas id="doughnutChart"></canvas>');
+
+
         label_name = [];
         label_data = [];
         $('#b').text('Billable:'+data1.hour);
@@ -474,40 +546,42 @@ function getDChartData()
             else{
                 label_data[i]="0";
             }
-                
-            }
-        //console.log(data1.requiredHr);
-        Chart.pluginService.register({
-            beforeDraw: function(chart) {
-            var width = chart.chart.width,
-                height = chart.chart.height,
-                //ctx = chart.chart.ctx,
-                ctx = document.getElementById("doughnutChart").getContext('2d'),
-                type = chart.config.type;
-      //console.log(chart.config.data.datasets[0].data[2]);
-          if (type == 'doughnut')
-          {
-            //var percent = Math.round(((chart.config.data.datasets[0].data[0]+chart.config.data.datasets[0].data[1]+chart.config.data.datasets[0].data[2]) * 100) / 160);
-            var oldFill = ctx.fillStyle;
-            var percent = ((data1.hour/data1.requiredHr)*100).toFixed(2);
-            
-            var fontSize = ((height - chart.chartArea.top) / 100);
-            
-            ctx.restore();
-            ctx.font = fontSize + "em sans-serif";
-            ctx.textBaseline = "middle"
-      
-            var text = percent + "%",
-                textX = Math.round((width - ctx.measureText(text).width) / 2),
-                textY = (height + chart.chartArea.top) / 2;
-                  
-            ctx.fillStyle = chart.config.data.datasets[0].backgroundColor[0];
-            ctx.fillText(text, textX, textY);
-            ctx.fillStyle = oldFill;
-            ctx.save();
-          }
         }
-      });
+        
+        const tooltipNote = {
+            id: 'centerText',
+            beforeDraw: chart =>  {
+                    var width = chart.chart.width,
+                        height = chart.chart.height,
+                        ctx = document.getElementById("doughnutChart").getContext('2d'),
+                        type = chart.config.type;
+                    //console.log(chart.config.data.datasets[0].data[2]);
+                    if (type == 'doughnut')
+                    {
+                        //var percent = Math.round(((chart.config.data.datasets[0].data[0]+chart.config.data.datasets[0].data[1]+chart.config.data.datasets[0].data[2]) * 100) / 160);
+                        var oldFill = ctx.fillStyle;
+                        var percent = ((data1.hour/data1.requiredHr)*100).toFixed(2);
+                        
+                        var fontSize = ((height - chart.chartArea.top) / 100);
+                        
+                        ctx.restore();
+                        ctx.font = fontSize + "em sans-serif";
+                        ctx.textBaseline = "middle"
+                
+                        var text = percent + "%",
+                            textX = Math.round((width - ctx.measureText(text).width) / 2),
+                            textY = (height + chart.chartArea.top) / 2;
+                            
+                        ctx.fillStyle = chart.config.data.datasets[0].backgroundColor[0];
+                        ctx.fillText(text, textX, textY);
+                        ctx.fillStyle = oldFill;
+                        ctx.save();
+                    }
+            }
+          };
+
+        //center text plugin
+        
 
     new Chart(document.getElementById("doughnutChart"), {
         type: "doughnut",
@@ -527,19 +601,15 @@ function getDChartData()
         options: {
           maintainAspectRatio: false,
           cutoutPercentage: 65,
-        }
+          
+        },
+        plugins: [tooltipNote]
       });
     },
 });
 }
 
 
-function loadDChart(data1)
-{//doughnut
-    
-}
-
-getAreaData();
 function getAreaData()
 {
     $.ajax({
@@ -558,11 +628,20 @@ function getAreaData()
                 }
             }
             //line
+            current_month = new Date();
+            months = []
+            //console.log(current_month.getMonth());
+            for(i=0;i<=current_month.getMonth();i++)
+            {
+                m = month_num_to_name(i+1);
+                months.push(m);
+            }
+            
             var ctxL = document.getElementById("lineChart").getContext('2d');
             var myLineChart = new Chart(ctxL, {
             type: 'line',
             data: {
-                labels: ["January", "February", "March", "April", "May", "June", "July"],
+                labels: months,
                 datasets: [{
                 label: "Monthly Hours for "+data.year,
                 data: getdata,//[data.jan.Hours__sum, data.feb.Hours__sum, 0, 0, 0, 0, 0],
@@ -669,8 +748,151 @@ function loadUsersChart(id,hr1,hr2)
 }
 
 
-</script>
-<script>
+function getmytask()
+{
+    $.ajax({
+        url: "{% url 'getmytask' %}",
+        method: "GET",
+        success: function(data){
+            console.log(data);
+            html = '';
+            for(i =0;i<data.tasks.length;i++)
+            {
+                if(data.tasks[i].priority=='high')
+                {
+                    html='<span class="ms-4 me-2 badge rounded-0 text-bg-danger">'+data.tasks[i].priority+'</span>';
+                }
+                else if(data.tasks[i].priority=='medium')
+                {
+                    html='<span class="ms-4 me-2 badge rounded-0 text-bg-info">'+data.tasks[i].priority+'</span>';
+                }
+                else{
+                    html='<span class="ms-4 me-2 badge rounded-0 text-bg-primary">'+data.tasks[i].priority+'</span>';
+                }
+                $("#activeTask").append('<li class="list-group-item"><a href="/Issue/details/'+data.tasks[i].id+'"" class="">'+data.tasks[i].ticket_name+html+data.tasks[i].state+'</a></li>');
+            }
+        },
+    });
+}
 
+
+function getmyactivity(num)
+{
+    $.ajax({
+        url: "{% url 'getmyactivity' %}",
+        method: "GET",
+        data:{days:num},
+        success: function(data){
+            console.log(data);
+            $("#activity").empty()
+            $('#f_day').html(num);
+            attendance = data.result.attendance;
+            leave=data.result.leave;
+            log = data.result.logs;
+            for(i=0;i<attendance.length;i++)
+            {
+                today = formatDate(new Date());
+                if(today == attendance[i].date)
+                {
+                    $("#activity").append('<li class="list-group-item"><span>Today</span><span class="ms-4">Entry at: '+attendance[i].entry+'</span><span class="ms-4">Exit at: '+attendance[i].exit+'</span> <a href="/Attendance/Details">view all</a></li>');
+                }
+                else{
+                    $("#activity").append('<li class="list-group-item"><span>'+attendance[i].day+'</span><span class="ms-4">Entry at: '+attendance[i].entry+'</span><span class="ms-4">Exit at: '+attendance[i].exit+'</span> <a href="/Attendance/Details">view all</a></li>');
+                }
+                
+            }
+            for(i=0;i<leave.length;i++)
+            {
+                if(leave[i].approval_id == 1 )
+                {
+                    $("#activity").append('<li class="list-group-item">Your leave from '+leave[i].leave_from+' to '+leave[i].leave_to+' has been Approved <a href="/Attendance/getLeaveDetails/'+leave[i].id+'">View Details</a></li>');
+                }
+                else if(leave[i].approval_id == 2 )
+                {
+                    $("#activity").append('<li class="list-group-item">Your leave from '+leave[i].leave_from+' to '+leave[i].leave_to+' is Pending <a href="/Attendance/getLeaveDetails/'+leave[i].id+'">View Details</a></li>');
+                }
+                else 
+                {
+                    $("#activity").append('<li class="list-group-item">Your leave from '+leave[i].leave_from+' to '+leave[i].leave_to+' has been Rejected <a href="/Attendance/getLeaveDetails/'+leave[i].id+'">View Details</a></li>');
+                }
+                
+            }
+            for(i=0;i<log.length;i++)
+            {
+                if(log[i].status ==  false)
+                {
+                    m =month_num_to_name(log[i].month)
+                    $("#activity").append('<li class="list-group-item">Your log approval for '+m+' is pending  <a href="/Worklog/usersLog">View log details</a></li> ');
+                }
+                else{
+                    m =month_num_to_name(log[i].month)
+                    $("#activity").append('<li class="list-group-item">Your log approval for '+m+' is approved <a href="/Worklog/usersLog">View log details</a></li>');
+                }
+            }
+        },
+    })
+}
+
+function month_num_to_name(month)
+{
+    const date = new Date();
+    date.setMonth(month - 1);
+
+    return date.toLocaleString('en-US', { month: 'long' });
+}
+
+function formatDate(date) {
+    var d = new Date(date),
+        month = '' + (d.getMonth() + 1),
+        day = '' + d.getDate(),
+        year = d.getFullYear();
+
+    if (month.length < 2) 
+        month = '0' + month;
+    if (day.length < 2) 
+        day = '0' + day;
+
+    return [year, month, day].join('-');
+}
+
+
+/*
+ Chart.pluginService.register({
+            beforeDraw: function(chart) {
+            var width = chart.chart.width,
+                height = chart.chart.height,
+                //ctx = chart.chart.ctx,
+                
+                ctx = document.getElementById("doughnutChart").getContext('2d'),
+                type = chart.config.type;
+            //console.log(chart.config.data.datasets[0].data[2]);
+           
+            if (type == 'doughnut')
+            {
+                //var percent = Math.round(((chart.config.data.datasets[0].data[0]+chart.config.data.datasets[0].data[1]+chart.config.data.datasets[0].data[2]) * 100) / 160);
+                var oldFill = ctx.fillStyle;
+                var percent = ((data1.hour/data1.requiredHr)*100).toFixed(2);
+                
+                var fontSize = ((height - chart.chartArea.top) / 100);
+                
+                ctx.restore();
+                ctx.font = fontSize + "em sans-serif";
+                ctx.textBaseline = "middle"
+        
+                var text = percent + "1%",
+                    textX = Math.round((width - ctx.measureText(text).width) / 2),
+                    textY = (height + chart.chartArea.top) / 2;
+                    
+                ctx.fillStyle = chart.config.data.datasets[0].backgroundColor[0];
+                ctx.fillText(text, textX, textY);
+                ctx.fillStyle = oldFill;
+                ctx.save();
+            }
+            }
+        });
+
+
+*/
 </script>
+
 {% endblock %}

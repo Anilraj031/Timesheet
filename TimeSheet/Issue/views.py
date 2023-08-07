@@ -9,6 +9,7 @@ from Manager.views import checkTeams
 from Authentication.models import Company,Employees
 import datetime
 from django.contrib.auth.decorators import login_required
+from django.db.models import Q
 
 
 # Create your views here.
@@ -167,3 +168,8 @@ def addComments(request):
         
         getComment = ticketDetails.objects.last()
         return JsonResponse({'date':getComment.date.strftime("%B %d, %Y %I:%M %p"),'comment':getComment.comments,'user':getComment.user.username})
+
+def getMyTask(request):
+    if request.method == 'GET':
+        issues = Ticket.objects.filter(Q(state='New')|Q(state='Pending'),assigned_to = request.user).values()
+        return JsonResponse({'tasks':list(issues)})

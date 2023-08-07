@@ -15,6 +15,7 @@ urlpatterns= [
     path('donestatus ', views.Done, name='done'),
     path('updateStatus',views.updateStatus,name='updateTicketStatus'),
     path('addDetails', views.addComments, name= 'addComments'),
+    path('gettask',views.getMyTask, name='getmytask'),
    
 ]
 

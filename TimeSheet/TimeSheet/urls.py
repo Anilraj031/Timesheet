@@ -22,6 +22,7 @@ urlpatterns = [
     path('admin/', admin.site.urls),
     path('', views.index, name="home"),
     path('login', views.login, name='login2'),
+    path('activity',views.myActivity,name='getmyactivity'),
     path('test', views.test, name='test'),
     path('validate/', include('Authentication.urls')),
     path('Attendance/', include('Attendance.urls')),

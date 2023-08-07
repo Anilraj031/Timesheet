@@ -52,7 +52,8 @@ def send_invite_email(request):
 
 @login_required
 def getDetails(request):
-    allusers =User.objects.all().values('id','username')
+    get_users = checkTeams(request)
+    allusers = User.objects.filter(pk__in=get_users[0]).values('id','username')
     data = {
             'users' :allusers
         }
@@ -298,13 +299,22 @@ def report(request):
         'total':str(days),
         'leave':str(l_taken)
     }
-    #new_data = attendance.union(leave)
-    #print(a_details)
+    issue_hours = worklog.objects.filter(User=request.user,Billable=True,TaskType=1,Date__range=(date1,date2)).aggregate(Sum('Hours'))
+    project_hours = worklog.objects.filter(User=request.user,Billable=True,TaskType=2,Date__range=(date1,date2)).aggregate(Sum('Hours'))
+    other_hours = worklog.objects.filter(User=request.user,Billable=False,Date__range=(date1,date2)).aggregate(Sum('Hours'))
+    
+    print(other_hours)
+    issues = Ticket.objects.filter(assigned_to__id=user_id).values()
+    
     data={
         'user':user_details,
-        'attendance':list(attendance),
+        #'attendance':list(attendance),
         'leave':list(leave),
-        'atdnc':a_details
+        'atdnc':a_details,
+        'issue_hr':issue_hours,
+        'project_hr':project_hours,
+        'other_hr':other_hours,
+        'issue':list(issues),
     }
     #print(attendance)
     return JsonResponse(data)

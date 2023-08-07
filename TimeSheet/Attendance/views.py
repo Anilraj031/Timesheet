@@ -30,7 +30,7 @@ def attendance(request):
 
         #btnTrack=TrackAttendance.objects.get(user=request.user)
         attenType = userDetails.objects.get(user=request.user)
-        print(attenType.attendanceType)
+        #print(attenType.attendanceType)
         #send_mail('A cool subject', 'A stunning message', settings.EMAIL_HOST_USER, ['anilrajbanshi31@gmail.com'])
         #getDistance(request) #distance calculator
         date = datetime.date.today()

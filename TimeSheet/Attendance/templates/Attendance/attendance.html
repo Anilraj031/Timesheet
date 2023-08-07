@@ -14,7 +14,7 @@
 </style>
 <script>
 $(document).ready(function(){
-    is_admin = '{% if user.is_superuser %}True{% else %}False{% endif %}';
+    is_admin = '{% if manager == True %}True{% else %}False{% endif %}';
     checkAType = '{{attendanceType.attendanceType}}';
     
     if(checkAType == 'Physical')
@@ -181,7 +181,7 @@ function showError(error) {
             <th>Break</th>
             <th>Exit</th>
             <th>Hour</th>
-            {% if user.is_superuser %}<th>User</th><th style="width:1%;">Action</th>{% endif %}
+            {% if manager == True  %}<th>User</th><th style="width:1%;">Action</th>{% endif %}
           </tr>
         </thead>
         <tbody id="tbody">

@@ -184,7 +184,7 @@
     <body class="sb-nav-fixed" >
         <nav class="sb-topnav navbar navbar-expand-sm navbar-light bg-light fixed-top" style=" box-shadow: 5px 1px 5px #888888;">
             <!-- Navbar Brand-->
-            <a class="navbar-brand ps-3 bg-light" href="{% url 'home' %}">{{request.session.company}}</a>
+            <a class="navbar-brand ps-3 bg-light" href="{% url 'home' %}">{{request.session.company}}{{request.session.id}}</a>
             <!-- Sidebar Toggle-->
             <button class="btn btn-link btn-sm order-2 order-lg-0 me-4 me-lg-0" id="sidebarToggle" href="#!"><i class="fas fa-bars"></i></button>
             
@@ -198,7 +198,7 @@
             <!-- Nav Item - Alerts -->
             <ul class="navbar-nav ms-auto ms-md-0 ">
                 <li class="nav-item dropdown">
-                    <a class="nav-link dropdown-toggle" id="navbarDropdown" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false"> <i class="fas fa-bell"></i><span class="badge badge-sm badge-danger badge-counter bg-danger rounded-circle " style="margin-left:-10px;">{{ n_leaves.count|add:n_log_approval.count}}</span></a>
+                    <a class="nav-link dropdown-toggle" id="navbarDropdown" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false"> <i class="fas fa-bell"></i><span class="badge badge-sm badge-danger badge-counter bg-danger rounded-circle " style="margin-left:-10px;">{% if n_leaves.count|add:n_log_approval.count != 0 %}{{ n_leaves.count|add:n_log_approval.count}}{% endif %}</span></a>
                     <ul class="dropdown-menu dropdown-menu-end rounded-0 mt-2" aria-labelledby="navbarDropdown">
                         
                             {% if n_leaves is not None and manager == False %}

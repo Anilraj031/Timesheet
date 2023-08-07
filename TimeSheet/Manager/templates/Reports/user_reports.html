@@ -19,7 +19,7 @@
       <div class="row">
           <div class="col-md-12">
               <div class="col-md-12">
-                {% if user.is_superuser %}
+                {% if manager == True %}
                   <select class="form-control form-control-sm col-sm-2 mb-3" id="user" style="float:left;">
                     <option value="0">All Users</option>
                     {% for n in users %}
@@ -34,7 +34,7 @@
           </div>
       </div>
     </div>
-     <form class="form" style="max-width: none; ">
+     <form class="form" style="max-width: none; background-color:ghostwhite;">
       <div class="container-fluid">
         <div class="container" style="border:1px solid black;">
           <div class="container-fluid">
@@ -43,13 +43,13 @@
             </div>
             <hr>
             <div class='row'>
-              <div class='col-md-8'>
-                <label>Employee Details</label>
+              <div class='col-md-7'>
+                <label><b>Employee Details</b></label>
                 <div class="row">
                   <div class="col-sm-3">
                     <h6 class="mb-0">UserName</h6>
                   </div>
-                  <div class="col-sm-9 text-secondary">
+                  <div class="col-sm-9 ">
                     <span id='name'></span>
                   </div>
                 </div>
@@ -57,7 +57,7 @@
                   <div class="col-sm-3">
                     <h6 class="mb-0">Email</h6>
                   </div>
-                  <div class="col-sm-9 text-secondary">
+                  <div class="col-sm-9 ">
                     <span id='email'></span>
                   </div>
                 </div>
@@ -65,7 +65,7 @@
                   <div class="col-sm-3">
                     <h6 class="mb-0">Date Joined</h6>
                   </div>
-                  <div class="col-sm-9 text-secondary">
+                  <div class="col-sm-9 ">
                     <span id='joined'></span>
                   </div>
                 </div>
@@ -73,17 +73,17 @@
                   <div class="col-sm-3">
                     <h6 class="mb-0">Last Login</h6>
                   </div>
-                  <div class="col-sm-9 text-secondary">
+                  <div class="col-sm-9 ">
                     <span id='login'></span>
                   </div>
                 </div>
               </div>
-              <div class='col-md-4'>
+              <div class='col-md-5'>
                 <div class="row mt-4">
                   <div class="col-sm-6">
                     <h6 class="mb-0 ml-4">Created On</h6>
                   </div>
-                  <div class="col-sm-6 text-secondary">
+                  <div class="col-sm-6 ">
                     <span id='rtoday'></span>
                   </div>
                 </div>
@@ -91,7 +91,7 @@
                   <div class="col-sm-6">
                     <h6 class="mb-0 ml-4">Report from</h6>
                   </div>
-                  <div class="col-sm-6 text-secondary">
+                  <div class="col-sm-6 ">
                     <span id='rfrom'></span>
                   </div>
                 </div>
@@ -99,13 +99,14 @@
                   <div class="col-sm-6">
                     <h6 class="mb-0 ml-4">Report to</h6>
                   </div>
-                  <div class="col-sm-6 text-secondary">
+                  <div class="col-sm-6 ">
                     <span id='rto'></span>
                   </div>
                 </div>
               </div>
             </div>
             <hr>
+            
             <div>
               <label><b>Attendance Details</b></label>
               <div class="row">
@@ -113,7 +114,7 @@
                   <div class="col-sm-3">
                     <h6 class="mb-0">Total Working Days</h6>
                   </div>
-                  <div class="col-sm-9 text-secondary">
+                  <div class="col-sm-9 ">
                     <span id='workdays'></span>
                   </div>
                 </div>
@@ -121,7 +122,7 @@
                   <div class="col-sm-3">
                     <h6 class="mb-0">Worked Days</h6>
                   </div>
-                  <div class="col-sm-9 text-secondary">
+                  <div class="col-sm-9 ">
                     <span id='workeddays'></span>
                   </div>
                 </div>
@@ -129,23 +130,61 @@
                   <div class="col-sm-3">
                     <h6 class="mb-0">Leave Taken</h6>
                   </div>
-                  <div class="col-sm-9 text-secondary">
+                  <div class="col-sm-9 ">
                     <span id='leave'></span>
                   </div>
                 </div>
               </div>
             </div>
-      
+            <hr>
+
+            <div>
+              <label><b>Worked Hours</b></label>
+              <div class="row">
+                <div class="row">
+                  <div class="col-sm-3">
+                    <h6 class="mb-0">Total Worked Hour</h6>
+                  </div>
+                  <div class="col-sm-9 ">
+                    <span id='worked_hr'></span>
+                  </div>
+                </div>
+                <div class="row mt-2">
+                  <div class="col-sm-3">
+                    <h6 class="mb-0">Issue</h6>
+                  </div>
+                  <div class="col-sm-9 ">
+                    <span id='issue_hr'></span>
+                  </div>
+                </div>
+                <div class="row mt-2">
+                  <div class="col-sm-3">
+                    <h6 class="mb-0">Project</h6>
+                  </div>
+                  <div class="col-sm-9 ">
+                    <span id='project_hr'></span>
+                  </div>
+                </div>
+                <div class="row mt-2">
+                  <div class="col-sm-3">
+                    <h6 class="mb-0">Other</h6>
+                  </div>
+                  <div class="col-sm-9 ">
+                    <span id='other_hr'></span>
+                  </div>
+                </div>
+              </div>
+            </div>
             <hr>
             <div>
               <label><b>Works Done</b></label>
               <table class="table" id="workDetails">
                 <thead>
                   <tr>
-                    <th>Issue Opened</th>
+                    <th>Ticket</th>
                     <th>Task Type</th>
-                    <th>Date Completed</th>
-                    <th>Hours</th>
+                    <th>Assigned On</th>
+                    <th>Completed On</th>
                   </tr>
                 </thead>
                 <tbody id="tbody_work"></tbody>
@@ -184,7 +223,10 @@
                        format: 'a4'
                    });
                   doc.addImage(img, 'JPEG', 20, 20);
-                  doc.save('bhavdip-html-to-pdf.pdf');
+                  var user = $('#user option:selected').text();
+                  var date1 = $('#from').val();
+                  var date2 = $('#to').val();
+                  doc.save('Report_for_'+user+'_'+date1+'_to_'+date2+'.pdf');
                   form.width(cache_width);
               });
           }
@@ -280,7 +322,7 @@
             data:data,
             method: "POST",
             success: function(data){
-                console.log(data);
+                //console.log(data);
                 $("#name").text(data.user.name);
                 $("#email").text(data.user.email);
                 $("#joined").text(data.user.joined);
@@ -291,7 +333,22 @@
                 $("#workdays").text(data.atdnc.total);
                 $("#workeddays").text(data.atdnc.worked);
                 $("#leave").text(data.atdnc.leave);
-                works_done(data.attendance)
+
+                //hours
+                var hr1 = 0;
+                var hr2 = 0;
+                var hr3 = 0;
+                if(data.issue_hr.Hours__sum != null ){hr1=parseInt(data.issue_hr.Hours__sum)}
+                if(data.project_hr.Hours__sum != null ){hr2=parseInt(data.project_hr.Hours__sum)}
+                if(data.other_hr.Hours__sum != null ){hr3=parseInt(data.other_hr.Hours__sum)}
+                
+                var hr4 =hr1+hr2+hr3;
+
+                $('#worked_hr').text(hr4);
+                $('#issue_hr').text(hr1);
+                $('#project_hr').text(hr2);
+                $('#other_hr').text(hr3);
+                works_done(data.issue)
             },
             });
         }
@@ -310,10 +367,10 @@
         html = '';
         for(i=0;i<data.length;i++)
         {
-            html+='<tr><td>'+data[i].date+'</td>'+
-            '<td>'+data[i].day+'</td>'+
-            '<td>'+data[i].date+'</td>'+
-            '<td>'+data[i].hour+'</td></tr>';
+            html+='<tr><td>'+data[i].ticket_name+'</td>'+
+            '<td>'+data[i].ticket_type+'</td>'+
+            '<td>'+data[i].open_date+'</td>'+
+            '<td>'+data[i].last_updated+'</td></tr>';
         }
         $("#tbody_work").html(html); 
     }
