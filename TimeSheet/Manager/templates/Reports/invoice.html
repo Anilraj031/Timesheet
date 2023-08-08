@@ -1,0 +1,119 @@
+{% extends "base.html" %}
+{% block title %}Users Daily Log{% endblock %}
+{% block script %}
+<style>
+</style>
+
+{% endblock %}
+{% block content %} 
+
+<div class="container" style="background-color:GhostWhite !important;">
+	
+	<h5 class="text-info">Create Invoice</h5>
+	<div class="btn-group btn-group-sm" role="group" aria-label="Small button group">
+		{% if manager == True %}
+		<select class="rounded-0 form-select form-select-sm" id="customer"   name="customers">
+			{% for n in customer %}
+				<option class="" value="{{n.id}}">{{n.name}}</option>
+			{% endfor %}
+			<option value="0">all</option>
+		</select>
+		{% endif %}
+		<select class="form-control form-control-sm col-xs-2 rounded-0" id="month" >
+            <option value="1">January</option>
+            <option value="2">February</option>
+            <option value="3">March</option>
+            <option value="4">April</option>
+            <option value="5">May</option>
+            <option value="6">June</option>
+            <option value="7">July</option>
+            <option value="8">August</option>
+            <option value="9">September</option>
+            <option value="10">October</option>
+            <option value="11">November</option>
+            <option value="12">December</option>
+          </select>
+		<button class="btn btn-success btn-sm" onclick="getInvoice()">Filter</button>
+	</div>
+
+    <div id="filter_result" style="display:visible;">
+		{% csrf_token %}
+		<div class="d-sm-flex align-items-center justify-content-between mt-4 mb-1">
+			<h1 class="h3 mb-0 text-gray-800" style="color:CornflowerBlue;"></h1>
+			<span id="downloadButton">
+				
+			</span>
+		</div>
+		<table class="table table-responsive mt-2" id="invoiceDetails">
+			<thead>
+				<tr>
+					<th>User</th>
+                    <th>Week</th>
+					<th>Date</th>
+                    <th>Title</th>
+                    <th>Hour</th>
+					<th class="w-25">Details</th>
+					
+				</tr>
+			</thead>
+			<tbody id="filter">
+
+			</tbody>
+		</table>
+	</div>
+</div>
+
+<script>
+$(document).ready(function () {
+    $('#invoiceDetails').dataTable({
+        bPaginate: false,
+        bFilter:false,
+        bInfo:false,
+            pagingType: 'full_numbers',
+            lengthChange: true
+        });
+});
+
+function getInvoice()
+{
+    var cus = $('#customer').val();
+    var month = $('#month').val();
+    
+    $.ajax({
+        url:'{% url "getInvoice" %}',
+        data:{customer:cus,month:month},
+        method:'GET',
+        success: function(data){
+            //console.log(data);
+            //$('#filter_result').show();
+			//console.log(data.result);
+			//const test = data.filter;
+            id=parseInt(cus);
+            mn = parseInt(month);
+            url="/Manage/downloadInvoice/"+id+"/"+mn;
+			$('#downloadButton').html('<a href="'+url+'" class="d-none d-sm-inline-block btn btn-sm btn-primary " ><i class="fas fa-download fa-sm text-white-50"></i> Download Excel</a>');
+
+			dataset = [];
+			dataset1 = [];
+			for(i=0;i<data.result.length;i++)
+			{
+				dataset1.push(
+					data.result[i].user,
+					'Week '+data.result[i].week,
+					data.result[i].date,
+                    data.result[i].issue,
+					data.result[i].hour,
+                    data.result[i].detail,
+                    )
+				dataset.push(dataset1);
+				dataset1=[];
+			}
+			//console.log(dataset1)
+			var table = $('#invoiceDetails').DataTable();
+			table.clear();
+			table.rows.add(dataset).draw();
+        },
+    });
+}
+</script>
+{% endblock %}

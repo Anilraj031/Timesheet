@@ -1,12 +1,14 @@
 from django.shortcuts import render
-from django.http import JsonResponse
+from django.http import JsonResponse,HttpResponse
 from django.contrib.auth.models import User,Permission,Group
 from .models import InitialPassword,Teams,TeamLeads,TeamUsers
 from django.views.decorators.csrf import csrf_exempt
 from Authentication.models import Company, userDetails,Employees,userManager
 from Attendance.models import Attendance,Leave,TrackAttendance
-from datetime import date,datetime
+from Customer.models import customer,employee
+from datetime import date,datetime,timedelta
 from django.db.models import Q
+from dateutil.relativedelta import relativedelta,MO
 import numpy as np
 import re
 from emp_worklog.models import worklog
@@ -18,6 +20,9 @@ from django.core.mail import send_mail
 from urllib.parse import quote
 from django.conf import settings
 from django.contrib.auth.decorators import login_required
+from dateutil.parser import parse
+import pandas as pd
+import xlwt
 
 
 # Create your views here.
@@ -396,3 +401,159 @@ def removeManager(request):
     userDetails.objects.filter(user__id=userid).update(is_manager=False)
     userManager.objects.filter(manager__user__id=userid).delete()
     return JsonResponse({'result':'success'})
+
+@login_required
+def invoice(request):
+    usr = checkTeams(request)
+    users = User.objects.filter(pk__in=usr[0])
+    cutomers = customer.objects.all()
+    return render(request,'Reports/invoice.html',{'customer':cutomers,'users':users})
+
+def getInvoice(request):
+    customer_id = request.GET['customer']
+    month = request.GET['month']
+
+    start_date = getWeekNum(month,None,1)
+    end_date = getWeekNum(month,None,2)
+
+
+    custr = customer.objects.get(id=customer_id)
+    customer_contacts = employee.objects.filter(company__id=customer_id)
+    issue = Ticket.objects.filter(affected_user__in=customer_contacts)
+    projects = Project.objects.filter(customer = custr.name)
+    subProjects = SubProject.objects.filter(project__in=projects)
+    
+    logs = worklog.objects.filter(task__in=issue,Billable=True,Date__range=(start_date,end_date))
+    projectLogs = worklog.objects.filter(project_id__in=subProjects,Billable=True,Date__range=(start_date,end_date))
+
+
+    invoice = []
+    for l in logs:
+        weekNum = getWeekNum(month,l.Date,3)
+        invoice.append({
+            'user':l.User.username,
+            'week':weekNum,
+            'date':l.Date,
+            'issue':l.task.ticket_name,
+            'detail':l.Workdone,
+            'hour':l.Hours
+            })
+        
+    for p in projectLogs:
+        weekNum = getWeekNum(month,l.Date,3)
+        invoice.append({
+            'user':p.User.username,
+            'week':weekNum,
+            'date':p.Date,
+            'issue':p.project_id.project.name,
+            'detail':p.Workdone,
+            'hour':p.Hours
+        })
+    #print(projectLogs)
+    #print(end_date)
+
+    return JsonResponse({'result':invoice})
+
+def getWeekNum(month,date1,type):
+    year  = int(datetime.today().year)
+    first_date = datetime(year, int(month), 1)
+
+    if month == 12:
+        last_date = datetime(year, int(month), 31)
+    else:
+        last_date = datetime(year, int(month) + 1, 1) + timedelta(days=-1)
+
+    #last monday is start date if today is monday lastMonday is today
+    lastMonday = first_date + relativedelta(weekday=MO(-1))
+    nextMonday = last_date + relativedelta(weekday=MO(1))
+
+
+    if nextMonday.day > 1:
+        end_date = (last_date + relativedelta(weekday=MO(-1)))-timedelta(days=1)
+    else:
+        end_date = nextMonday-timedelta(days=1)
+    
+    week1 = first_date + relativedelta(weekday=MO(-1))
+    week2 = (week1+timedelta(days=1)) + relativedelta(weekday=MO(1))
+    week3 = (week2+timedelta(days=1)) + relativedelta(weekday=MO(1))
+    week4 = (week3+timedelta(days=1)) + relativedelta(weekday=MO(1))
+    week5 = (week4+timedelta(days=1)) + relativedelta(weekday=MO(1))
+    
+    #print(date1)
+    #print(week4)
+    if type == 1:
+        return lastMonday #as start date for selected month
+    elif type == 2:
+        return end_date
+    else:
+        date2 = (convert_to_datetime(str(date1))).date()
+        #print(date2)
+        #print("sda")
+        date = datetime(date2.year,date2.month,date2.day)
+        w1 = datetime(week1.year,week1.month,week1.day)
+        w2 = datetime(week2.year,week2.month,week2.day)
+        w3 = datetime(week3.year,week3.month,week3.day)
+        w4 = datetime(week4.year,week4.month,week4.day)
+        w5 = datetime(week5.year,week5.month,week5.day)
+        #print(date)
+        #print(w1)
+        if date >= w1 and date < w2:
+            return 1
+        elif date >= w2 and date < w3:
+            return 2
+        elif date >= w3 and date < w4:
+            return 3
+        elif date >= w4 and date <w5:
+            return 4
+        elif date >=w5 and date < datetime(end_date.year,end_date.month,end_date.day):
+            return 5
+        else:
+            return None
+
+def convert_to_datetime(input_str, parserinfo=None):
+    return parse(input_str, parserinfo=parserinfo)
+
+@csrf_exempt
+def download_invoice_data(request,id,month):
+    print(id)
+    print(month)
+    #print('I am id'+id)
+    data = []#createReportData(filter.user.id,filter.date1,filter.date2,filter.log_type,filter.task_type)
+    #print(data)
+    response = HttpResponse(content_type='application/ms-excel')
+    response['Content-Disposition'] = 'attachment; filename="users.xls"'
+
+    wb = xlwt.Workbook(encoding='utf-8')
+    ws = wb.add_sheet('Users Log Data') # this will make a sheet named Users Data
+
+    # Sheet header, first row
+    row_num = 0
+
+    font_style = xlwt.XFStyle()
+    font_style.font.bold = True
+
+    columns = ['id','Username', 'Date','Task Type', 'Task Name','Billable','Details','Hour' ]
+
+    for col_num in range(len(columns)):
+        ws.write(row_num, col_num, columns[col_num], font_style) # at 0 row 0 column 
+
+    # Sheet body, remaining rows
+    font_style = xlwt.XFStyle()
+
+    #rows = User.objects.all().values_list('username', 'first_name', 'last_name', 'email')
+    
+    rows = data
+    """
+    for row in rows:
+        row_num += 1
+        for col_num in range(len(row)):
+            ws.write(row_num, col_num, row[col_num], font_style)
+    """
+    columns = list(data[0].keys()) # list() is not need in Python 2.x
+    for i, row in enumerate(data):
+        for j, col in enumerate(columns):
+            ws.write(i+1, j, row[col])
+
+    wb.save(response)
+
+    return response
