@@ -32,7 +32,7 @@ def send_invite_email(request):
         email = request.POST.get('email')
         company = quote(company_id.company.name)
         #link = f"http://127.0.0.1:8000/validate/addown/?email={email}&company={company}"
-        link=f"http://127.0.0.1:8000/validate/addown/?email={email}&company={company}"
+        link=f"http://glacier.pythonanywhere.com//validate/addown/?email={email}&company={company}"
         # message = f"Join With Us:\n From Here: '{link}',\n Your Email: '{email}',\n Company Id: '{company_id}'"
         print('I am here')
         try:
