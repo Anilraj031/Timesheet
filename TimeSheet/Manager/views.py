@@ -34,7 +34,7 @@ def send_invite_email(request):
         # link = "<a href='http://127.0.0.1:8000/validate/addown?email="+email+"&company="+company_id.company.name+"'>Join Company</a>"
         link=f"http://127.0.0.1:8000/validate/addown/?email={email}&company={company}"
         # message = f"Join With Us:\n From Here: '{link}',\n Your Email: '{email}',\n Company Id: '{company_id}'"
-
+        print('I am here')
         try:
             send_mail(
                 "Invitation From Glacier",
@@ -79,7 +79,7 @@ def checkTeams(request):
         is_manager = userDetails.objects.get(user__id=request.user.id)
         if is_manager.is_manager == True:
             users1 = userManager.objects.values('user').filter(manager=is_manager)
-            
+
             users = User.objects.filter(Q(pk__in=users1)| Q(pk=request.user.id))
             is_team=True
         else:
@@ -106,7 +106,7 @@ def getusers(request):
             allusers = User.objects.filter(is_active=False,pk__in=users[0])
         else:
             allusers = User.objects.filter(pk__in=users[0])
-        
+
         data = []
         for x in allusers:
             data.append({
@@ -159,7 +159,7 @@ def newUser(request):
 
                 udetails = userDetails(user=new_user).save()
                 #udetails.save()
-                
+
                 return JsonResponse({'result':"Success"})
         elif(action == 'update'):
             User.objects.filter(id=userId).update(username=username,first_name=fname,last_name=lname,email=n_email)
@@ -214,11 +214,11 @@ def viewUser(request,userId):
 
     project = Project.objects.filter(manager=getUser)
     task =worklog.objects.filter(User=getUser,TaskType=1)
-    
+
 
     hour = worklog.objects.filter(Billable=True).aggregate(Sum('Hours'))
     totalhour = Attendance.objects.filter(user=getUser).aggregate(Sum('hour'))
-    
+
     leave = Leave.objects.filter(user=getUser).count()
     attendance = Attendance.objects.filter(user=getUser).count()
 
@@ -233,7 +233,7 @@ def viewUser(request,userId):
         'totalHour':totalhour,
         'leave':leave,
         'attendance':attendance,
-        
+
     }
     pid = []
     for x in perm:
@@ -307,10 +307,10 @@ def report(request):
     issue_hours = worklog.objects.filter(User=request.user,Billable=True,TaskType=1,Date__range=(date1,date2)).aggregate(Sum('Hours'))
     project_hours = worklog.objects.filter(User=request.user,Billable=True,TaskType=2,Date__range=(date1,date2)).aggregate(Sum('Hours'))
     other_hours = worklog.objects.filter(User=request.user,Billable=False,Date__range=(date1,date2)).aggregate(Sum('Hours'))
-    
+
     print(other_hours)
     issues = Ticket.objects.filter(assigned_to__id=user_id).values()
-    
+
     data={
         'user':user_details,
         #'attendance':list(attendance),
@@ -352,7 +352,7 @@ def updateLoginType(request):
     typeTo = request.POST.get('type')
     userid = request.POST.get('user')
     user = User.objects.get(id=userid)
-    
+
     if l_type == 'update':
         userDetails.objects.filter(user=user).update(attendanceType=typeTo)
         if typeTo == 'Physical':
@@ -364,7 +364,7 @@ def updateLoginType(request):
             userDetails.objects.filter(user=user).update(is_mfa=False)
         else:
             userDetails.objects.filter(user=user).update(is_mfa=True)
-        
+
     return JsonResponse({'result':'success'})
 
 @csrf_exempt
@@ -374,15 +374,15 @@ def addManagerMember(request):
     userList.remove(id)
 
     userDetails.objects.filter(user__id=id).update(is_manager=True)
-    
+
     for u in userList:
         user = User.objects.get(username=u)
         checkUser = userManager.objects.filter(manager__user__id=id,user=user)
-        
+
         if checkUser.exists() == False:
-            manager = userDetails.objects.get(user__id=id) 
+            manager = userDetails.objects.get(user__id=id)
             userManager(manager=manager,user=user).save()
-            
+
     return JsonResponse({'result':'success'})
 
 
@@ -417,7 +417,7 @@ def getInvoice(request):
     return JsonResponse({'result':invoice[0],'details':invoice[1]})
 
 def createInvoice(month,customer_id):
-    
+
     start_date = getWeekNum(month,None,1)
     end_date = getWeekNum(month,None,2)
 
@@ -427,15 +427,15 @@ def createInvoice(month,customer_id):
     issue = Ticket.objects.filter(affected_user__in=customer_contacts)
     projects = Project.objects.filter(customer = custr.name)
     subProjects = SubProject.objects.filter(project__in=projects)
-    
+
     logs = worklog.objects.filter(Q(task__in=issue)|Q(project_id__in=subProjects),Billable=True,Date__range=(start_date,end_date)).order_by('Date')
-    
+
     #hours
     projecthr = worklog.objects.filter(project_id__in=subProjects,Billable=True,Date__range=(start_date,end_date)).aggregate(Sum('Hours')).get('Hours__sum', 0.00)
     issueHr = worklog.objects.filter(task__in=issue,Billable=True,Date__range=(start_date,end_date)).aggregate(Sum('Hours')).get('Hours__sum', 0.00)
     totalHr = logs.aggregate(Sum('Hours')).get('Hours__sum', 0.00)
     cname = custr.name
-    
+
     hrs = {
         'project':projecthr,
         'issue':issueHr,
@@ -495,13 +495,13 @@ def getWeekNum(month,date1,type):
         end_date = (last_date + relativedelta(weekday=MO(-1)))-timedelta(days=1)
     else:
         end_date = nextMonday-timedelta(days=1)
-    
+
     week1 = first_date + relativedelta(weekday=MO(-1))
     week2 = (week1+timedelta(days=1)) + relativedelta(weekday=MO(1))
     week3 = (week2+timedelta(days=1)) + relativedelta(weekday=MO(1))
     week4 = (week3+timedelta(days=1)) + relativedelta(weekday=MO(1))
     week5 = (week4+timedelta(days=1)) + relativedelta(weekday=MO(1))
-    
+
     #print(date1)
     #print(week4)
     if type == 1:
@@ -545,7 +545,7 @@ def download_invoice_data(request):
     data = get_data[0]
 
     #print(get_data[1])
-    
+
     #print(data)
     response = HttpResponse(content_type='application/ms-excel')
     response['Content-Disposition'] = 'attachment; filename="Invoice.xls"'
@@ -588,13 +588,13 @@ def download_invoice_data(request):
     columns = ['Username', 'Week','Date', 'Title','Hour','Details']
 
     for col_num in range(len(columns)):
-        ws.write(row_num, col_num, columns[col_num], font_style) # at 0 row 0 column 
+        ws.write(row_num, col_num, columns[col_num], font_style) # at 0 row 0 column
 
     # Sheet body, remaining rows
     font_style = xlwt.XFStyle()
 
     #rows = User.objects.all().values_list('username', 'first_name', 'last_name', 'email')
-    
+
     rows = data
     """
     for row in rows:
