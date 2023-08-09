@@ -16,7 +16,7 @@ urlpatterns = [
     path('removeManager',views.removeManager,name="removeManager"),
     path('invoice',views.invoice,name="invoice"),
     path('getInvoice',views.getInvoice,name="getInvoice"),
-    path('downloadInvoice/<id>/<month>',views.download_invoice_data,name="downloadInvoice"),
+    path('downloadInvoice/',views.download_invoice_data,name="downloadInvoice"),
 
     path('send_invite_email/',views.send_invite_email,name='send_invite_email'),
 ]

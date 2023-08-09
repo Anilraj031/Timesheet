@@ -36,7 +36,7 @@
 		<button class="btn btn-success btn-sm" onclick="getInvoice()">Filter</button>
 	</div>
 
-    <div id="filter_result" style="display:visible;">
+    <div id="filter_result" style="display:none;">
 		{% csrf_token %}
 		<div class="d-sm-flex align-items-center justify-content-between mt-4 mb-1">
 			<h1 class="h3 mb-0 text-gray-800" style="color:CornflowerBlue;"></h1>
@@ -44,6 +44,41 @@
 				
 			</span>
 		</div>
+		<div>
+			<div class="row mt-2">
+				<div class="col-sm-2">
+				  <h6 class="mb-0">Customer</h6>
+				</div>
+				<div class="col-sm-10 ">
+				  <span id='cs'></span>
+				</div>
+			</div><hr>
+			<div class="row mt-2">
+				<div class="col-sm-2">
+				  <h6 class="mb-0">Total Hours</h6>
+				</div>
+				<div class="col-sm-10 ">
+				  <span id='thr'></span>
+				</div>
+			</div>
+			<div class="row mt-2">
+				<div class="col-sm-2">
+				  <h6 class="mb-0">Project Hours</h6>
+				</div>
+				<div class="col-sm-10 ">
+				  <span id='phr'></span>
+				</div>
+			</div>
+			<div class="row mt-2">
+				<div class="col-sm-2">
+				  <h6 class="mb-0">Other Issues</h6>
+				</div>
+				<div class="col-sm-10 ">
+				  <span id='ohr'></span>
+				</div>
+			</div>
+		</div><hr>
+		<h6 class="mt-4">Hours Details</h6>
 		<table class="table table-responsive mt-2" id="invoiceDetails">
 			<thead>
 				<tr>
@@ -85,12 +120,16 @@ function getInvoice()
         method:'GET',
         success: function(data){
             //console.log(data);
-            //$('#filter_result').show();
+            $('#filter_result').show();
+			$('#cs').text(data.details.customer);
+			$('#thr').text(data.details.total);
+			$('#phr').text(data.details.project);
+			$('#ohr').text(data.details.issue);
 			//console.log(data.result);
 			//const test = data.filter;
             id=parseInt(cus);
             mn = parseInt(month);
-            url="/Manage/downloadInvoice/"+id+"/"+mn;
+            url="/Manage/downloadInvoice/?id="+id+"&month="+mn;
 			$('#downloadButton').html('<a href="'+url+'" class="d-none d-sm-inline-block btn btn-sm btn-primary " ><i class="fas fa-download fa-sm text-white-50"></i> Download Excel</a>');
 
 			dataset = [];

@@ -412,7 +412,12 @@ def invoice(request):
 def getInvoice(request):
     customer_id = request.GET['customer']
     month = request.GET['month']
+    invoice = createInvoice(month,customer_id)
 
+    return JsonResponse({'result':invoice[0],'details':invoice[1]})
+
+def createInvoice(month,customer_id):
+    
     start_date = getWeekNum(month,None,1)
     end_date = getWeekNum(month,None,2)
 
@@ -423,36 +428,54 @@ def getInvoice(request):
     projects = Project.objects.filter(customer = custr.name)
     subProjects = SubProject.objects.filter(project__in=projects)
     
-    logs = worklog.objects.filter(task__in=issue,Billable=True,Date__range=(start_date,end_date))
-    projectLogs = worklog.objects.filter(project_id__in=subProjects,Billable=True,Date__range=(start_date,end_date))
+    logs = worklog.objects.filter(Q(task__in=issue)|Q(project_id__in=subProjects),Billable=True,Date__range=(start_date,end_date)).order_by('Date')
+    
+    #hours
+    projecthr = worklog.objects.filter(project_id__in=subProjects,Billable=True,Date__range=(start_date,end_date)).aggregate(Sum('Hours')).get('Hours__sum', 0.00)
+    issueHr = worklog.objects.filter(task__in=issue,Billable=True,Date__range=(start_date,end_date)).aggregate(Sum('Hours')).get('Hours__sum', 0.00)
+    totalHr = logs.aggregate(Sum('Hours')).get('Hours__sum', 0.00)
+    cname = custr.name
+    
+    hrs = {
+        'project':projecthr,
+        'issue':issueHr,
+        'total':totalHr,
+        'customer':cname
+    }
 
 
     invoice = []
     for l in logs:
         weekNum = getWeekNum(month,l.Date,3)
+        if l.task != None:
+            name = l.task.ticket_name
+        else:
+            name = l.project_id.project.name
         invoice.append({
             'user':l.User.username,
-            'week':weekNum,
-            'date':l.Date,
-            'issue':l.task.ticket_name,
+            'week':'Week '+str(weekNum),
+            'date':str(l.Date),
+            #'issue':l.task.ticket_name,
+            'issue':name,
+            'hour':l.Hours,
             'detail':l.Workdone,
-            'hour':l.Hours
             })
-        
+    """
     for p in projectLogs:
-        weekNum = getWeekNum(month,l.Date,3)
+        weekNum1 = getWeekNum(month,p.Date,3)
         invoice.append({
             'user':p.User.username,
-            'week':weekNum,
-            'date':p.Date,
+            'week':weekNum1,
+            'date':str(p.Date),
             'issue':p.project_id.project.name,
+            'hour':p.Hours,
             'detail':p.Workdone,
-            'hour':p.Hours
         })
+    """
     #print(projectLogs)
     #print(end_date)
 
-    return JsonResponse({'result':invoice})
+    return invoice,hrs
 
 def getWeekNum(month,date1,type):
     year  = int(datetime.today().year)
@@ -503,7 +526,7 @@ def getWeekNum(month,date1,type):
             return 2
         elif date >= w3 and date < w4:
             return 3
-        elif date >= w4 and date <w5:
+        elif date >= w4 and date < w5:
             return 4
         elif date >=w5 and date < datetime(end_date.year,end_date.month,end_date.day):
             return 5
@@ -514,25 +537,55 @@ def convert_to_datetime(input_str, parserinfo=None):
     return parse(input_str, parserinfo=parserinfo)
 
 @csrf_exempt
-def download_invoice_data(request,id,month):
-    print(id)
-    print(month)
+def download_invoice_data(request):
+    id = request.GET.get('id')
+    month = request.GET.get('month')
     #print('I am id'+id)
-    data = []#createReportData(filter.user.id,filter.date1,filter.date2,filter.log_type,filter.task_type)
+    get_data = createInvoice(month,id)
+    data = get_data[0]
+
+    #print(get_data[1])
+    
     #print(data)
     response = HttpResponse(content_type='application/ms-excel')
-    response['Content-Disposition'] = 'attachment; filename="users.xls"'
+    response['Content-Disposition'] = 'attachment; filename="Invoice.xls"'
 
     wb = xlwt.Workbook(encoding='utf-8')
     ws = wb.add_sheet('Users Log Data') # this will make a sheet named Users Data
 
-    # Sheet header, first row
-    row_num = 0
+    #hours details
+    font_style1 = xlwt.XFStyle()
+    font_style1.font.bold = True
+    ws.write_merge(0, 0, 0, 1, 'Customer',font_style1)
+    ws.write(0, 2, get_data[1]['customer'],font_style1)
+    ws.write_merge(1, 1, 0, 1, 'Total Hr',font_style1)
+    ws.write(1, 2, get_data[1]['total'],font_style1)
 
-    font_style = xlwt.XFStyle()
+    #ws.write_merge(0, 0, 0, 1, 'Long Cell')
+    # Sheet header, first row
+    row_num = 3
+    #column width
+    col_width = 256*15
+    ws.col(0).width = col_width
+    ws.col(1).width = 256*10
+    ws.col(2).width = col_width
+    ws.col(3).width = col_width
+    ws.col(4).width = 256*10
+    ws.col(5).width = 256*40
+
+    #styling color blue
+    xlwt.add_palette_colour("custom_blue_color", 0x21) # the second argument must be a number between 8 and 64
+    wb.set_colour_RGB(0x21, 79, 129, 189) # Red — 79, Green — 129, Blue — 189
+    #font_style = xlwt.XFStyle()
+    font_style = xlwt.easyxf('pattern: pattern solid, fore_colour custom_blue_color')
     font_style.font.bold = True
 
-    columns = ['id','Username', 'Date','Task Type', 'Task Name','Billable','Details','Hour' ]
+    #styling left align
+    style_text_align_vert_bottom_horiz_left = xlwt.easyxf("align: vert bottom, horiz left")
+
+
+
+    columns = ['Username', 'Week','Date', 'Title','Hour','Details']
 
     for col_num in range(len(columns)):
         ws.write(row_num, col_num, columns[col_num], font_style) # at 0 row 0 column 
@@ -552,7 +605,7 @@ def download_invoice_data(request,id,month):
     columns = list(data[0].keys()) # list() is not need in Python 2.x
     for i, row in enumerate(data):
         for j, col in enumerate(columns):
-            ws.write(i+1, j, row[col])
+            ws.write(i+4, j, row[col],style_text_align_vert_bottom_horiz_left)
 
     wb.save(response)
 
