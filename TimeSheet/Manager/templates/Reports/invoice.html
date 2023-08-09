@@ -5,11 +5,11 @@
 </style>
 
 {% endblock %}
-{% block content %} 
+{% block content %}
 
 <div class="container" style="background-color:GhostWhite !important;">
-	
-	<h5 class="text-info">Create Invoice</h5>
+
+	<h5 class="text-info">Create Invoice Updated</h5>
 	<div class="btn-group btn-group-sm" role="group" aria-label="Small button group">
 		{% if manager == True %}
 		<select class="rounded-0 form-select form-select-sm" id="customer"   name="customers">
@@ -41,7 +41,7 @@
 		<div class="d-sm-flex align-items-center justify-content-between mt-4 mb-1">
 			<h1 class="h3 mb-0 text-gray-800" style="color:CornflowerBlue;"></h1>
 			<span id="downloadButton">
-				
+
 			</span>
 		</div>
 		<div>
@@ -88,7 +88,7 @@
                     <th>Title</th>
                     <th>Hour</th>
 					<th class="w-25">Details</th>
-					
+
 				</tr>
 			</thead>
 			<tbody id="filter">
@@ -113,7 +113,7 @@ function getInvoice()
 {
     var cus = $('#customer').val();
     var month = $('#month').val();
-    
+
     $.ajax({
         url:'{% url "getInvoice" %}',
         data:{customer:cus,month:month},
