@@ -73,9 +73,8 @@ def VerifyLoginOTP(request):
         user = authenticate(username=uname, password=upass, email=email)
         if user is not None:
             login(request, user)
+            LoggedUser(user=request.user).save()
             createSession(request)
-            device = request.META['HTTP_USER_AGENT']
-            LoggedUser(user=request.user,device=device).save()
             #print("Login Done")
             #print("OTP: ", userotp)
         return JsonResponse({'data': 'Hello'}, status=200)
@@ -87,10 +86,12 @@ def login_n(request):
             upass = request.POST.get('password')
             email = request.POST.get('email') 
             user = authenticate(username=uname, password=upass)
-            print(user)
+            # print(user)
             if user is not None:
+
                 user_Details= userDetails.objects.get(user=user)
                 #print(user_Details.is_mfa)
+
                 if user_Details.is_mfa:
                     email = User.objects.get(username=uname).email
                     otp = random.randint(1000, 9999)
@@ -98,29 +99,32 @@ def login_n(request):
                     return render(request, 'Authentication/VerifyLogin.html', {'otp': otp, 'username': uname, 'password': upass})
                 else:
                     login(request, user)
+                    LoggedUser(user=request.user).save()
                     createSession(request)
-                    device = request.META['HTTP_USER_AGENT']
-                    LoggedUser(user=request.user,device=device).save()
                     return HttpResponseRedirect(reverse('home'))
-            else:
-                fm = {
-                    'username': request.POST.get('username'),
-                    'password': request.POST.get('password'),
-                    'error': True
-                }
-                context = {
-                    "forms": fm
-                }
-                return render(request,'Authentication/login.html',context)
+
+                # messages.success(request, 'User saved Successfully')
+            fm = {
+                'username': request.POST.get('username'),
+                'password': request.POST.get('password'),
+                'error': True
+            }
         else:
-            """
-            checkPassword = InitialPassword.objects.get(user=request.user.id)
-            if checkPassword.first_changed == False:
-                return HttpResponseRedirect(reverse('newPassword'))
-            else:
-                return HttpResponseRedirect(reverse('home'))
-            """
-            return render(request, 'Authentication/login.html')
+            fm = {}
+            context = {
+                "forms": fm
+            }
+            #print("yes")
+            return render(request,'Authentication/login.html')
+    else:
+        """
+        checkPassword = InitialPassword.objects.get(user=request.user.id)
+        if checkPassword.first_changed == False:
+            return HttpResponseRedirect(reverse('newPassword'))
+        else:
+            return HttpResponseRedirect(reverse('home'))
+        """
+        return render(request, 'Authentication/login.html')
 
 
 def addown(request):
@@ -129,6 +133,7 @@ def addown(request):
         form = UserCreationForm(request.POST)
         email=request.POST.get('email')
         get_company = request.POST.get('company')  # Retrieve the 'company' value from the form
+        print(get_company)
         company_id=Company.objects.get(name=get_company)
 
         if form.is_valid():
@@ -139,8 +144,19 @@ def addown(request):
                 Employees(company=company_id, user=newuser).save()
                 userDetails(user=user).save()
 
-            messages.success(request, 'Sign up successful!')
-            return HttpResponseRedirect(reverse('login'))
+                login(request, user)
+                device = request.META['HTTP_USER_AGENT']
+                LoggedUser(user=request.user,device=device).save()
+                createSession(request)
+                messages.success(request, 'Sign up successful!')
+                return HttpResponseRedirect(reverse('home'))
+        else:
+            context = {
+                'username': request.POST.get('username'),
+                'email':request.POST.get('email'),
+                'company':get_company
+            }
+            return render(request, 'Authentication/addown.html', context)
     else:
         context = {
             'form': form,
@@ -281,7 +297,6 @@ def createSession(request):
     #print(companyid.company.name)
     request.session['company'] =companyid.company.name
     request.session['comp'] = companyid.company.id
-    #request.session['id'] = random.randint(1000, 9999)
     
     return True
 @csrf_exempt

@@ -40,11 +40,11 @@
                                         <!--{{form.as_p}} -->
 
                                         <div class="form-floating mb-3">
-                                            <input type="email" class="form-control" name="email" id="email" placeholder="Email" value="{{email}}" readonly/>
+                                            <input type="email" class="form-control" name="email" id="email" placeholder="Email" value="{{ email }}" readonly/>
                                             <label for="exampleFormControlInput1" class="form-label">Email address</label>
                                         </div>
                                         <div class="form-floating mb-3">
-                                            <input type="text" class="form-control" name="username"  placeholder="Username" value="{{ forms.username}}" required/>
+                                            <input type="text" class="form-control" name="username"  placeholder="Username" value="{{ username }}" required/>
                                             <label for="exampleFormControlInput1" class="form-label">Username</label>
                                         </div>
                                         <div class="form-floating mb-3">
@@ -56,7 +56,7 @@
                                             <label for="floatingInputGrid">Confirm Password</label>
                                         </div>
                                         <div class="form-floating mb-3">
-                                            <input type="text" class="form-control" name="company" id="company" placeholder="Company" value="" readonly/>
+                                            <input type="text" class="form-control" name="company" id="company" placeholder="Company" value="{{ company }}" readonly/>
                                             <label for="floatingInputGrid">Company</label>
                                         </div>
                                         <div class="d-flex justify-content-end">
