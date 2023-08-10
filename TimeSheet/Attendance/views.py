@@ -12,7 +12,7 @@ from Manager.views import checkTeams
 #for email send
 from django.core.mail import send_mail
 from django.conf import settings
-# email 
+# email
 
 # new add
 from django.contrib.auth.decorators import login_required
@@ -76,7 +76,7 @@ def getAttendance(request):
         result = Attendance.objects.filter(date__month=month,date__year=year,user=request.user)
     else:
         result = Attendance.objects.filter(date__month=month,date__year=year,user=user_id)
-    
+
     alldata = getUsernames(request,result)
     return JsonResponse({'attendance':alldata})
 
@@ -101,7 +101,7 @@ def attendance_Details(request):
     new_data.exit = attendance.exit
     new_data.start_location =start_location
     new_data.stop_location=stop_location
-    
+
     #return render(request,'Attendance/attendance_details.html',{'data':new_data})
     return JsonResponse({'start':str(new_data.start_location),'stop':str(new_data.stop_location)})
 
@@ -143,7 +143,7 @@ def make_attendance(request):
     else:
         getAll=Attendance.objects.filter(date__year=check_date.year,date__month=check_date.month,user=request.user).values()
         alldata=list(getAll)
-    
+
     return JsonResponse({'attendance':alldata})
 
 def getUsernames(request,result):
@@ -164,7 +164,7 @@ def getUsernames(request,result):
             })
     else:
         alldata = list(result.values())
-    
+
     return alldata
 
 @login_required
@@ -183,7 +183,7 @@ def getleave(request):
     usr = checkTeams(request)
     allusers =User.objects.filter(pk__in=usr[0]).values('id','username')
     all_leaves = Leave.objects.filter(user__id__in=usr[0])
-    
+
     type = LeaveType.objects.all().values()
     return render(request, 'Attendance/leave.html',{'result':all_leaves,'users' :allusers,'LeaveTypes':type})
 
@@ -198,7 +198,7 @@ def request_leave(request):
         Leave.objects.filter(id=id).update(user = request.user,type=leaveType,leave_from=leave_from,leave_to=leave_to,details=details)
     else:
         Leave(user = request.user,type=leaveType,leave_from=leave_from,leave_to=leave_to,details=details).save()
-        
+
     if request.user.is_superuser:
         result = Leave.objects.all()
     else:
@@ -207,7 +207,7 @@ def request_leave(request):
     getmanager = userDetails.objects.get(user__id=request.user.id)
     if getmanager.is_manager == True or request.user.is_superuser:
         manager = True
-    else: 
+    else:
         manager = False
     list_data = []
     for x in result:
@@ -226,7 +226,7 @@ def request_leave(request):
 
 def getLocation_Name(user_location):
     if user_location != None:
-        geolocator = Nominatim(user_agent="geoapiExercises")
+        geolocator = Nominatim(user_agent="Timesheet")
         new_location = user_location.split(",")
         Latitude = new_location[0]
         Longitude = new_location[1]
@@ -268,7 +268,7 @@ def getLeave(request):
     getmanager = userDetails.objects.get(user__id=request.user.id)
     if getmanager.is_manager == True or request.user.is_superuser:
         manager = True
-    else: 
+    else:
         manager = False
     return JsonResponse({'result':all_leaves,'is_manager':manager})
 
@@ -299,7 +299,7 @@ def getUsernamesForLeave(request,result):
                 'leave_to':x.leave_to,
                 'approval':x.approval.name
             })
-    
+
     return alldata
 
 @csrf_exempt
@@ -385,13 +385,13 @@ def getLeaveType(request):
 
 
 def getDistance(request):
-    #LoA = radians(LoA) 
-    #LoB = radians(LoB) 
-    #LaA= radians(LaA) 
+    #LoA = radians(LoA)
+    #LoB = radians(LoB)
+    #LaA= radians(LaA)
     #LaB = radians(LaB)
 
 
-    #test by anil 
+    #test by anil
     LaA = 38.63
     LaB = 39.95
     LoA = -90.19
@@ -399,13 +399,13 @@ def getDistance(request):
     # The "Haversine formula" is used.
     D_Lo = LoB - LoA
     D_La = LaB - LaA
-    P = sin(D_La / 2)**2 + cos(LaA) * cos(LaB) * sin(D_Lo / 2)**2 
-   
-    Q = 2 * asin(sqrt(P))  
+    P = sin(D_La / 2)**2 + cos(LaA) * cos(LaB) * sin(D_Lo / 2)**2
+
+    Q = 2 * asin(sqrt(P))
     # The earth's radius in kilometers.
-    R_km = 6371 
+    R_km = 6371
     # Then we'll compute the outcome.
-    print ("The distance between St Louis and Philadelphia is: ", Q * R_km, "K.M") 
+    print ("The distance between St Louis and Philadelphia is: ", Q * R_km, "K.M")
     #return(Q * R_km)
     return True
 
@@ -413,5 +413,5 @@ def getDistance(request):
     LaB = 39.95
     LoA = -90.19
     LoB = -75.14
-    print ("The distance between St Louis and Philadelphia is: ", distance_d(LaA, LaB, LoA, LoB), "K.M") 
+    print ("The distance between St Louis and Philadelphia is: ", distance_d(LaA, LaB, LoA, LoB), "K.M")
 
